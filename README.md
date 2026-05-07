@@ -50,17 +50,16 @@ BloodLink focuses on a realistic MVP:
 - Containerization: Docker + Docker Compose
 
 ## Architecture
-```text
-React Web App
-      |
-      v
-FastAPI REST API
-      |
-      v
-PostgreSQL Database
-      |
-      v
-Docker Compose
+```mermaid
+flowchart TD
+    U["Donors / Receivers / Admins"] --> F["React + Vite Frontend<br/>Port 5173"]
+    F --> A["FastAPI REST API<br/>Port 8000"]
+    A --> D["PostgreSQL Database<br/>Port 5432"]
+    A --> S["Protected Upload Storage<br/>Docker Volume"]
+    DC["Docker Compose"] --> F
+    DC --> A
+    DC --> D
+    DC --> S
 ```
 
 ## Project structure
