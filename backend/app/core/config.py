@@ -16,6 +16,11 @@ class Settings(BaseSettings):
     upload_dir: str = "./uploads"
     max_upload_size_mb: int = 5
     environment: str = "development"
+    redis_url: str = "redis://redis:6379/0"
+    minio_endpoint: str = "http://minio:9000"
+    minio_access_key: str = "minioadmin"
+    minio_secret_key: str = "minioadmin"
+    minio_bucket_name: str = "bloodlink-private"
 
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -25,6 +25,34 @@ const navByRole = {
     { label: "Reports", to: "/admin/reports" },
     { label: "Audit Logs", to: "/admin/audit-logs" },
   ],
+  super_admin: [
+    { label: "Dashboard", to: "/admin" },
+    { label: "Users", to: "/admin/users" },
+    { label: "Donors", to: "/admin/donors" },
+    { label: "Blood Requests", to: "/admin/requests" },
+    { label: "Matches", to: "/admin/matches" },
+    { label: "Reports", to: "/admin/reports" },
+    { label: "Audit Logs", to: "/admin/audit-logs" },
+  ],
+  operations_agent: [
+    { label: "Dashboard", to: "/admin" },
+    { label: "Blood Requests", to: "/admin/requests" },
+    { label: "Reports", to: "/admin/reports" },
+  ],
+  hospital_admin: [
+    { label: "Dashboard", to: "/hospital" },
+    { label: "Requests", to: "/hospital/requests" },
+  ],
+  hospital_staff: [
+    { label: "Dashboard", to: "/hospital" },
+    { label: "Requests", to: "/hospital/requests" },
+  ],
+  blood_bank_admin: [
+    { label: "Inventory", to: "/blood-bank/inventory" },
+  ],
+  blood_bank_staff: [
+    { label: "Inventory", to: "/blood-bank/inventory" },
+  ],
 };
 
 export default function Layout() {
@@ -84,4 +112,3 @@ export default function Layout() {
     </div>
   );
 }
-

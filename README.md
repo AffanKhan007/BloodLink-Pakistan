@@ -38,6 +38,10 @@ BloodLink focuses on a realistic MVP:
 - Donor accept or reject flow for assigned matches
 - In-app notifications
 - Basic admin dashboard and analytics
+- Hospital dashboard foundation
+- Blood bank inventory foundation
+- API versioning at `/api/v1`
+- Redis, MinIO, worker, and scheduler Docker services
 - Docker Compose setup for frontend, backend, and PostgreSQL
 - PostgreSQL backup and restore notes
 - Responsive UI for mobile and desktop
@@ -46,6 +50,8 @@ BloodLink focuses on a realistic MVP:
 - Frontend: React + Vite
 - Backend: FastAPI
 - Database: PostgreSQL
+- Cache / queue broker: Redis
+- Object storage foundation: MinIO
 - ORM and migrations: SQLAlchemy + Alembic
 - Containerization: Docker + Docker Compose
 
@@ -55,40 +61,50 @@ flowchart TD
     U["Donors / Receivers / Admins"] --> F["React + Vite Frontend<br/>Port 5173"]
     F --> A["FastAPI REST API<br/>Port 8000"]
     A --> D["PostgreSQL Database<br/>Port 5432"]
-    A --> S["Protected Upload Storage<br/>Docker Volume"]
+    A --> R["Redis<br/>Queue / Realtime Foundation"]
+    A --> S["Protected Upload Storage<br/>MinIO / Local Volume Foundation"]
+    W["Worker"] --> R
+    W --> D
+    SCH["Scheduler"] --> R
     DC["Docker Compose"] --> F
     DC --> A
     DC --> D
+    DC --> R
     DC --> S
+    DC --> W
+    DC --> SCH
 ```
 
 ## Project structure
 ```text
 bloodlink-pakistan/
-├── frontend/
-│   ├── src/
-│   ├── public/
-│   ├── package.json
-│   ├── Dockerfile
-│   └── .env.example
-├── backend/
-│   ├── app/
-│   │   ├── main.py
-│   │   ├── core/
-│   │   ├── models/
-│   │   ├── schemas/
-│   │   ├── routes/
-│   │   ├── services/
-│   │   └── utils/
-│   ├── alembic/
-│   ├── requirements.txt
-│   ├── Dockerfile
-│   └── .env.example
-├── docker-compose.yml
-├── .env.example
-├── .gitignore
-├── AGENTS.md
-└── README.md
+|- frontend/
+|  |- src/
+|  |- public/
+|  |- package.json
+|  |- Dockerfile
+|  `- .env.example
+|- backend/
+|  |- app/
+|  |  |- api/
+|  |  |- core/
+|  |  |- models/
+|  |  |- routes/
+|  |  |- schemas/
+|  |  |- services/
+|  |  |- tests/
+|  |  |- worker.py
+|  |  `- scheduler.py
+|  |- alembic/
+|  |- requirements.txt
+|  |- Dockerfile
+|  `- .env.example
+|- docs/
+|- docker-compose.yml
+|- .env.example
+|- .gitignore
+|- AGENTS.md
+`- README.md
 ```
 
 ## User roles
@@ -116,9 +132,14 @@ Root `.env.example`:
 DATABASE_URL=postgresql+psycopg://blood_user:blood_password@db:5432/blood_app
 SECRET_KEY=change_this_secret
 ACCESS_TOKEN_EXPIRE_MINUTES=60
-BACKEND_CORS_ORIGINS=http://localhost:5173
+BACKEND_CORS_ORIGINS=["http://localhost:5173"]
 VITE_API_BASE_URL=http://localhost:8000
 UPLOAD_DIR=/app/uploads
+REDIS_URL=redis://redis:6379/0
+MINIO_ENDPOINT=http://minio:9000
+MINIO_ACCESS_KEY=minioadmin
+MINIO_SECRET_KEY=minioadmin
+MINIO_BUCKET_NAME=bloodlink-private
 ```
 
 Backend `.env.example` and frontend `.env.example` mirror the service-specific values required for local work.
@@ -135,6 +156,8 @@ Expected local URLs:
 - Frontend: [http://localhost:5173](http://localhost:5173)
 - Backend: [http://localhost:8000](http://localhost:8000)
 - FastAPI docs: [http://localhost:8000/docs](http://localhost:8000/docs)
+- MinIO API: [http://localhost:9000](http://localhost:9000)
+- MinIO Console: [http://localhost:9001](http://localhost:9001)
 
 ## Local setup without Docker
 ### Frontend
@@ -212,6 +235,8 @@ Basic backend tests cover:
 - Blood request creation
 - Matching service logic
 - Admin approval route
+- Hospital dashboard route
+- Blood bank inventory summary route
 
 Run:
 ```bash

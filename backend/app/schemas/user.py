@@ -10,6 +10,8 @@ class UserSummary(BaseSchema):
     id: int
     full_name: str
     email: EmailStr
+    hospital_id: int | None = None
+    blood_bank_id: int | None = None
     role: UserRole
     is_active: bool
     created_at: datetime

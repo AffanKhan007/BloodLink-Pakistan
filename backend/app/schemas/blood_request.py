@@ -43,6 +43,7 @@ class BloodRequestStatusUpdate(BaseModel):
 class BloodRequestOut(BaseSchema):
     id: int
     created_by_user_id: int
+    hospital_id: int | None = None
     patient_name: str
     blood_group_needed: str
     units_required: int
@@ -73,4 +74,3 @@ class RequestDocumentOut(BaseSchema):
 
 class BloodRequestDetailOut(BloodRequestListOut):
     documents: list[RequestDocumentOut] = []
-

@@ -111,3 +111,23 @@ def test_admin_approval_route(client, seeded_db):
     )
     assert response.status_code == 200
     assert response.json()["status"] == "approved"
+
+
+def test_hospital_dashboard_route(client, seeded_db):
+    token = login(client, "hospital@test.com", "Hospital12345")
+    response = client.get(
+        f"/api/v1/hospitals/{seeded_db['hospital'].id}/dashboard",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 200
+    assert response.json()["hospital"]["name"] == "Test Hospital"
+
+
+def test_blood_bank_inventory_summary_route(client, seeded_db):
+    token = login(client, "bank@test.com", "BloodBank12345")
+    response = client.get(
+        f"/api/v1/blood-banks/{seeded_db['blood_bank'].id}/inventory-summary",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 200
+    assert response.json()["total_units"] == 1

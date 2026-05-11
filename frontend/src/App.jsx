@@ -14,6 +14,10 @@ import DonorProfilePage from "./pages/donor/DonorProfilePage";
 import MatchingRequestsPage from "./pages/donor/MatchingRequestsPage";
 import MyMatchesPage from "./pages/donor/MyMatchesPage";
 import NotificationsPage from "./pages/donor/NotificationsPage";
+import BloodBankInventoryPage from "./pages/bloodbank/BloodBankInventoryPage";
+import BloodUnitDetailPage from "./pages/bloodbank/BloodUnitDetailPage";
+import HospitalDashboardPage from "./pages/hospital/HospitalDashboardPage";
+import HospitalRequestsPage from "./pages/hospital/HospitalRequestsPage";
 import LandingPage from "./pages/public/LandingPage";
 import LoginPage from "./pages/public/LoginPage";
 import RegisterPage from "./pages/public/RegisterPage";
@@ -26,6 +30,8 @@ import ReceiverDashboardPage from "./pages/receiver/ReceiverDashboardPage";
 import RequestDetailsPage from "./pages/receiver/RequestDetailsPage";
 
 export default function App() {
+  const adminRoles = ["admin", "super_admin", "operations_agent"];
+
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
@@ -126,7 +132,7 @@ export default function App() {
         <Route
           path="/admin"
           element={
-            <ProtectedRoute roles={["admin"]}>
+            <ProtectedRoute roles={adminRoles}>
               <AdminDashboardPage />
             </ProtectedRoute>
           }
@@ -134,7 +140,7 @@ export default function App() {
         <Route
           path="/admin/users"
           element={
-            <ProtectedRoute roles={["admin"]}>
+            <ProtectedRoute roles={adminRoles}>
               <UsersPage />
             </ProtectedRoute>
           }
@@ -142,7 +148,7 @@ export default function App() {
         <Route
           path="/admin/donors"
           element={
-            <ProtectedRoute roles={["admin"]}>
+            <ProtectedRoute roles={adminRoles}>
               <DonorsPage />
             </ProtectedRoute>
           }
@@ -150,7 +156,7 @@ export default function App() {
         <Route
           path="/admin/requests"
           element={
-            <ProtectedRoute roles={["admin"]}>
+            <ProtectedRoute roles={adminRoles}>
               <BloodRequestsPage />
             </ProtectedRoute>
           }
@@ -158,7 +164,7 @@ export default function App() {
         <Route
           path="/admin/matches"
           element={
-            <ProtectedRoute roles={["admin"]}>
+            <ProtectedRoute roles={adminRoles}>
               <MatchesPage />
             </ProtectedRoute>
           }
@@ -166,7 +172,7 @@ export default function App() {
         <Route
           path="/admin/reports"
           element={
-            <ProtectedRoute roles={["admin"]}>
+            <ProtectedRoute roles={adminRoles}>
               <ReportsPage />
             </ProtectedRoute>
           }
@@ -174,8 +180,42 @@ export default function App() {
         <Route
           path="/admin/audit-logs"
           element={
-            <ProtectedRoute roles={["admin"]}>
+            <ProtectedRoute roles={adminRoles}>
               <AuditLogsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/hospital"
+          element={
+            <ProtectedRoute roles={["hospital_admin", "hospital_staff"]}>
+              <HospitalDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/hospital/requests"
+          element={
+            <ProtectedRoute roles={["hospital_admin", "hospital_staff"]}>
+              <HospitalRequestsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/blood-bank/inventory"
+          element={
+            <ProtectedRoute roles={["blood_bank_admin", "blood_bank_staff"]}>
+              <BloodBankInventoryPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/blood-bank/units/:unitId"
+          element={
+            <ProtectedRoute roles={["blood_bank_admin", "blood_bank_staff"]}>
+              <BloodUnitDetailPage />
             </ProtectedRoute>
           }
         />

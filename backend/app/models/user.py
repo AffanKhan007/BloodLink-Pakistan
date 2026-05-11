@@ -1,16 +1,24 @@
 from datetime import datetime
 from enum import StrEnum
+from typing import Optional
 
-from sqlalchemy import Boolean, DateTime, Enum, String, func
+from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
 
 
 class UserRole(StrEnum):
+    SUPER_ADMIN = "super_admin"
     DONOR = "donor"
     RECEIVER = "receiver"
     ADMIN = "admin"
+    OPERATIONS_AGENT = "operations_agent"
+    HOSPITAL_ADMIN = "hospital_admin"
+    HOSPITAL_STAFF = "hospital_staff"
+    BLOOD_BANK_ADMIN = "blood_bank_admin"
+    BLOOD_BANK_STAFF = "blood_bank_staff"
+    AUDITOR = "auditor"
 
 
 class User(Base):
@@ -22,6 +30,8 @@ class User(Base):
     phone: Mapped[str] = mapped_column(String(20), unique=True, nullable=False, index=True)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     role: Mapped[UserRole] = mapped_column(Enum(UserRole, name="user_role"), nullable=False, index=True)
+    hospital_id: Mapped[Optional[int]] = mapped_column(ForeignKey("hospitals.id", ondelete="SET NULL"), nullable=True)
+    blood_bank_id: Mapped[Optional[int]] = mapped_column(ForeignKey("blood_banks.id", ondelete="SET NULL"), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
@@ -34,4 +44,5 @@ class User(Base):
     filed_reports = relationship("Report", back_populates="reporter", foreign_keys="Report.reporter_user_id")
     received_reports = relationship("Report", back_populates="reported_user", foreign_keys="Report.reported_user_id")
     admin_logs = relationship("AuditLog", back_populates="admin_user")
-
+    hospital = relationship("Hospital", back_populates="staff_users", foreign_keys=[hospital_id])
+    blood_bank = relationship("BloodBank", back_populates="staff_users", foreign_keys=[blood_bank_id])

@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker
 from app.core.database import Base, get_db
 from app.core.security import get_password_hash
 from app.main import app
-from app.models import BloodRequest, DonorProfile, DonorVerificationStatus, UrgencyLevel, User, UserRole
+from app.models import BloodBank, BloodRequest, BloodUnit, BloodUnitStatus, DonorProfile, DonorVerificationStatus, Hospital, TestingStatus, UrgencyLevel, User, UserRole
 
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test_bloodlink.db"
@@ -64,8 +64,41 @@ def seeded_db():
         password_hash=get_password_hash("Receiver12345"),
         role=UserRole.RECEIVER,
     )
-    db.add_all([admin, donor, receiver])
+    hospital = Hospital(
+        name="Test Hospital",
+        city="Lahore",
+        area="Gulberg",
+        verification_status="verified",
+    )
+    db.add(hospital)
     db.flush()
+    blood_bank_staff = User(
+        full_name="Blood Bank Staff",
+        email="bank@test.com",
+        phone="+923001111114",
+        password_hash=get_password_hash("BloodBank12345"),
+        role=UserRole.BLOOD_BANK_ADMIN,
+    )
+    hospital_staff = User(
+        full_name="Hospital Staff",
+        email="hospital@test.com",
+        phone="+923001111115",
+        password_hash=get_password_hash("Hospital12345"),
+        role=UserRole.HOSPITAL_ADMIN,
+        hospital_id=hospital.id,
+    )
+    db.add_all([admin, donor, receiver, blood_bank_staff, hospital_staff])
+    db.flush()
+    blood_bank = BloodBank(
+        name="Test Blood Bank",
+        hospital_id=hospital.id,
+        city="Lahore",
+        area="Gulberg",
+        verification_status="verified",
+    )
+    db.add(blood_bank)
+    db.flush()
+    blood_bank_staff.blood_bank_id = blood_bank.id
 
     donor_profile = DonorProfile(
         user_id=donor.id,
@@ -90,11 +123,36 @@ def seeded_db():
         attendant_name="Receiver User",
         attendant_phone=receiver.phone,
         required_by=datetime.now(timezone.utc) + timedelta(days=1),
+        hospital_id=hospital.id,
     )
-    db.add_all([donor_profile, request])
+    blood_unit = BloodUnit(
+        unit_code="BL-2026-000010",
+        qr_code_value="bloodlink://unit/1/BL-2026-000010",
+        donor_profile_id=None,
+        blood_bank_id=blood_bank.id,
+        blood_group="B+",
+        component_type="whole_blood",
+        collected_at=datetime.now(timezone.utc) - timedelta(days=1),
+        expires_at=datetime.now(timezone.utc) + timedelta(days=20),
+        testing_status=TestingStatus.CLEARED,
+        status=BloodUnitStatus.AVAILABLE,
+        storage_location="Fridge A",
+    )
+    db.add_all([donor_profile, request, blood_unit])
     db.commit()
     try:
-        yield {"db": db, "admin": admin, "donor": donor, "receiver": receiver, "profile": donor_profile, "request": request}
+        yield {
+            "db": db,
+            "admin": admin,
+            "donor": donor,
+            "receiver": receiver,
+            "hospital_staff": hospital_staff,
+            "blood_bank_staff": blood_bank_staff,
+            "hospital": hospital,
+            "blood_bank": blood_bank,
+            "blood_unit": blood_unit,
+            "profile": donor_profile,
+            "request": request,
+        }
     finally:
         db.close()
-

@@ -6,6 +6,9 @@ import { AlertMessage } from "../../components/PageState";
 
 function destinationForRole(role) {
   if (role === "admin") return "/admin";
+  if (role === "super_admin" || role === "operations_agent") return "/admin";
+  if (role === "hospital_admin" || role === "hospital_staff") return "/hospital";
+  if (role === "blood_bank_admin" || role === "blood_bank_staff") return "/blood-bank/inventory";
   if (role === "receiver") return "/receiver";
   return "/donor";
 }
@@ -65,4 +68,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

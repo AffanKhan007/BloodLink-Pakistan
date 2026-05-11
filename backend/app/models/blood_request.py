@@ -1,6 +1,8 @@
 from datetime import datetime
 from enum import StrEnum
 
+from typing import Optional
+
 from sqlalchemy import DateTime, Enum, ForeignKey, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -28,6 +30,7 @@ class BloodRequest(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     created_by_user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    hospital_id: Mapped[Optional[int]] = mapped_column(ForeignKey("hospitals.id", ondelete="SET NULL"), nullable=True, index=True)
     patient_name: Mapped[str] = mapped_column(String(150), nullable=False)
     blood_group_needed: Mapped[str] = mapped_column(String(5), nullable=False, index=True)
     units_required: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -51,6 +54,7 @@ class BloodRequest(Base):
     )
 
     created_by_user = relationship("User", back_populates="created_requests", foreign_keys=[created_by_user_id])
+    hospital = relationship("Hospital", back_populates="blood_requests")
     documents = relationship("RequestDocument", back_populates="request", cascade="all, delete-orphan")
     matches = relationship("DonationMatch", back_populates="request", cascade="all, delete-orphan")
     reports = relationship("Report", back_populates="request")
@@ -66,4 +70,3 @@ class RequestDocument(Base):
     uploaded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     request = relationship("BloodRequest", back_populates="documents")
-

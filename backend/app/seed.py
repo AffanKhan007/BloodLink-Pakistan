@@ -5,13 +5,18 @@ from sqlalchemy import select
 from app.core.database import SessionLocal
 from app.core.security import get_password_hash
 from app.models import (
+    BloodBank,
     BloodRequest,
+    BloodUnit,
+    BloodUnitStatus,
     DonationMatch,
     DonorProfile,
     DonorVerificationStatus,
+    Hospital,
     MatchStatus,
     Notification,
     RequestStatus,
+    TestingStatus,
     UrgencyLevel,
     User,
     UserRole,
@@ -91,6 +96,50 @@ def main() -> None:
             ),
         ]
 
+        hospital = db.scalar(select(Hospital).where(Hospital.name == "Services Hospital Lahore"))
+        if hospital is None:
+            hospital = Hospital(
+                name="Services Hospital Lahore",
+                city="Lahore",
+                area="Jail Road",
+                address="Jail Road, Lahore",
+                phone="+9242111222333",
+                verification_status="verified",
+            )
+            db.add(hospital)
+            db.flush()
+
+        blood_bank = db.scalar(select(BloodBank).where(BloodBank.name == "Lahore Central Blood Bank"))
+        if blood_bank is None:
+            blood_bank = BloodBank(
+                name="Lahore Central Blood Bank",
+                hospital_id=hospital.id,
+                city="Lahore",
+                area="Jail Road",
+                address="Near Services Hospital Lahore",
+                license_number="LIC-LHR-001",
+                verification_status="verified",
+            )
+            db.add(blood_bank)
+            db.flush()
+
+        get_or_create_user(
+            db,
+            full_name="Services Hospital Admin",
+            email="hospital.admin@bloodlink.pk",
+            phone="+923001234566",
+            password="Hospital12345",
+            role=UserRole.HOSPITAL_ADMIN,
+        ).hospital_id = hospital.id
+        get_or_create_user(
+            db,
+            full_name="Blood Bank Supervisor",
+            email="bloodbank.admin@bloodlink.pk",
+            phone="+923001234567",
+            password="BloodBank12345",
+            role=UserRole.BLOOD_BANK_ADMIN,
+        ).blood_bank_id = blood_bank.id
+
         profiles = [
             {
                 "user": donor_users[0],
@@ -153,6 +202,7 @@ def main() -> None:
                 "attendant_phone": receiver_users[0].phone,
                 "required_by": datetime.now(timezone.utc) + timedelta(days=1),
                 "status": RequestStatus.APPROVED,
+                "hospital_id": hospital.id,
             },
             {
                 "created_by_user_id": receiver_users[1].id,
@@ -224,6 +274,38 @@ def main() -> None:
                 ]
             )
 
+        if not db.scalar(select(BloodUnit).limit(1)):
+            db.add_all(
+                [
+                    BloodUnit(
+                        unit_code="BL-2026-000001",
+                        qr_code_value="bloodlink://unit/1/BL-2026-000001",
+                        donor_profile_id=donor_profiles[0].id,
+                        blood_bank_id=blood_bank.id,
+                        blood_group="B+",
+                        component_type="whole_blood",
+                        collected_at=datetime.now(timezone.utc) - timedelta(days=2),
+                        expires_at=datetime.now(timezone.utc) + timedelta(days=28),
+                        testing_status=TestingStatus.CLEARED,
+                        status=BloodUnitStatus.AVAILABLE,
+                        storage_location="Fridge 2",
+                    ),
+                    BloodUnit(
+                        unit_code="BL-2026-000002",
+                        qr_code_value="bloodlink://unit/1/BL-2026-000002",
+                        donor_profile_id=donor_profiles[2].id,
+                        blood_bank_id=blood_bank.id,
+                        blood_group="A-",
+                        component_type="packed_rbc",
+                        collected_at=datetime.now(timezone.utc) - timedelta(days=1),
+                        expires_at=datetime.now(timezone.utc) + timedelta(days=34),
+                        testing_status=TestingStatus.PENDING,
+                        status=BloodUnitStatus.TESTING_PENDING,
+                        storage_location="Testing Bay",
+                    ),
+                ]
+            )
+
         db.commit()
         print("Seed data inserted or already present.")
     finally:
@@ -232,4 +314,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

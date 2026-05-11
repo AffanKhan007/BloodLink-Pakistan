@@ -29,8 +29,8 @@ class RegisterRequest(BaseModel):
     @field_validator("role")
     @classmethod
     def disallow_public_admin(cls, value: UserRole) -> UserRole:
-        if value == UserRole.ADMIN:
-            raise ValueError("Admin accounts cannot be self-registered")
+        if value not in {UserRole.DONOR, UserRole.RECEIVER}:
+            raise ValueError("Only donor and receiver accounts can be self-registered")
         return value
 
 
@@ -50,6 +50,8 @@ class UserOut(BaseSchema):
     email: EmailStr
     phone: str
     role: UserRole
+    hospital_id: int | None = None
+    blood_bank_id: int | None = None
     is_active: bool
     created_at: datetime
     updated_at: datetime
@@ -59,4 +61,3 @@ class AuthResponse(BaseSchema):
     access_token: str
     token_type: str
     user: UserOut
-

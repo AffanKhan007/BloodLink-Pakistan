@@ -30,12 +30,13 @@ from app.services.matching import count_confirmed_matches, get_matching_donors
 
 
 router = APIRouter(prefix="/admin", tags=["admin"])
+ADMIN_ROLES = (UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.OPERATIONS_AGENT)
 
 
 @router.get("/dashboard", response_model=DashboardStats)
 def dashboard(
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.ADMIN)),
+    current_user: User = Depends(require_roles(*ADMIN_ROLES)),
 ) -> DashboardStats:
     return DashboardStats(
         total_users=db.scalar(select(func.count(User.id))) or 0,
@@ -64,7 +65,7 @@ def dashboard(
 @router.get("/users", response_model=list[AdminUserSummary])
 def list_users(
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.ADMIN)),
+    current_user: User = Depends(require_roles(*ADMIN_ROLES)),
 ) -> list[AdminUserSummary]:
     users = list(db.scalars(select(User).order_by(User.created_at.desc())).all())
     return [AdminUserSummary.model_validate(user) for user in users]
@@ -74,7 +75,7 @@ def list_users(
 def block_user(
     user_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.ADMIN)),
+    current_user: User = Depends(require_roles(*ADMIN_ROLES)),
 ) -> AdminUserSummary:
     user = db.get(User, user_id)
     if not user:
@@ -96,7 +97,7 @@ def block_user(
 @router.get("/donors", response_model=list[DonorWithUserOut])
 def list_donors(
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.ADMIN)),
+    current_user: User = Depends(require_roles(*ADMIN_ROLES)),
 ) -> list[DonorWithUserOut]:
     donors = list(
         db.scalars(select(DonorProfile).options(joinedload(DonorProfile.user)).order_by(DonorProfile.created_at.desc())).all()
@@ -109,7 +110,7 @@ def verify_donor(
     donor_id: int,
     payload: DonorVerificationUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.ADMIN)),
+    current_user: User = Depends(require_roles(*ADMIN_ROLES)),
 ) -> DonorWithUserOut:
     donor = db.scalar(select(DonorProfile).options(joinedload(DonorProfile.user)).where(DonorProfile.id == donor_id))
     if not donor:
@@ -134,7 +135,7 @@ def verify_donor(
 @router.get("/requests", response_model=list[BloodRequestListOut])
 def admin_requests(
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.ADMIN)),
+    current_user: User = Depends(require_roles(*ADMIN_ROLES)),
 ) -> list[BloodRequestListOut]:
     requests = list(
         db.scalars(
@@ -154,7 +155,7 @@ def admin_requests(
 def approve_request(
     request_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.ADMIN)),
+    current_user: User = Depends(require_roles(*ADMIN_ROLES)),
 ) -> BloodRequestListOut:
     request = db.scalar(select(BloodRequest).options(joinedload(BloodRequest.matches)).where(BloodRequest.id == request_id))
     if not request:
@@ -180,7 +181,7 @@ def approve_request(
 def reject_request(
     request_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.ADMIN)),
+    current_user: User = Depends(require_roles(*ADMIN_ROLES)),
 ) -> BloodRequestListOut:
     request = db.scalar(select(BloodRequest).options(joinedload(BloodRequest.matches)).where(BloodRequest.id == request_id))
     if not request:
@@ -206,7 +207,7 @@ def reject_request(
 def matching_candidates(
     request_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.ADMIN)),
+    current_user: User = Depends(require_roles(*ADMIN_ROLES)),
 ) -> list[DonorWithUserOut]:
     request = db.get(BloodRequest, request_id)
     if not request:
@@ -218,7 +219,7 @@ def matching_candidates(
 @router.get("/reports", response_model=list[ReportOut])
 def admin_reports(
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.ADMIN)),
+    current_user: User = Depends(require_roles(*ADMIN_ROLES)),
 ) -> list[ReportOut]:
     reports = list(db.scalars(select(Report).order_by(Report.created_at.desc())).all())
     return [ReportOut.model_validate(report) for report in reports]
@@ -229,7 +230,7 @@ def update_report_status(
     report_id: int,
     payload: ReportStatusUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.ADMIN)),
+    current_user: User = Depends(require_roles(*ADMIN_ROLES)),
 ) -> ReportOut:
     report = db.get(Report, report_id)
     if not report:
@@ -251,7 +252,7 @@ def update_report_status(
 @router.get("/audit-logs", response_model=list[AuditLogOut])
 def audit_logs(
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.ADMIN)),
+    current_user: User = Depends(require_roles(*ADMIN_ROLES)),
 ) -> list[AuditLogOut]:
     logs = list(db.scalars(select(AuditLog).order_by(AuditLog.created_at.desc())).all())
     return [AuditLogOut.model_validate(log) for log in logs]

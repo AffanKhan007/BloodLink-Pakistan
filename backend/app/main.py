@@ -4,8 +4,9 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.v1 import api_router
 from app.core.config import get_settings
-from app.routes import admin, auth, donors, matches, notifications, reports, requests, uploads
+from app.routes import admin, auth, blood_banks, donors, hospitals, matches, notifications, reports, requests, uploads
 
 
 settings = get_settings()
@@ -40,3 +41,6 @@ app.include_router(notifications.router)
 app.include_router(reports.router)
 app.include_router(admin.router)
 app.include_router(uploads.router)
+app.include_router(hospitals.router)
+app.include_router(blood_banks.router)
+app.include_router(api_router)
