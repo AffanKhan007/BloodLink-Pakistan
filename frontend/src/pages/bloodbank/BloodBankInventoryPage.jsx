@@ -1,11 +1,14 @@
-import { useEffect, useState } from "react";
+import { CalendarClock, Search, ShieldCheck, TestTubeDiagonal, Warehouse } from "lucide-react";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { apiRequest } from "../../api/client";
 import { useAuth } from "../../auth/AuthContext";
+import FilterToolbar from "../../components/FilterToolbar";
 import { AlertMessage, EmptyState, LoadingState } from "../../components/PageState";
-import StatusBadge from "../../components/StatusBadge";
+import SectionIntro from "../../components/SectionIntro";
 import StatCard from "../../components/StatCard";
+import StatusBadge from "../../components/StatusBadge";
 
 const initialForm = {
   donor_profile_id: "",
@@ -24,6 +27,9 @@ export default function BloodBankInventoryPage() {
   const [form, setForm] = useState(initialForm);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [groupFilter, setGroupFilter] = useState("all");
 
   const loadSummary = async () => {
     if (!user?.blood_bank_id) return;
@@ -58,6 +64,24 @@ export default function BloodBankInventoryPage() {
     }
   };
 
+  const deferredSearch = useDeferredValue(search);
+  const filteredUnits = useMemo(() => {
+    if (!summary) return [];
+    const query = deferredSearch.trim().toLowerCase();
+    return summary.units.filter((unit) => {
+      const matchesQuery =
+        !query ||
+        [unit.unit_code, unit.blood_group, unit.component_type, unit.storage_location]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase()
+          .includes(query);
+      const matchesStatus = statusFilter === "all" || unit.status === statusFilter;
+      const matchesGroup = groupFilter === "all" || unit.blood_group === groupFilter;
+      return matchesQuery && matchesStatus && matchesGroup;
+    });
+  }, [deferredSearch, groupFilter, statusFilter, summary]);
+
   if (!user?.blood_bank_id) {
     return <EmptyState title="No blood bank scope" description="This staff account is not assigned to a blood bank yet." />;
   }
@@ -66,19 +90,18 @@ export default function BloodBankInventoryPage() {
   return (
     <div className="page-stack">
       <section className="stats-grid">
-        <StatCard label="Blood bank" value={summary.blood_bank.name} helper={summary.blood_bank.city} />
-        <StatCard label="Total units" value={summary.total_units} helper="Tracked inventory" />
-        <StatCard label="Available" value={summary.available_units} helper="Ready for coordination" />
-        <StatCard label="Expiring soon" value={summary.expiring_soon_units} helper="Within 7 days" />
+        <StatCard label="Blood bank" value={summary.blood_bank.name} helper={summary.blood_bank.city} icon={Warehouse} tone="default" />
+        <StatCard label="Total units" value={summary.total_units} helper="Tracked inventory" icon={TestTubeDiagonal} tone="accent" />
+        <StatCard label="Available" value={summary.available_units} helper="Ready for coordination" icon={ShieldCheck} tone="success" />
+        <StatCard label="Expiring soon" value={summary.expiring_soon_units} helper="Within 7 days" icon={CalendarClock} tone="warning" />
       </section>
 
       <section className="content-card">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Inventory intake</p>
-            <h2>Create blood unit</h2>
-          </div>
-        </div>
+        <SectionIntro
+          eyebrow="Inventory intake"
+          title="Create blood unit"
+          description="Capture unit metadata in a way that feels clean for staff and traceable for future workflows."
+        />
         {message ? <AlertMessage type="success">{message}</AlertMessage> : null}
         {error ? <AlertMessage type="error">{error}</AlertMessage> : null}
         <form className="grid-form" onSubmit={handleSubmit}>
@@ -139,26 +162,64 @@ export default function BloodBankInventoryPage() {
       </section>
 
       <section className="content-card">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Tracked units</p>
-            <h2>Inventory overview</h2>
-          </div>
-        </div>
+        <SectionIntro eyebrow="Tracked units" title="Inventory overview" description="Search stock by unit code, blood group, or current inventory status." />
+        <FilterToolbar
+          searchValue={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search unit code, blood group, component, or location"
+          summary={
+            <span className="toolbar-result">
+              <Search size={15} />
+              {filteredUnits.length} unit{filteredUnits.length === 1 ? "" : "s"} shown
+            </span>
+          }
+          filters={[
+            {
+              label: "Status",
+              value: statusFilter,
+              onChange: setStatusFilter,
+              options: [
+                { value: "all", label: "All statuses" },
+                { value: "available", label: "Available" },
+                { value: "reserved", label: "Reserved" },
+                { value: "testing_pending", label: "Testing pending" },
+                { value: "collected", label: "Collected" },
+                { value: "cleared", label: "Cleared" },
+              ],
+            },
+            {
+              label: "Blood group",
+              value: groupFilter,
+              onChange: setGroupFilter,
+              options: [
+                { value: "all", label: "All groups" },
+                ...["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((group) => ({ value: group, label: group })),
+              ],
+            },
+          ]}
+        />
         {summary.units.length === 0 ? (
           <EmptyState title="No units yet" description="Create blood units to begin inventory traceability." />
+        ) : filteredUnits.length === 0 ? (
+          <EmptyState title="No units match those filters" description="Try a broader status or search term to bring more inventory into view." />
         ) : (
           <div className="stacked-cards">
-            {summary.units.map((unit) => (
+            {filteredUnits.map((unit) => (
               <div className="info-card" key={unit.id}>
                 <div className="list-row">
                   <div>
                     <strong>{unit.unit_code}</strong>
                     <p>
-                      {unit.blood_group} • {unit.component_type}
+                      {unit.blood_group} / {unit.component_type}
                     </p>
                   </div>
                   <StatusBadge value={unit.status} />
+                </div>
+                <div className="inline-pills">
+                  <span className="pill pill-soft">
+                    <Warehouse size={14} />
+                    {unit.storage_location || "Storage pending"}
+                  </span>
                 </div>
                 <div className="card-actions">
                   <StatusBadge value={unit.testing_status} />
@@ -174,4 +235,3 @@ export default function BloodBankInventoryPage() {
     </div>
   );
 }
-

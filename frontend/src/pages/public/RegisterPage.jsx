@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { ArrowRight, UserPlus } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../auth/AuthContext";
+import AuthShell from "../../components/AuthShell";
 import { AlertMessage } from "../../components/PageState";
 
 function destinationForRole(role) {
@@ -36,10 +38,16 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="auth-shell">
-      <form className="form-card" onSubmit={handleSubmit}>
-        <h1>Register</h1>
-        <p>Create a donor or receiver account for the MVP.</p>
+    <AuthShell title="Create a BloodLink account" description="Join as a donor or receiver and move through a safer, more professional blood coordination workflow." accent="New account setup">
+      <form className="auth-form" onSubmit={handleSubmit}>
+        <div className="auth-form-header">
+          <span className="eyebrow eyebrow-inline">
+            <UserPlus size={14} />
+            Simple onboarding
+          </span>
+          <h2>Register</h2>
+          <p>Create a donor or receiver account for the MVP.</p>
+        </div>
         {error ? <AlertMessage type="error">{error}</AlertMessage> : null}
         <label>
           Full name
@@ -84,14 +92,14 @@ export default function RegisterPage() {
             <option value="receiver">Receiver / Patient Attendant</option>
           </select>
         </label>
-        <button className="button button-primary button-full" disabled={submitting}>
+        <button className="button button-primary button-full button-with-icon" disabled={submitting}>
           {submitting ? "Creating account..." : "Create account"}
+          <ArrowRight size={16} />
         </button>
-        <p className="form-footer">
-          Already registered? <Link to="/login">Login here</Link>
-        </p>
       </form>
-    </div>
+      <p className="form-footer">
+        Already registered? <Link to="/login">Login here</Link>
+      </p>
+    </AuthShell>
   );
 }
-

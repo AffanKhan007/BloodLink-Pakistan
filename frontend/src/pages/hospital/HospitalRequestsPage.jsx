@@ -1,9 +1,12 @@
-import { useEffect, useState } from "react";
+import { Activity, ClipboardPlus, Search } from "lucide-react";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
 
 import { apiRequest } from "../../api/client";
 import { useAuth } from "../../auth/AuthContext";
+import FilterToolbar from "../../components/FilterToolbar";
 import { AlertMessage, EmptyState, LoadingState } from "../../components/PageState";
 import RequestCard from "../../components/RequestCard";
+import SectionIntro from "../../components/SectionIntro";
 
 const initialForm = {
   patient_name: "",
@@ -23,6 +26,7 @@ export default function HospitalRequestsPage() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
 
   const loadDashboard = async () => {
     if (!user?.hospital_id) return;
@@ -64,6 +68,19 @@ export default function HospitalRequestsPage() {
     }
   };
 
+  const deferredSearch = useDeferredValue(search);
+  const filteredRequests = useMemo(() => {
+    const query = deferredSearch.trim().toLowerCase();
+    return requests.filter((request) =>
+      !query ||
+      [request.patient_name, request.hospital_name, request.city, request.area, request.blood_group_needed]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase()
+        .includes(query)
+    );
+  }, [deferredSearch, requests]);
+
   if (!user?.hospital_id) {
     return <EmptyState title="No hospital scope" description="This staff account is not assigned to a hospital yet." />;
   }
@@ -72,12 +89,11 @@ export default function HospitalRequestsPage() {
   return (
     <div className="page-stack">
       <section className="content-card">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Verified request intake</p>
-            <h2>Create hospital request</h2>
-          </div>
-        </div>
+        <SectionIntro
+          eyebrow="Verified request intake"
+          title="Create hospital request"
+          description="Capture patient need directly from the hospital workspace to keep the coordination trail cleaner."
+        />
         {message ? <AlertMessage type="success">{message}</AlertMessage> : null}
         {error ? <AlertMessage type="error">{error}</AlertMessage> : null}
         <form className="grid-form" onSubmit={handleSubmit}>
@@ -124,23 +140,38 @@ export default function HospitalRequestsPage() {
             Attendant phone
             <input value={form.attendant_phone} onChange={(event) => setForm((current) => ({ ...current, attendant_phone: event.target.value }))} required />
           </label>
+          <div className="form-span form-note">
+            <Activity size={16} />
+            <span>Hospital-created requests still move through a verified coordination flow rather than bypassing review rules.</span>
+          </div>
           <div className="form-span">
-            <button className="button button-primary">Create hospital request</button>
+            <button className="button button-primary button-with-icon">
+              Create hospital request
+              <ClipboardPlus size={16} />
+            </button>
           </div>
         </form>
       </section>
       <section className="content-card">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Hospital queue</p>
-            <h2>Recent hospital requests</h2>
-          </div>
-        </div>
+        <SectionIntro eyebrow="Hospital queue" title="Recent hospital requests" description="Filter the current list to focus on active or recently created demand." />
+        <FilterToolbar
+          searchValue={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search patient, hospital, city, or blood group"
+          summary={
+            <span className="toolbar-result">
+              <Search size={15} />
+              {filteredRequests.length} request{filteredRequests.length === 1 ? "" : "s"} shown
+            </span>
+          }
+        />
         {requests.length === 0 ? (
           <EmptyState title="No requests yet" description="Hospital-created requests will appear here." />
+        ) : filteredRequests.length === 0 ? (
+          <EmptyState title="No requests match that search" description="Try a broader term to see the rest of the hospital queue." />
         ) : (
           <div className="card-list">
-            {requests.map((request) => (
+            {filteredRequests.map((request) => (
               <RequestCard key={request.id} request={request} />
             ))}
           </div>
@@ -149,4 +180,3 @@ export default function HospitalRequestsPage() {
     </div>
   );
 }
-

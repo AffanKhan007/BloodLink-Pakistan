@@ -1,9 +1,14 @@
+import { AlertTriangle } from "lucide-react";
+
 export default function ConfirmModal({ open, title, description, confirmLabel, onCancel, onConfirm, tone = "danger" }) {
   if (!open) return null;
 
   return (
     <div className="modal-backdrop">
       <div className="modal-card">
+        <div className="modal-icon">
+          <AlertTriangle size={20} />
+        </div>
         <h3>{title}</h3>
         <p>{description}</p>
         <div className="modal-actions">
@@ -18,4 +23,3 @@ export default function ConfirmModal({ open, title, description, confirmLabel, o
     </div>
   );
 }
-

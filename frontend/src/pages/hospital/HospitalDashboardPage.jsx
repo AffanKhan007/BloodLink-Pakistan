@@ -1,10 +1,12 @@
+import { Building2, ClipboardList, Droplets, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { apiRequest } from "../../api/client";
 import { useAuth } from "../../auth/AuthContext";
 import { EmptyState, LoadingState } from "../../components/PageState";
-import StatCard from "../../components/StatCard";
 import RequestCard from "../../components/RequestCard";
+import SectionIntro from "../../components/SectionIntro";
+import StatCard from "../../components/StatCard";
 
 export default function HospitalDashboardPage() {
   const { token, user } = useAuth();
@@ -23,18 +25,17 @@ export default function HospitalDashboardPage() {
   return (
     <div className="page-stack">
       <section className="stats-grid">
-        <StatCard label="Hospital" value={data.hospital.name} helper={data.hospital.city} />
-        <StatCard label="Total requests" value={data.total_requests} helper="Hospital-created demand" />
-        <StatCard label="Active requests" value={data.active_requests} helper="Approved or matched" />
-        <StatCard label="Fulfilled requests" value={data.fulfilled_requests} helper="Closed requests" />
+        <StatCard label="Hospital" value={data.hospital.name} helper={data.hospital.city} icon={Building2} tone="default" />
+        <StatCard label="Total requests" value={data.total_requests} helper="Hospital-created demand" icon={ClipboardList} tone="accent" />
+        <StatCard label="Active requests" value={data.active_requests} helper="Approved or matched" icon={ShieldCheck} tone="warning" />
+        <StatCard label="Fulfilled requests" value={data.fulfilled_requests} helper="Closed requests" icon={Droplets} tone="success" />
       </section>
       <section className="content-card">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Hospital demand</p>
-            <h2>Recent requests</h2>
-          </div>
-        </div>
+        <SectionIntro
+          eyebrow="Hospital demand"
+          title="Recent requests"
+          description="Give clinical teams a cleaner view of current blood demand, active matching, and fulfilled cases."
+        />
         {data.requests.length === 0 ? (
           <EmptyState title="No hospital requests yet" description="Create a verified request from the hospital portal." />
         ) : (
@@ -48,4 +49,3 @@ export default function HospitalDashboardPage() {
     </div>
   );
 }
-

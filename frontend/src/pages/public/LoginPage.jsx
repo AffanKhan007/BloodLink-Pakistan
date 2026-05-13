@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { ArrowRight, KeyRound } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../auth/AuthContext";
+import AuthShell from "../../components/AuthShell";
 import { AlertMessage } from "../../components/PageState";
 
 function destinationForRole(role) {
@@ -35,10 +37,16 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="auth-shell">
-      <form className="form-card" onSubmit={handleSubmit}>
-        <h1>Login</h1>
-        <p>Access your donor, receiver, or admin workspace.</p>
+    <AuthShell title="Secure sign in for every workspace" description="Access donor, receiver, admin, hospital, or blood bank operations through a calmer, modern healthcare UI." accent="Access your workspace">
+      <form className="auth-form" onSubmit={handleSubmit}>
+        <div className="auth-form-header">
+          <span className="eyebrow eyebrow-inline">
+            <KeyRound size={14} />
+            Secure access
+          </span>
+          <h2>Login</h2>
+          <p>Use your existing BloodLink account to continue.</p>
+        </div>
         {error ? <AlertMessage type="error">{error}</AlertMessage> : null}
         <label>
           Email
@@ -58,13 +66,14 @@ export default function LoginPage() {
             required
           />
         </label>
-        <button className="button button-primary button-full" disabled={submitting}>
+        <button className="button button-primary button-full button-with-icon" disabled={submitting}>
           {submitting ? "Signing in..." : "Sign in"}
+          <ArrowRight size={16} />
         </button>
-        <p className="form-footer">
-          Need an account? <Link to="/register">Register here</Link>
-        </p>
       </form>
-    </div>
+      <p className="form-footer">
+        Need an account? <Link to="/register">Register here</Link>
+      </p>
+    </AuthShell>
   );
 }

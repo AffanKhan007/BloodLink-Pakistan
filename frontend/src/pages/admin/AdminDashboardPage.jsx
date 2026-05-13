@@ -1,8 +1,10 @@
+import { ClipboardCheck, Droplets, FileClock, HeartHandshake, ShieldCheck, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { apiRequest } from "../../api/client";
 import { useAuth } from "../../auth/AuthContext";
 import { LoadingState } from "../../components/PageState";
+import SectionIntro from "../../components/SectionIntro";
 import StatCard from "../../components/StatCard";
 
 export default function AdminDashboardPage() {
@@ -16,14 +18,22 @@ export default function AdminDashboardPage() {
   if (!stats) return <LoadingState label="Loading admin dashboard" />;
 
   return (
-    <section className="stats-grid">
-      <StatCard label="Users" value={stats.total_users} helper="All roles" />
-      <StatCard label="Approved donors" value={stats.approved_donors} helper={`${stats.total_donors} total donors`} />
-      <StatCard label="Pending requests" value={stats.pending_requests} helper="Needs admin review" />
-      <StatCard label="Active matches" value={stats.active_matches} helper="Pending or accepted" />
-      <StatCard label="Approved requests" value={stats.approved_requests} helper="Open for coordination" />
-      <StatCard label="Pending reports" value={stats.pending_reports} helper="Needs review" />
-    </section>
+    <div className="page-stack">
+      <section className="content-card">
+        <SectionIntro
+          eyebrow="Overview"
+          title="Platform operations snapshot"
+          description="Watch the request lifecycle, donor verification load, and moderation work from a calmer admin control center."
+        />
+      </section>
+      <section className="stats-grid">
+        <StatCard label="Users" value={stats.total_users} helper="All roles" icon={Users} tone="default" />
+        <StatCard label="Approved donors" value={stats.approved_donors} helper={`${stats.total_donors} total donors`} icon={ShieldCheck} tone="success" />
+        <StatCard label="Pending requests" value={stats.pending_requests} helper="Needs admin review" icon={Droplets} tone="warning" />
+        <StatCard label="Active matches" value={stats.active_matches} helper="Pending or accepted" icon={HeartHandshake} tone="accent" />
+        <StatCard label="Approved requests" value={stats.approved_requests} helper="Open for coordination" icon={ClipboardCheck} tone="success" />
+        <StatCard label="Pending reports" value={stats.pending_reports} helper="Needs review" icon={FileClock} tone="warning" />
+      </section>
+    </div>
   );
 }
-

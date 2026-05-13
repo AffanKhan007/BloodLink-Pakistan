@@ -1,9 +1,11 @@
+import { Bell, HeartHandshake, Search, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { apiRequest } from "../../api/client";
 import { useAuth } from "../../auth/AuthContext";
 import { AlertMessage, EmptyState, LoadingState } from "../../components/PageState";
 import RequestCard from "../../components/RequestCard";
+import SectionIntro from "../../components/SectionIntro";
 import StatCard from "../../components/StatCard";
 
 export default function DonorDashboardPage() {
@@ -39,19 +41,24 @@ export default function DonorDashboardPage() {
     <div className="page-stack">
       {state.error ? <AlertMessage type="warning">{state.error}</AlertMessage> : null}
       <section className="stats-grid">
-        <StatCard label="Verification" value={state.profile?.verification_status || "pending"} helper="Admin reviewed" />
-        <StatCard label="Available requests" value={state.requests.length} helper="Based on simple MVP filters" />
-        <StatCard label="My matches" value={state.matches.length} helper="Assigned by admin" />
-        <StatCard label="Unread notifications" value={state.notifications.filter((item) => !item.is_read).length} helper="In-app only" />
+        <StatCard label="Verification" value={state.profile?.verification_status || "pending"} helper="Admin reviewed" icon={ShieldCheck} tone="success" />
+        <StatCard label="Available requests" value={state.requests.length} helper="Based on simple MVP filters" icon={Search} tone="accent" />
+        <StatCard label="My matches" value={state.matches.length} helper="Assigned by admin" icon={HeartHandshake} tone="default" />
+        <StatCard
+          label="Unread notifications"
+          value={state.notifications.filter((item) => !item.is_read).length}
+          helper="In-app only"
+          icon={Bell}
+          tone="warning"
+        />
       </section>
 
       <section className="content-card">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Matching opportunities</p>
-            <h2>Requests near your profile</h2>
-          </div>
-        </div>
+        <SectionIntro
+          eyebrow="Matching opportunities"
+          title="Requests near your profile"
+          description="Only approved requests that fit your city and blood group appear here, keeping the donor experience focused."
+        />
         {state.requests.length === 0 ? (
           <EmptyState title="No matching requests yet" description="Approved requests that fit your city and blood group will appear here." />
         ) : (
@@ -65,4 +72,3 @@ export default function DonorDashboardPage() {
     </div>
   );
 }
-

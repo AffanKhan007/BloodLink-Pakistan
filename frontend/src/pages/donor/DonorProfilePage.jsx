@@ -1,8 +1,10 @@
+import { Droplets, HeartPulse, MapPin, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { apiRequest } from "../../api/client";
 import { useAuth } from "../../auth/AuthContext";
 import { AlertMessage, LoadingState } from "../../components/PageState";
+import SectionIntro from "../../components/SectionIntro";
 
 const initialForm = {
   blood_group: "A+",
@@ -54,16 +56,49 @@ export default function DonorProfilePage() {
   if (loading) return <LoadingState label="Loading donor profile" />;
 
   return (
-    <div className="content-card">
-      <div className="section-heading">
-        <div>
-          <p className="eyebrow">Donor setup</p>
-          <h2>My profile</h2>
+    <div className="page-stack">
+      <section className="content-card">
+        <SectionIntro
+          eyebrow="Donor setup"
+          title="My profile"
+          description="Keep your blood group, location, and availability up to date so the matching logic can surface the right requests."
+        />
+        <div className="metrics-strip">
+          <div className="metric-chip">
+            <MapPin size={16} />
+            <div>
+              <span>Coverage area</span>
+              <strong>{form.city || "Add city"} {form.area ? `/ ${form.area}` : ""}</strong>
+            </div>
+          </div>
+          <div className="metric-chip">
+            <Droplets size={16} />
+            <div>
+              <span>Blood group</span>
+              <strong>{form.blood_group}</strong>
+            </div>
+          </div>
+          <div className="metric-chip">
+            <ShieldCheck size={16} />
+            <div>
+              <span>Availability</span>
+              <strong>{form.availability_status}</strong>
+            </div>
+          </div>
+          <div className="metric-chip">
+            <HeartPulse size={16} />
+            <div>
+              <span>Health note</span>
+              <strong>{form.health_notes ? "Added" : "Optional"}</strong>
+            </div>
+          </div>
         </div>
-      </div>
-      {message ? <AlertMessage type="success">{message}</AlertMessage> : null}
-      {error ? <AlertMessage type="error">{error}</AlertMessage> : null}
-      <form className="grid-form" onSubmit={handleSubmit}>
+      </section>
+
+      <section className="content-card">
+        {message ? <AlertMessage type="success">{message}</AlertMessage> : null}
+        {error ? <AlertMessage type="error">{error}</AlertMessage> : null}
+        <form className="grid-form" onSubmit={handleSubmit}>
         <label>
           Blood group
           <select value={form.blood_group} onChange={(event) => setForm((current) => ({ ...current, blood_group: event.target.value }))}>
@@ -116,9 +151,11 @@ export default function DonorProfilePage() {
             onChange={(event) => setForm((current) => ({ ...current, health_notes: event.target.value }))}
           />
         </label>
-        <button className="button button-primary">Save profile</button>
-      </form>
+          <div className="form-span form-actions-row">
+            <button className="button button-primary">Save profile</button>
+          </div>
+        </form>
+      </section>
     </div>
   );
 }
-

@@ -1,9 +1,11 @@
+import { Activity, Building2, CalendarClock, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { apiRequest } from "../../api/client";
 import { useAuth } from "../../auth/AuthContext";
 import { AlertMessage } from "../../components/PageState";
+import SectionIntro from "../../components/SectionIntro";
 
 const initialForm = {
   patient_name: "",
@@ -48,78 +50,108 @@ export default function CreateRequestPage() {
   };
 
   return (
-    <div className="content-card">
-      <div className="section-heading">
-        <div>
-          <p className="eyebrow">Receiver workflow</p>
-          <h2>Create blood request</h2>
+    <div className="page-stack">
+      <section className="content-card">
+        <SectionIntro
+          eyebrow="Receiver workflow"
+          title="Create blood request"
+          description="Provide clear patient, hospital, and urgency details so the admin review and matching process can move quickly."
+        />
+        <div className="metrics-strip">
+          <div className="metric-chip">
+            <Building2 size={16} />
+            <div>
+              <span>Hospital context</span>
+              <strong>Add verified patient location details</strong>
+            </div>
+          </div>
+          <div className="metric-chip">
+            <CalendarClock size={16} />
+            <div>
+              <span>Required by</span>
+              <strong>Set a clear timeline for urgency</strong>
+            </div>
+          </div>
+          <div className="metric-chip">
+            <ShieldCheck size={16} />
+            <div>
+              <span>Admin review</span>
+              <strong>Requests are verified before matching</strong>
+            </div>
+          </div>
         </div>
-      </div>
-      {message ? <AlertMessage type="success">{message}</AlertMessage> : null}
-      {error ? <AlertMessage type="error">{error}</AlertMessage> : null}
-      <form className="grid-form" onSubmit={handleSubmit}>
-        <label>
-          Patient name
-          <input value={form.patient_name} onChange={(event) => setForm((current) => ({ ...current, patient_name: event.target.value }))} required />
-        </label>
-        <label>
-          Blood group needed
-          <select value={form.blood_group_needed} onChange={(event) => setForm((current) => ({ ...current, blood_group_needed: event.target.value }))}>
-            {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((group) => (
-              <option key={group} value={group}>
-                {group}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Units required
-          <input type="number" min="1" value={form.units_required} onChange={(event) => setForm((current) => ({ ...current, units_required: Number(event.target.value) }))} required />
-        </label>
-        <label>
-          Hospital name
-          <input value={form.hospital_name} onChange={(event) => setForm((current) => ({ ...current, hospital_name: event.target.value }))} required />
-        </label>
-        <label>
-          City
-          <input value={form.city} onChange={(event) => setForm((current) => ({ ...current, city: event.target.value }))} required />
-        </label>
-        <label>
-          Area
-          <input value={form.area} onChange={(event) => setForm((current) => ({ ...current, area: event.target.value }))} required />
-        </label>
-        <label>
-          Ward / room
-          <input value={form.ward_room} onChange={(event) => setForm((current) => ({ ...current, ward_room: event.target.value }))} required />
-        </label>
-        <label>
-          Urgency
-          <select value={form.urgency_level} onChange={(event) => setForm((current) => ({ ...current, urgency_level: event.target.value }))}>
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-            <option value="critical">Critical</option>
-          </select>
-        </label>
-        <label>
-          Required by
-          <input type="datetime-local" value={form.required_by} onChange={(event) => setForm((current) => ({ ...current, required_by: event.target.value }))} required />
-        </label>
-        <label>
-          Attendant name
-          <input value={form.attendant_name} onChange={(event) => setForm((current) => ({ ...current, attendant_name: event.target.value }))} required />
-        </label>
-        <label>
-          Attendant phone
-          <input value={form.attendant_phone} onChange={(event) => setForm((current) => ({ ...current, attendant_phone: event.target.value }))} required />
-        </label>
-        <div className="form-span">
-          <button className="button button-primary" disabled={submitting}>
-            {submitting ? "Submitting..." : "Submit request"}
-          </button>
-        </div>
-      </form>
+      </section>
+
+      <section className="content-card">
+        {message ? <AlertMessage type="success">{message}</AlertMessage> : null}
+        {error ? <AlertMessage type="error">{error}</AlertMessage> : null}
+        <form className="grid-form" onSubmit={handleSubmit}>
+          <label>
+            Patient name
+            <input value={form.patient_name} onChange={(event) => setForm((current) => ({ ...current, patient_name: event.target.value }))} required />
+          </label>
+          <label>
+            Blood group needed
+            <select value={form.blood_group_needed} onChange={(event) => setForm((current) => ({ ...current, blood_group_needed: event.target.value }))}>
+              {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((group) => (
+                <option key={group} value={group}>
+                  {group}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Units required
+            <input type="number" min="1" value={form.units_required} onChange={(event) => setForm((current) => ({ ...current, units_required: Number(event.target.value) }))} required />
+          </label>
+          <label>
+            Hospital name
+            <input value={form.hospital_name} onChange={(event) => setForm((current) => ({ ...current, hospital_name: event.target.value }))} required />
+          </label>
+          <label>
+            City
+            <input value={form.city} onChange={(event) => setForm((current) => ({ ...current, city: event.target.value }))} required />
+          </label>
+          <label>
+            Area
+            <input value={form.area} onChange={(event) => setForm((current) => ({ ...current, area: event.target.value }))} required />
+          </label>
+          <label>
+            Ward / room
+            <input value={form.ward_room} onChange={(event) => setForm((current) => ({ ...current, ward_room: event.target.value }))} required />
+          </label>
+          <label>
+            Urgency
+            <select value={form.urgency_level} onChange={(event) => setForm((current) => ({ ...current, urgency_level: event.target.value }))}>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="critical">Critical</option>
+            </select>
+          </label>
+          <label>
+            Required by
+            <input type="datetime-local" value={form.required_by} onChange={(event) => setForm((current) => ({ ...current, required_by: event.target.value }))} required />
+          </label>
+          <label>
+            Attendant name
+            <input value={form.attendant_name} onChange={(event) => setForm((current) => ({ ...current, attendant_name: event.target.value }))} required />
+          </label>
+          <label>
+            Attendant phone
+            <input value={form.attendant_phone} onChange={(event) => setForm((current) => ({ ...current, attendant_phone: event.target.value }))} required />
+          </label>
+          <div className="form-span form-note">
+            <Activity size={16} />
+            <span>After submission, the request enters admin review before donors are matched.</span>
+          </div>
+          <div className="form-span">
+            <button className="button button-primary" disabled={submitting}>
+              {submitting ? "Submitting..." : "Submit request"}
+            </button>
+          </div>
+        </form>
+      </section>
     </div>
   );
 }
-
