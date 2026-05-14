@@ -57,26 +57,6 @@ BloodLink focuses on a realistic MVP:
 - ORM and migrations: SQLAlchemy + Alembic
 - Containerization: Docker + Docker Compose
 
-## Architecture
-```mermaid
-flowchart TD
-    U["Donors / Receivers / Admins"] --> F["React + Vite Frontend<br/>Port 5173"]
-    F --> A["FastAPI REST API<br/>Port 8000"]
-    A --> D["PostgreSQL Database<br/>Port 5432"]
-    A --> R["Redis<br/>Queue / Realtime Foundation"]
-    A --> S["Protected Upload Storage<br/>MinIO / Local Volume Foundation"]
-    W["Worker"] --> R
-    W --> D
-    SCH["Scheduler"] --> R
-    DC["Docker Compose"] --> F
-    DC --> A
-    DC --> D
-    DC --> R
-    DC --> S
-    DC --> W
-    DC --> SCH
-```
-
 ## Project structure
 ```text
 bloodlink-pakistan/
