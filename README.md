@@ -40,6 +40,8 @@ BloodLink focuses on a realistic MVP:
 - Basic admin dashboard and analytics
 - Hospital dashboard foundation
 - Blood bank inventory foundation
+- Search and filter flows for donors, requests, hospital demand, and blood bank inventory
+- Modern responsive healthcare UI with reusable cards, badges, alerts, modals, and empty states
 - API versioning at `/api/v1`
 - Redis, MinIO, worker, and scheduler Docker services
 - Docker Compose setup for frontend, backend, and PostgreSQL
@@ -47,7 +49,7 @@ BloodLink focuses on a realistic MVP:
 - Responsive UI for mobile and desktop
 
 ## Tech stack
-- Frontend: React + Vite
+- Frontend: React + Vite + Lucide React + custom modern CSS design system
 - Backend: FastAPI
 - Database: PostgreSQL
 - Cache / queue broker: Redis
@@ -244,6 +246,12 @@ cd backend
 pytest
 ```
 
+Manual frontend verification covers:
+- Public landing, about, and how-it-works pages
+- Donor, receiver, admin, hospital, and blood bank dashboards
+- Responsive layout behavior across mobile and desktop widths
+- Search and filter interactions for donor/request/inventory lists
+
 ## Deployment notes
 Suggested future-friendly hosting options:
 - Frontend: Vercel or Netlify
@@ -260,9 +268,9 @@ This application is not a replacement for hospitals, licensed blood banks, medic
 - No real SMS or WhatsApp notifications in MVP
 - No NADRA verification
 - No medical approval workflow
-- No blood bank inventory management yet
+- No full production blood bank inventory workflow yet beyond the current foundation
 - No mobile app yet
-- No real hospital integration yet
+- No real hospital system integration yet beyond the current hospital workspace foundation
 
 ## Future updates / roadmap
 ### Version 1.1: Better verification
