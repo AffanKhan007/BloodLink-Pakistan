@@ -1,4 +1,4 @@
-![BloodLink Banner](docs/images/banner.png)
+![Project Screenshot](docs/images/screenshot.png)
 # BloodLink Pakistan
 
 A production-style blood donation and blood bank coordination platform for Pakistan that connects donors, receivers, hospitals, blood banks, institution donors, and admins through verified request capture, automatic matching, messaging, and status tracking.
@@ -33,7 +33,7 @@ A production-style blood donation and blood bank coordination platform for Pakis
 - Object storage foundation: MinIO
 - Containerization: Docker + Docker Compose
 
-![Project Screenshot](docs/images/screenshot.png)
+<!-- ![Project Screenshot](docs/images/screenshot.png) -->
 
 ![Demo GIF](docs/images/demo.gif)
 
