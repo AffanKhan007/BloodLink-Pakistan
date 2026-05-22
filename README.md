@@ -23,6 +23,7 @@ BloodLink focuses on a realistic MVP:
 - Matching happens automatically using city, blood-group compatibility, donor availability, and donation recency rules.
 - Donors can stay private or mark themselves publicly available for compatible receiver outreach in-app.
 - Receivers can also discover blood banks and institution donors in the same city.
+- Institution donors register through a separate verification flow and only become publicly visible after admin approval.
 - Chat and notifications keep receiver-to-donor and receiver-to-institution coordination inside the platform.
 - Admins act as the trust and moderation layer, with analytics, audit logs, reports, and system-wide visibility.
 
@@ -30,6 +31,7 @@ BloodLink focuses on a realistic MVP:
 - Donor registration and login
 - Receiver registration and login
 - Institution donor self-registration and login
+- Institution approval flow with pending, approved, rejected, and suspended states
 - Admin login through seed data
 - Donor profile creation, availability management, and public visibility toggle
 - Receiver profile foundation and blood request creation with required hospital slip upload
@@ -38,7 +40,7 @@ BloodLink focuses on a realistic MVP:
 - Receiver views for matched donors, public donors, blood banks, and institutions in the request city
 - Blood bank inventory management with unit creation, summary metrics, and city-request visibility
 - Hospital staff workspace for hospital-originated request intake
-- Institution donor workspace for organization profile management and message handling
+- Institution donor workspace with status-based access control and admin approval gating
 - Simple in-app messaging between receivers and matched donors, public donors, blood banks, and institutions
 - FastAPI WebSocket support for real-time chat in active conversation views
 - In-app notifications
@@ -99,7 +101,7 @@ bloodlink-pakistan/
 - Admin: reviews users, donors, receivers, requests, reports, matches, and audit logs across the whole platform.
 - Hospital Staff: works only inside the assigned hospital workspace and creates hospital-originated requests.
 - Blood Bank Staff: works only inside the assigned blood bank scope, manages inventory, and monitors city demand.
-- Institution Donor: publishes an organization profile and handles receiver outreach for city-based donor support.
+- Institution Donor: registers through a separate verification flow and only gets full institution features after admin approval.
 
 ## Permissions
 - Donor can only manage their own donor profile.
@@ -110,18 +112,21 @@ bloodlink-pakistan/
 - Receiver can only view matches related to their own requests and only contact valid in-scope donors or organizations.
 - Hospital staff can only operate within their assigned hospital.
 - Blood bank staff can only operate within their assigned blood bank.
-- Institution donors can only manage their own institution profile and message threads.
+- Pending, rejected, and suspended institutions cannot access full institution features, public visibility, or receiver messaging.
+- Approved institution donors can manage their own institution profile and message threads.
 - Admin can manage all users, donors, requests, matches, reports, and audit logs.
+- Admin can approve, reject, or suspend institution accounts from the protected admin workspace.
 
 ## System workflow
-1. A donor, receiver, or institution donor creates an account.
+1. A donor or receiver creates an account, or an institution submits a separate verification registration.
 2. A receiver or hospital staff member creates a blood request and uploads the supporting slip.
 3. BloodLink automatically looks for compatible donors in the same city.
 4. Candidate matches are created and donors receive notifications.
-5. Receivers can also discover public donors, blood banks, and institutions in the same city.
-6. Donors accept or reject assigned matches.
-7. Receivers track confirmed donor counts, message valid contacts, and mark the request fulfilled.
-8. Admins monitor users, reports, inventory visibility, and audit history.
+5. Admin reviews institution registrations and approves only legitimate organizations for public visibility.
+6. Receivers can discover public donors, blood banks, and approved institutions in the same city.
+7. Donors accept or reject assigned matches.
+8. Receivers track confirmed donor counts, message valid contacts, and mark the request fulfilled.
+9. Admins monitor users, reports, inventory visibility, and audit history.
 
 ## Database overview
 Core tables in the MVP include:
@@ -220,7 +225,7 @@ Included sample data:
 - 2 sample donation matches
 - 1 sample hospital
 - 1 sample blood bank
-- 1 sample institution profile
+- 1 approved sample institution profile
 - Major Pakistan city seed data
 - Sample notifications and chat history
 
@@ -232,6 +237,13 @@ Other useful seeded accounts:
 - Hospital admin: `hospital.admin@bloodlink.pk` / `Hospital12345`
 - Blood bank admin: `bloodbank.admin@bloodlink.pk` / `BloodBank12345`
 - Institution donor: `institution@bloodlink.pk` / `Institution12345`
+
+Institution approval note:
+- New institution registrations start as `pending_approval`
+- Pending institutions are redirected to a verification progress screen
+- Only `approved` institutions appear in receiver listings and can use institution messaging
+- `rejected` institutions can correct details and resubmit for review
+- `suspended` institutions lose institution access until restored by admin
 
 ## Backup and restore
 Backup:
@@ -262,6 +274,7 @@ cat backup.sql | docker exec -i bloodlink-postgres psql -U blood_user -d blood_a
 Basic backend tests cover:
 - Health route
 - Auth register and login flow
+- Institution registration and approval-state access control
 - Donor profile creation
 - Blood request creation and auto-matching
 - Matching service logic
