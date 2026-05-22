@@ -1,3 +1,4 @@
+![BloodLink Banner](docs/images/banner.png)
 # BloodLink Pakistan
 
 A production-style blood donation and blood bank coordination platform for Pakistan that connects donors, receivers, hospitals, blood banks, institution donors, and admins through verified request capture, automatic matching, messaging, and status tracking.
