@@ -12,8 +12,16 @@ A production-style blood donation and blood bank coordination platform for Pakis
   <img src="https://cdn.simpleicons.org/fastapi/009688" alt="FastAPI" width="48" height="48" />
   <img src="https://cdn.simpleicons.org/minio/C72E49" alt="MinIO" width="48" height="48" />
   <img src="https://cdn.simpleicons.org/sqlalchemy/D71F00" alt="SQLAlchemy" width="48" height="48" />
-  <img src="https://cdn.simpleicons.org/alembic/6C47FF" alt="Alembic" width="48" height="48" />
+  <img src="https://img.shields.io/badge/Alembic-Migrations-6C47FF?style=for-the-badge" alt="Alembic migrations" />
 </p>
+
+- Frontend: React + Vite
+- Backend: FastAPI
+- Database: PostgreSQL
+- ORM and migrations: SQLAlchemy + Alembic
+- Cache and queue support: Redis
+- Object storage foundation: MinIO
+- Containerization: Docker + Docker Compose
 
 ![Project Screenshot](docs/images/screenshot.png)
 
