@@ -5,14 +5,23 @@ A production-style blood donation and blood bank coordination platform for Pakis
 ## Built with
 
 <p align="left">
-  <img src="https://skillicons.dev/icons?i=react,vite,py,js,postgres,docker,redis" alt="Core stack icons" />
+  <img src="https://img.shields.io/badge/ReactJS-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="ReactJS" />
+  <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=FFFFFF" alt="Vite" />
+  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=FFFFFF" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=FFFFFF" alt="PostgreSQL" />
 </p>
 
 <p align="left">
-  <img src="https://cdn.simpleicons.org/fastapi/009688" alt="FastAPI" width="48" height="48" />
-  <img src="https://cdn.simpleicons.org/minio/C72E49" alt="MinIO" width="48" height="48" />
-  <img src="https://cdn.simpleicons.org/sqlalchemy/D71F00" alt="SQLAlchemy" width="48" height="48" />
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=FFFFFF" alt="Docker" />
+  <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=FFFFFF" alt="Redis" />
+  <img src="https://img.shields.io/badge/MinIO-C72E49?style=for-the-badge&logo=minio&logoColor=FFFFFF" alt="MinIO" />
+  <img src="https://img.shields.io/badge/SQLAlchemy-D71F00?style=for-the-badge&logo=sqlalchemy&logoColor=FFFFFF" alt="SQLAlchemy" />
+</p>
+
+<p align="left">
   <img src="https://img.shields.io/badge/Alembic-Migrations-6C47FF?style=for-the-badge" alt="Alembic migrations" />
+  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=FFD43B" alt="Python" />
+  <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=1F2328" alt="JavaScript" />
 </p>
 
 - Frontend: React + Vite
