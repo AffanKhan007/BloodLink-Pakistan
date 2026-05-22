@@ -1,13 +1,19 @@
 # BloodLink Pakistan
 
-![React](https://img.shields.io/badge/Frontend-React-61dafb?logo=react&logoColor=white)
-![FastAPI](https://img.shields.io/badge/Backend-FastAPI-05998b?logo=fastapi&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-336791?logo=postgresql&logoColor=white)
-![Docker](https://img.shields.io/badge/Container-Docker-2496ed?logo=docker&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-black)
-![Status](https://img.shields.io/badge/Status-MVP-c52128)
-
 A production-style blood donation and blood bank coordination platform for Pakistan that connects donors, receivers, hospitals, blood banks, institution donors, and admins through verified request capture, automatic matching, messaging, and status tracking.
+
+## Built with
+
+<p align="left">
+  <img src="https://skillicons.dev/icons?i=react,vite,py,js,postgres,docker,redis" alt="Core stack icons" />
+</p>
+
+<p align="left">
+  <img src="https://cdn.simpleicons.org/fastapi/009688" alt="FastAPI" width="48" height="48" />
+  <img src="https://cdn.simpleicons.org/minio/C72E49" alt="MinIO" width="48" height="48" />
+  <img src="https://cdn.simpleicons.org/sqlalchemy/D71F00" alt="SQLAlchemy" width="48" height="48" />
+  <img src="https://cdn.simpleicons.org/alembic/6C47FF" alt="Alembic" width="48" height="48" />
+</p>
 
 ![Project Screenshot](docs/images/screenshot.png)
 
