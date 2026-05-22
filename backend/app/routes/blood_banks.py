@@ -1,12 +1,12 @@
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.deps import get_current_user, require_roles
-from app.models import BloodBank, BloodUnit, BloodUnitStatus, InventoryMovement, TestingStatus, User, UserRole
+from app.models import BloodBank, BloodRequest, BloodUnit, BloodUnitStatus, InventoryMovement, TestingStatus, User, UserRole
 from app.schemas.blood_bank import (
     BloodBankCreate,
     BloodBankOut,
@@ -18,7 +18,9 @@ from app.schemas.blood_bank import (
     InventoryMovementOut,
     InventorySummaryOut,
 )
+from app.schemas.blood_request import BloodRequestListOut
 from app.services.audit import create_audit_log
+from app.services.matching import count_confirmed_matches
 
 
 router = APIRouter(tags=["blood_banks"])
@@ -46,7 +48,7 @@ def _coerce_utc(dt: datetime) -> datetime:
 def list_blood_banks(
     db: Session = Depends(get_db),
     current_user: User = Depends(
-        require_roles(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.BLOOD_BANK_ADMIN, UserRole.BLOOD_BANK_STAFF)
+        require_roles(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.BLOOD_BANK_ADMIN, UserRole.BLOOD_BANK_STAFF, UserRole.RECEIVER)
     ),
 ) -> list[BloodBankOut]:
     banks = list(db.scalars(select(BloodBank).order_by(BloodBank.name.asc())).all())
@@ -89,12 +91,35 @@ def inventory_summary(
     expiring_threshold = datetime.now(timezone.utc) + timedelta(days=7)
     return InventorySummaryOut(
         blood_bank=BloodBankOut.model_validate(bank),
-        total_units=len(units),
-        available_units=sum(1 for item in units if item.status == BloodUnitStatus.AVAILABLE),
-        reserved_units=sum(1 for item in units if item.status == BloodUnitStatus.RESERVED),
-        expiring_soon_units=sum(1 for item in units if _coerce_utc(item.expires_at) <= expiring_threshold),
+        total_units=sum(item.units_available for item in units),
+        available_units=sum(item.units_available for item in units if item.status == BloodUnitStatus.AVAILABLE),
+        reserved_units=sum(item.units_available for item in units if item.status == BloodUnitStatus.RESERVED),
+        expiring_soon_units=sum(
+            item.units_available for item in units if _coerce_utc(item.expires_at) <= expiring_threshold
+        ),
         units=[BloodUnitOut.model_validate(item) for item in units[:20]],
     )
+
+
+@router.get("/blood-banks/me/city-requests", response_model=list[BloodRequestListOut])
+def blood_bank_city_requests(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(UserRole.BLOOD_BANK_ADMIN, UserRole.BLOOD_BANK_STAFF)),
+) -> list[BloodRequestListOut]:
+    if not current_user.blood_bank_id:
+        return []
+    bank = db.get(BloodBank, current_user.blood_bank_id)
+    if not bank:
+        return []
+    requests = list(
+        db.scalars(
+            select(BloodRequest).where(BloodRequest.city == bank.city).order_by(BloodRequest.required_by.asc())
+        ).all()
+    )
+    return [
+        BloodRequestListOut(**request.__dict__, confirmed_donor_count=count_confirmed_matches(request))
+        for request in requests
+    ]
 
 
 @router.post("/blood-banks/{blood_bank_id}/blood-units", response_model=BloodUnitOut, status_code=status.HTTP_201_CREATED)

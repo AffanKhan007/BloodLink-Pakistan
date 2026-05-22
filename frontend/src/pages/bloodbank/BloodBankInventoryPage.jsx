@@ -13,6 +13,7 @@ import StatusBadge from "../../components/StatusBadge";
 const initialForm = {
   donor_profile_id: "",
   blood_group: "A+",
+  units_available: 1,
   component_type: "whole_blood",
   collected_at: "",
   expires_at: "",
@@ -105,11 +106,17 @@ export default function BloodBankInventoryPage() {
         {message ? <AlertMessage type="success">{message}</AlertMessage> : null}
         {error ? <AlertMessage type="error">{error}</AlertMessage> : null}
         <form className="grid-form" onSubmit={handleSubmit}>
+          <div className="form-section form-span">
+            <div className="form-section-header">
+              <h3>Unit intake details</h3>
+              <p>Capture unit metadata cleanly so inventory summaries, testing states, and traceability screens stay reliable.</p>
+            </div>
+          </div>
           <label>
             Donor profile ID
             <input value={form.donor_profile_id} onChange={(event) => setForm((current) => ({ ...current, donor_profile_id: event.target.value }))} />
           </label>
-          <label>
+          <label className="field-required">
             Blood group
             <select value={form.blood_group} onChange={(event) => setForm((current) => ({ ...current, blood_group: event.target.value }))}>
               {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((group) => (
@@ -119,18 +126,35 @@ export default function BloodBankInventoryPage() {
               ))}
             </select>
           </label>
-          <label>
+          <label className="field-required">
+            Units available
+            <input
+              type="number"
+              min="1"
+              max="100"
+              value={form.units_available}
+              onChange={(event) => setForm((current) => ({ ...current, units_available: Number(event.target.value) }))}
+              required
+            />
+          </label>
+          <label className="field-required">
             Component type
             <input value={form.component_type} onChange={(event) => setForm((current) => ({ ...current, component_type: event.target.value }))} required />
           </label>
-          <label>
+          <label className="field-required">
             Collected at
             <input type="datetime-local" value={form.collected_at} onChange={(event) => setForm((current) => ({ ...current, collected_at: event.target.value }))} required />
           </label>
-          <label>
+          <label className="field-required">
             Expires at
             <input type="datetime-local" value={form.expires_at} onChange={(event) => setForm((current) => ({ ...current, expires_at: event.target.value }))} required />
           </label>
+          <div className="form-section form-span">
+            <div className="form-section-header">
+              <h3>Testing and storage</h3>
+              <p>Use clear testing and storage details so staff can understand immediately whether a unit is ready, pending, or reserved.</p>
+            </div>
+          </div>
           <label>
             Testing status
             <select value={form.testing_status} onChange={(event) => setForm((current) => ({ ...current, testing_status: event.target.value }))}>
@@ -216,6 +240,7 @@ export default function BloodBankInventoryPage() {
                   <StatusBadge value={unit.status} />
                 </div>
                 <div className="inline-pills">
+                  <span className="pill pill-soft">{unit.units_available} units</span>
                   <span className="pill pill-soft">
                     <Warehouse size={14} />
                     {unit.storage_location || "Storage pending"}

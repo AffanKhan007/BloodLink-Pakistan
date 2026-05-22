@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { apiRequest } from "../../api/client";
 import { useAuth } from "../../auth/AuthContext";
 import { EmptyState, LoadingState } from "../../components/PageState";
+import SectionIntro from "../../components/SectionIntro";
 import { formatDate } from "../../utils/format";
 
 export default function NotificationsPage() {
@@ -29,6 +30,13 @@ export default function NotificationsPage() {
 
   return (
     <div className="page-stack">
+      <section className="content-card">
+        <SectionIntro
+          eyebrow="Updates"
+          title="Notifications"
+          description="Stay on top of new matches, donor responses, and coordination updates without opening every page manually."
+        />
+      </section>
       {notifications.map((notification) => (
         <div className="content-card" key={notification.id}>
           <div className="list-row">
@@ -48,4 +56,3 @@ export default function NotificationsPage() {
     </div>
   );
 }
-

@@ -71,6 +71,17 @@ def list_users(
     return [AdminUserSummary.model_validate(user) for user in users]
 
 
+@router.get("/receivers", response_model=list[AdminUserSummary])
+def list_receivers(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(*ADMIN_ROLES)),
+) -> list[AdminUserSummary]:
+    users = list(
+        db.scalars(select(User).where(User.role == UserRole.RECEIVER).order_by(User.created_at.desc())).all()
+    )
+    return [AdminUserSummary.model_validate(user) for user in users]
+
+
 @router.patch("/users/{user_id}/block", response_model=AdminUserSummary)
 def block_user(
     user_id: int,

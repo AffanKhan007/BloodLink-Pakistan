@@ -39,7 +39,7 @@ export default function MatchingRequestsPage() {
 
   if (loading) return <LoadingState label="Loading matching requests" />;
   if (requests.length === 0) {
-    return <EmptyState title="No matching requests" description="When approved requests fit your profile, they will appear here." />;
+    return <EmptyState title="No matching requests" description="When compatible requests fit your profile, they will appear here." />;
   }
 
   return (

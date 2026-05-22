@@ -29,8 +29,8 @@ class RegisterRequest(BaseModel):
     @field_validator("role")
     @classmethod
     def disallow_public_admin(cls, value: UserRole) -> UserRole:
-        if value not in {UserRole.DONOR, UserRole.RECEIVER}:
-            raise ValueError("Only donor and receiver accounts can be self-registered")
+        if value not in {UserRole.DONOR, UserRole.RECEIVER, UserRole.INSTITUTION_DONOR}:
+            raise ValueError("Only donor, receiver, and institution donor accounts can be self-registered")
         return value
 
 

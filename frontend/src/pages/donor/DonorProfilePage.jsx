@@ -14,26 +14,30 @@ const initialForm = {
   gender: "",
   last_donation_date: "",
   availability_status: "available",
+  is_publicly_available: false,
   health_notes: "",
 };
 
 export default function DonorProfilePage() {
   const { token } = useAuth();
   const [form, setForm] = useState(initialForm);
+  const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
-    apiRequest("/donors/profile/me", { token })
-      .then((profile) => {
-        setForm({
-          ...profile,
-          last_donation_date: profile.last_donation_date || "",
-          health_notes: profile.health_notes || "",
-        });
+    Promise.all([apiRequest("/donors/profile/me", { token }).catch(() => null), apiRequest("/cities").catch(() => [])])
+      .then(([profile, cityData]) => {
+        setCities(cityData);
+        if (profile) {
+          setForm({
+            ...profile,
+            last_donation_date: profile.last_donation_date || "",
+            health_notes: profile.health_notes || "",
+          });
+        }
       })
-      .catch(() => {})
       .finally(() => setLoading(false));
   }, [token]);
 
@@ -99,7 +103,13 @@ export default function DonorProfilePage() {
         {message ? <AlertMessage type="success">{message}</AlertMessage> : null}
         {error ? <AlertMessage type="error">{error}</AlertMessage> : null}
         <form className="grid-form" onSubmit={handleSubmit}>
-        <label>
+        <div className="form-section form-span">
+          <div className="form-section-header">
+            <h3>Donation profile</h3>
+            <p>Keep your core eligibility, blood group, and location details accurate so request matching stays trustworthy.</p>
+          </div>
+        </div>
+        <label className="field-required">
           Blood group
           <select value={form.blood_group} onChange={(event) => setForm((current) => ({ ...current, blood_group: event.target.value }))}>
             {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((group) => (
@@ -109,19 +119,26 @@ export default function DonorProfilePage() {
             ))}
           </select>
         </label>
-        <label>
+        <label className="field-required">
           City
-          <input value={form.city} onChange={(event) => setForm((current) => ({ ...current, city: event.target.value }))} required />
-        </label>
-        <label>
+          <select value={form.city} onChange={(event) => setForm((current) => ({ ...current, city: event.target.value }))} required>
+            <option value="">Select city</option>
+            {cities.map((city) => (
+              <option key={city.id} value={city.name}>
+                {city.name}
+              </option>
+              ))}
+            </select>
+          </label>
+        <label className="field-required">
           Area
           <input value={form.area} onChange={(event) => setForm((current) => ({ ...current, area: event.target.value }))} required />
         </label>
-        <label>
+        <label className="field-required">
           Age
           <input type="number" min="18" max="65" value={form.age} onChange={(event) => setForm((current) => ({ ...current, age: Number(event.target.value) }))} required />
         </label>
-        <label>
+        <label className="field-required">
           Gender
           <input value={form.gender} onChange={(event) => setForm((current) => ({ ...current, gender: event.target.value }))} required />
         </label>
@@ -133,6 +150,12 @@ export default function DonorProfilePage() {
             onChange={(event) => setForm((current) => ({ ...current, last_donation_date: event.target.value }))}
           />
         </label>
+        <div className="form-section form-span">
+          <div className="form-section-header">
+            <h3>Availability and visibility</h3>
+            <p>Control whether you are only reachable through assigned matches or also discoverable to compatible receivers in your city.</p>
+          </div>
+        </div>
         <label>
           Availability
           <select
@@ -144,11 +167,28 @@ export default function DonorProfilePage() {
           </select>
         </label>
         <label className="form-span">
+          Public donor visibility
+          <select
+            value={form.is_publicly_available ? "yes" : "no"}
+            onChange={(event) => setForm((current) => ({ ...current, is_publicly_available: event.target.value === "yes" }))}
+          >
+            <option value="no">Keep profile private to matched flows</option>
+            <option value="yes">Show me to compatible receivers in my city</option>
+          </select>
+        </label>
+        <div className="form-section form-span">
+          <div className="form-section-header">
+            <h3>Health context</h3>
+            <p>Add optional notes that help moderation or coordination staff understand your donation readiness.</p>
+          </div>
+        </div>
+        <label className="form-span">
           Health notes
           <textarea
             rows="4"
             value={form.health_notes}
             onChange={(event) => setForm((current) => ({ ...current, health_notes: event.target.value }))}
+            placeholder="Optional notes about donation timing, temporary restrictions, or health context."
           />
         </label>
           <div className="form-span form-actions-row">

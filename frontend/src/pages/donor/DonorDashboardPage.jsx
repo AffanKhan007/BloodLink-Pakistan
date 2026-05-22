@@ -1,5 +1,6 @@
 import { Bell, HeartHandshake, Search, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 import { apiRequest } from "../../api/client";
 import { useAuth } from "../../auth/AuthContext";
@@ -58,6 +59,16 @@ export default function DonorDashboardPage() {
           eyebrow="Matching opportunities"
           title="Requests near your profile"
           description="Only approved requests that fit your city and blood group appear here, keeping the donor experience focused."
+          actions={
+            <>
+              <Link className="button button-secondary" to="/donor/profile">
+                Update profile
+              </Link>
+              <Link className="button button-primary" to="/donor/matches">
+                Open my matches
+              </Link>
+            </>
+          }
         />
         {state.requests.length === 0 ? (
           <EmptyState title="No matching requests yet" description="Approved requests that fit your city and blood group will appear here." />

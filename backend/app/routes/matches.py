@@ -144,6 +144,12 @@ def reject_match(
     match = _get_owned_match(db, match_id, current_user)
     match.status = MatchStatus.REJECTED
     match.rejected_at = datetime.now(timezone.utc)
+    create_notification(
+        db,
+        user_id=match.request.created_by_user_id,
+        title="A donor rejected your request",
+        message=f"A donor declined request #{match.request_id}. Other matches can still continue.",
+    )
     db.commit()
     db.refresh(match)
     return MatchOut.model_validate(match)

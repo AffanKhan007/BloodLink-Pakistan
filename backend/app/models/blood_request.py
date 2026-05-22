@@ -3,7 +3,7 @@ from enum import StrEnum
 
 from typing import Optional
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Integer, String, func
+from sqlalchemy import DateTime, Enum, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -42,6 +42,7 @@ class BloodRequest(Base):
     attendant_name: Mapped[str] = mapped_column(String(150), nullable=False)
     attendant_phone: Mapped[str] = mapped_column(String(20), nullable=False)
     required_by: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    additional_notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     status: Mapped[RequestStatus] = mapped_column(
         Enum(RequestStatus, name="request_status"),
         default=RequestStatus.PENDING_REVIEW,

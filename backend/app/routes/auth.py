@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.deps import get_current_user
 from app.core.security import create_access_token, get_password_hash, verify_password
-from app.models import User
+from app.models import ReceiverProfile, User, UserRole
 from app.schemas.auth import AuthResponse, LoginRequest, RegisterRequest, UserOut
 
 
@@ -27,6 +27,9 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)) -> AuthRes
         is_active=True,
     )
     db.add(user)
+    db.flush()
+    if user.role == UserRole.RECEIVER:
+        db.add(ReceiverProfile(user_id=user.id))
     db.commit()
     db.refresh(user)
 
@@ -49,4 +52,3 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)) -> AuthResponse:
 @router.get("/me", response_model=UserOut)
 def me(current_user: User = Depends(get_current_user)) -> UserOut:
     return UserOut.model_validate(current_user)
-

@@ -1,22 +1,23 @@
 import { ClipboardCheck, HeartHandshake, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 
+import PublicFooter from "../../components/PublicFooter";
 import PublicHeader from "../../components/PublicHeader";
 
 const steps = [
   {
-    title: "Donors register and complete profiles",
-    description: "Donors share blood group, city, area, and availability. Admins verify profiles before matching.",
+    title: "Create a request",
+    description: "Receivers add patient details, urgency, and hospital information in one place.",
     icon: HeartHandshake,
   },
   {
-    title: "Receivers submit structured blood requests",
-    description: "Patient attendants add hospital details, urgency, required time, and upload a hospital slip for review.",
+    title: "Match the right support",
+    description: "Compatible donors and city-based organizations are surfaced through focused matching rules.",
     icon: ClipboardCheck,
   },
   {
-    title: "Admins review and coordinate safely",
-    description: "Approved donors are matched to approved requests using practical MVP rules for blood group, city, availability, and donation recency.",
+    title: "Track and respond",
+    description: "Messages, responses, and request status stay organized through a clean coordination workflow.",
     icon: ShieldCheck,
   },
 ];
@@ -37,10 +38,9 @@ export default function HowItWorksPage() {
       <div className="public-page public-page-wide">
         <section className="content-card public-hero-card">
           <span className="alert-pill alert-pill-soft">How coordination works</span>
-          <h1>A practical donor-to-request workflow designed for urgent real-world use.</h1>
+          <h1>A simple workflow designed for urgent coordination.</h1>
           <p>
-            BloodLink avoids pretending to replace hospitals. Instead, it adds better verification, clearer matching,
-            and more accountable status tracking around the coordination layer.
+            The platform keeps the process short, clear, and easy to follow for donors, receivers, and operational teams.
           </p>
         </section>
         <div className="timeline-grid">
@@ -56,6 +56,7 @@ export default function HowItWorksPage() {
           ))}
         </div>
       </div>
+      <PublicFooter />
     </div>
   );
 }

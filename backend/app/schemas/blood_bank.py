@@ -12,6 +12,8 @@ class BloodBankCreate(BaseModel):
     hospital_id: int | None = None
     city: str = Field(min_length=2, max_length=120)
     area: str | None = Field(default=None, max_length=120)
+    contact_number: str | None = Field(default=None, max_length=20)
+    email: str | None = Field(default=None, max_length=255)
     address: str | None = Field(default=None, max_length=500)
     license_number: str | None = Field(default=None, max_length=120)
     verification_status: str = Field(default="pending", max_length=40)
@@ -23,6 +25,8 @@ class BloodBankOut(BaseSchema):
     hospital_id: int | None
     city: str
     area: str | None
+    contact_number: str | None
+    email: str | None
     address: str | None
     license_number: str | None
     verification_status: str
@@ -33,6 +37,7 @@ class BloodBankOut(BaseSchema):
 class BloodUnitCreate(BaseModel):
     donor_profile_id: int | None = None
     blood_group: str
+    units_available: int = Field(default=1, ge=1, le=100)
     component_type: str = Field(default="whole_blood", min_length=2, max_length=60)
     collected_at: datetime
     expires_at: datetime
@@ -61,6 +66,7 @@ class BloodUnitOut(BaseSchema):
     donor_profile_id: int | None
     blood_bank_id: int
     blood_group: str
+    units_available: int
     component_type: str
     collected_at: datetime
     expires_at: datetime
@@ -78,6 +84,16 @@ class InventorySummaryOut(BaseSchema):
     reserved_units: int
     expiring_soon_units: int
     units: list[BloodUnitOut]
+
+
+class BloodBankCityInventoryItem(BaseSchema):
+    blood_group: str
+    total_units: int
+
+
+class BloodBankDiscoveryOut(BloodBankOut):
+    available_inventory: list[BloodBankCityInventoryItem]
+    contact_user_id: int | None = None
 
 
 class BloodUnitStatusUpdate(BaseModel):

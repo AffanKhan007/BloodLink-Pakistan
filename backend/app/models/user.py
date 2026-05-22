@@ -12,6 +12,7 @@ class UserRole(StrEnum):
     SUPER_ADMIN = "super_admin"
     DONOR = "donor"
     RECEIVER = "receiver"
+    INSTITUTION_DONOR = "institution_donor"
     ADMIN = "admin"
     OPERATIONS_AGENT = "operations_agent"
     HOSPITAL_ADMIN = "hospital_admin"
@@ -39,6 +40,8 @@ class User(Base):
     )
 
     donor_profile = relationship("DonorProfile", back_populates="user", uselist=False)
+    receiver_profile = relationship("ReceiverProfile", back_populates="user", uselist=False)
+    institution_profile = relationship("Institution", back_populates="user", uselist=False)
     created_requests = relationship("BloodRequest", back_populates="created_by_user", foreign_keys="BloodRequest.created_by_user_id")
     notifications = relationship("Notification", back_populates="user")
     filed_reports = relationship("Report", back_populates="reporter", foreign_keys="Report.reporter_user_id")
@@ -46,3 +49,6 @@ class User(Base):
     admin_logs = relationship("AuditLog", back_populates="admin_user")
     hospital = relationship("Hospital", back_populates="staff_users", foreign_keys=[hospital_id])
     blood_bank = relationship("BloodBank", back_populates="staff_users", foreign_keys=[blood_bank_id])
+    sent_chats = relationship("Chat", back_populates="participant_one", foreign_keys="Chat.participant_one_id")
+    received_chats = relationship("Chat", back_populates="participant_two", foreign_keys="Chat.participant_two_id")
+    sent_messages = relationship("ChatMessage", back_populates="sender")

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 
 import pytest
 from fastapi.testclient import TestClient
@@ -8,7 +8,22 @@ from sqlalchemy.orm import sessionmaker
 from app.core.database import Base, get_db
 from app.core.security import get_password_hash
 from app.main import app
-from app.models import BloodBank, BloodRequest, BloodUnit, BloodUnitStatus, DonorProfile, DonorVerificationStatus, Hospital, TestingStatus, UrgencyLevel, User, UserRole
+from app.models import (
+    BloodBank,
+    BloodRequest,
+    BloodUnit,
+    BloodUnitStatus,
+    City,
+    DonorProfile,
+    DonorVerificationStatus,
+    Hospital,
+    Institution,
+    ReceiverProfile,
+    TestingStatus,
+    UrgencyLevel,
+    User,
+    UserRole,
+)
 
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test_bloodlink.db"
@@ -43,6 +58,12 @@ def client():
 @pytest.fixture
 def seeded_db():
     db = TestingSessionLocal()
+    db.add_all(
+        [
+            City(name="Lahore", province="Punjab", sort_order=1),
+            City(name="Karachi", province="Sindh", sort_order=2),
+        ]
+    )
     admin = User(
         full_name="Admin",
         email="admin@test.com",
@@ -63,6 +84,13 @@ def seeded_db():
         phone="+923001111113",
         password_hash=get_password_hash("Receiver12345"),
         role=UserRole.RECEIVER,
+    )
+    institution_user = User(
+        full_name="Institution User",
+        email="institution@test.com",
+        phone="+923001111116",
+        password_hash=get_password_hash("Institution12345"),
+        role=UserRole.INSTITUTION_DONOR,
     )
     hospital = Hospital(
         name="Test Hospital",
@@ -87,19 +115,34 @@ def seeded_db():
         role=UserRole.HOSPITAL_ADMIN,
         hospital_id=hospital.id,
     )
-    db.add_all([admin, donor, receiver, blood_bank_staff, hospital_staff])
+    db.add_all([admin, donor, receiver, institution_user, blood_bank_staff, hospital_staff])
     db.flush()
     blood_bank = BloodBank(
         name="Test Blood Bank",
         hospital_id=hospital.id,
         city="Lahore",
         area="Gulberg",
+        contact_number="+924212223334",
+        email="test@bloodbank.pk",
         verification_status="verified",
     )
     db.add(blood_bank)
     db.flush()
     blood_bank_staff.blood_bank_id = blood_bank.id
 
+    receiver_profile = ReceiverProfile(user_id=receiver.id, city="Lahore", area="Gulberg")
+    institution = Institution(
+        user_id=institution_user.id,
+        institution_name="Test University Donor Club",
+        institution_type="University",
+        city="Lahore",
+        area="Gulberg",
+        contact_person="Coordinator",
+        email="club@test.edu.pk",
+        phone="+924200000000",
+        address="Test address Lahore",
+        available_blood_groups="B+, O+",
+    )
     donor_profile = DonorProfile(
         user_id=donor.id,
         blood_group="B+",
@@ -108,12 +151,14 @@ def seeded_db():
         age=29,
         gender="male",
         availability_status="available",
+        is_publicly_available=True,
         verification_status=DonorVerificationStatus.APPROVED,
+        last_donation_date=date.today() - timedelta(days=120),
     )
     request = BloodRequest(
         created_by_user_id=receiver.id,
         patient_name="Patient One",
-        blood_group_needed="B+",
+        blood_group_needed="AB+",
         units_required=2,
         hospital_name="Services Hospital",
         city="Lahore",
@@ -123,6 +168,7 @@ def seeded_db():
         attendant_name="Receiver User",
         attendant_phone=receiver.phone,
         required_by=datetime.now(timezone.utc) + timedelta(days=1),
+        status="approved",
         hospital_id=hospital.id,
     )
     blood_unit = BloodUnit(
@@ -131,6 +177,7 @@ def seeded_db():
         donor_profile_id=None,
         blood_bank_id=blood_bank.id,
         blood_group="B+",
+        units_available=3,
         component_type="whole_blood",
         collected_at=datetime.now(timezone.utc) - timedelta(days=1),
         expires_at=datetime.now(timezone.utc) + timedelta(days=20),
@@ -138,7 +185,7 @@ def seeded_db():
         status=BloodUnitStatus.AVAILABLE,
         storage_location="Fridge A",
     )
-    db.add_all([donor_profile, request, blood_unit])
+    db.add_all([receiver_profile, institution, donor_profile, request, blood_unit])
     db.commit()
     try:
         yield {
@@ -146,11 +193,13 @@ def seeded_db():
             "admin": admin,
             "donor": donor,
             "receiver": receiver,
+            "institution_user": institution_user,
             "hospital_staff": hospital_staff,
             "blood_bank_staff": blood_bank_staff,
             "hospital": hospital,
             "blood_bank": blood_bank,
             "blood_unit": blood_unit,
+            "institution": institution,
             "profile": donor_profile,
             "request": request,
         }

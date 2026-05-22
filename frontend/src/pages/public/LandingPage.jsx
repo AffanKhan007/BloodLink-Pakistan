@@ -1,43 +1,77 @@
-import { Activity, ArrowRight, Clock3, Droplets, HeartHandshake, ShieldCheck, Sparkles, Users } from "lucide-react";
+import { ArrowRight, Building2, CalendarClock, CheckCircle2, Droplets, HeartHandshake, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
+import PublicFooter from "../../components/PublicFooter";
 import PublicHeader from "../../components/PublicHeader";
-
-const heroStats = [
-  { label: "Verified request flow", value: "Admin reviewed before matching", icon: ShieldCheck },
-  { label: "Response speed", value: "Clear status tracking for urgent cases", icon: Clock3 },
-  { label: "Privacy-first donor flow", value: "Controlled contact visibility", icon: Users },
-];
 
 const featureCards = [
   {
-    title: "Trusted verification before outreach",
-    description: "Patient attendants submit structured requests with hospital context and supporting documents before coordination begins.",
+    title: "Structured request capture",
+    description: "Receivers create clear blood requests with hospital details, urgency, and supporting documents.",
     icon: ShieldCheck,
   },
   {
-    title: "Simple donor matching that stays practical",
-    description: "The MVP keeps matching realistic: blood group, city, availability, and recent donation history.",
+    title: "Practical matching",
+    description: "Donors are matched using city, blood-group compatibility, availability, and donation eligibility.",
     icon: HeartHandshake,
   },
   {
-    title: "Operational visibility for every stakeholder",
-    description: "Donors, receivers, hospitals, blood banks, and admins each get a focused workspace instead of chaotic chat threads.",
-    icon: Activity,
+    title: "Focused workspaces",
+    description: "Each role gets a clean dashboard for action, tracking, and follow-up without unnecessary clutter.",
+    icon: Building2,
   },
 ];
 
-const testimonials = [
+const steps = [
   {
-    quote: "We needed a flow that feels calm in emergencies. BloodLink replaces panic-driven outreach with a structured process.",
-    author: "Operations lead",
-    role: "Blood donation coordination",
+    title: "Create a request",
+    description: "Add patient need, hospital context, urgency, and supporting slip.",
+    icon: Droplets,
   },
   {
-    quote: "The request tracking and donor privacy controls make this feel like a real platform, not another spreadsheet-backed list.",
-    author: "Hospital admin",
-    role: "Lahore-based healthcare team",
+    title: "Find the right support",
+    description: "Surface compatible donors, blood banks, and institutions in the same city.",
+    icon: HeartHandshake,
+  },
+  {
+    title: "Track the outcome",
+    description: "Monitor responses, message participants, and mark fulfilled when support is confirmed.",
+    icon: CalendarClock,
+  },
+];
+
+const trustItems = [
+  {
+    title: "Role-based access",
+    description: "Each user sees only the actions and data relevant to their role.",
+    icon: ShieldCheck,
+  },
+  {
+    title: "Clear status tracking",
+    description: "Requests, matches, and replies stay organized from creation to fulfillment.",
+    icon: CheckCircle2,
+  },
+];
+
+const heroPreviewCards = [
+  {
+    label: "Request tracking",
+    value: "Clear updates",
+    description: "Follow every request from creation to fulfillment.",
+    icon: Droplets,
+  },
+  {
+    label: "Donor matching",
+    value: "Relevant only",
+    description: "Donors see focused opportunities instead of every request.",
+    icon: HeartHandshake,
+  },
+  {
+    label: "Operational view",
+    value: "One platform",
+    description: "Admins, hospitals, and blood banks coordinate from clean dashboards.",
+    icon: Building2,
   },
 ];
 
@@ -47,8 +81,8 @@ export default function LandingPage() {
   return (
     <div className="marketing-shell">
       <PublicHeader
-        ctaLabel="Open workspace"
-        ctaTo="/login"
+        ctaLabel="Get started"
+        ctaTo="/register"
         mobileOpen={menuOpen}
         onToggleMenu={() => setMenuOpen((current) => !current)}
         onCloseMenu={() => setMenuOpen(false)}
@@ -56,90 +90,41 @@ export default function LandingPage() {
 
       <section className="hero">
         <div className="hero-copy-column">
-          <span className="alert-pill">
-            <Sparkles size={14} />
-            Production-ready healthcare UI
-          </span>
           <p className="eyebrow">Verified donation coordination</p>
-          <h1>Connect urgent blood requests with real donors, not scattered WhatsApp lists.</h1>
+          <h1>Modern blood coordination for urgent care teams.</h1>
           <p className="hero-copy">
-            BloodLink helps donors, patient attendants, and admins coordinate verified blood requests with safer
-            workflows, privacy-aware matching, and clear status tracking.
+            BloodLink helps donors, receivers, hospitals, and blood banks manage blood requests through a clear,
+            structured, and trustworthy workflow.
           </p>
           <div className="hero-actions">
             <Link className="button button-primary button-with-icon" to="/register">
-              Become a donor
+              Register
               <ArrowRight size={16} />
             </Link>
-            <Link className="button button-secondary button-with-icon" to="/receiver/create-request">
-              Request blood
-              <Droplets size={16} />
+            <Link className="button button-secondary" to="/login">
+              Login
             </Link>
-          </div>
-
-          <div className="hero-stats-grid">
-            {heroStats.map((item) => (
-              <div className="hero-stat" key={item.label}>
-                <div className="hero-stat-icon">
-                  <item.icon size={16} />
-                </div>
-                <div>
-                  <span>{item.label}</span>
-                  <strong>{item.value}</strong>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
 
         <div className="hero-panel hero-panel-large">
-          <div className="hero-surface">
-            <div className="hero-surface-header">
-              <span className="alert-pill alert-pill-soft">Critical request</span>
-              <span className="hero-surface-chip">Lahore active</span>
+          <div className="hero-surface hero-surface-minimal">
+            <div className="hero-surface-copy">
+              <p className="eyebrow">Platform preview</p>
+              <h3>Clean coordination from request to response</h3>
+              <p>A lighter, more focused experience for donors, receivers, and operational teams.</p>
             </div>
-            <h3>B+ Blood Needed</h3>
-            <p>Services Hospital Lahore</p>
-            <div className="hero-availability-grid">
-              <div className="mini-stat">
-                <span>Units required</span>
-                <strong>2 units</strong>
-              </div>
-              <div className="mini-stat">
-                <span>Urgency</span>
-                <strong>High priority</strong>
-              </div>
-              <div className="mini-stat">
-                <span>Review status</span>
-                <strong>Admin approved</strong>
-              </div>
-              <div className="mini-stat">
-                <span>Matching rule</span>
-                <strong>City + group</strong>
-              </div>
-            </div>
-          </div>
-
-          <div className="hero-panel-stack">
-            <div className="info-card">
-              <div className="list-row">
-                <div>
-                  <p className="eyebrow">Receiver experience</p>
-                  <h3>Track every status change</h3>
+            <div className="hero-preview-grid">
+              {heroPreviewCards.map((item) => (
+                <div className="mini-stat" key={item.label}>
+                  <div className="hero-stat-icon">
+                    <item.icon size={16} />
+                  </div>
+                  <span>{item.label}</span>
+                  <strong>{item.value}</strong>
+                  <p>{item.description}</p>
                 </div>
-                <Users size={18} />
-              </div>
-              <p>From pending review to matched to fulfilled, every step stays visible instead of getting lost in chat history.</p>
-            </div>
-            <div className="info-card">
-              <div className="list-row">
-                <div>
-                  <p className="eyebrow">Donor experience</p>
-                  <h3>See only relevant requests</h3>
-                </div>
-                <HeartHandshake size={18} />
-              </div>
-              <p>Donors only see matching approved requests and assigned coordination, keeping the UI focused and respectful.</p>
+              ))}
             </div>
           </div>
         </div>
@@ -148,11 +133,34 @@ export default function LandingPage() {
       <section className="marketing-section">
         <div className="section-heading">
           <div className="section-copy">
-            <p className="eyebrow">Core platform value</p>
-            <h2>Built for credibility during urgent care coordination</h2>
+            <p className="eyebrow">How it works</p>
+            <h2>A simple workflow that is easy to understand</h2>
             <p className="section-description">
-              The interface is designed to feel trustworthy under pressure, with a clean emergency-ready visual system,
-              clear calls to action, and role-specific operational views.
+              BloodLink keeps the process short, readable, and actionable for urgent cases.
+            </p>
+          </div>
+        </div>
+        <div className="timeline-grid">
+          {steps.map((item, index) => (
+            <section className="info-card timeline-card" key={item.title}>
+              <div className="feature-icon">
+                <item.icon size={18} />
+              </div>
+              <span className="timeline-step">Step {index + 1}</span>
+              <h3>{item.title}</h3>
+              <p>{item.description}</p>
+            </section>
+          ))}
+        </div>
+      </section>
+
+      <section className="marketing-section">
+        <div className="section-heading">
+          <div className="section-copy">
+            <p className="eyebrow">Core platform value</p>
+            <h2>Key product benefits</h2>
+            <p className="section-description">
+              A smaller, clearer interface helps the platform feel more trustworthy and easier to use when urgency matters.
             </p>
           </div>
         </div>
@@ -169,25 +177,30 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="marketing-section marketing-section-soft">
+      <section className="marketing-section">
         <div className="section-heading">
           <div className="section-copy">
-            <p className="eyebrow">Social proof</p>
-            <h2>Teams need healthcare software that feels calm, clear, and accountable</h2>
+            <p className="eyebrow">Trust and safety</p>
+            <h2>Built to feel trustworthy</h2>
+            <p className="section-description">
+              The interface keeps the most important actions visible and the rest out of the way.
+            </p>
           </div>
         </div>
-        <div className="testimonial-grid">
-          {testimonials.map((item) => (
-            <blockquote className="info-card testimonial-card" key={item.author}>
-              <p>{item.quote}</p>
-              <footer>
-                <strong>{item.author}</strong>
-                <span>{item.role}</span>
-              </footer>
-            </blockquote>
+        <div className="trust-grid">
+          {trustItems.map((item) => (
+            <div className="info-card feature-card" key={item.title}>
+              <div className="feature-icon">
+                <item.icon size={18} />
+              </div>
+              <h3>{item.title}</h3>
+              <p>{item.description}</p>
+            </div>
           ))}
         </div>
       </section>
+
+      <PublicFooter />
     </div>
   );
 }

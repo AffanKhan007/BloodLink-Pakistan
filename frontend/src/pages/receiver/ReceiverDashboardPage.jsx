@@ -1,5 +1,6 @@
 import { ClipboardList, Droplets, HeartHandshake, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 import { apiRequest } from "../../api/client";
 import { useAuth } from "../../auth/AuthContext";
@@ -28,7 +29,7 @@ export default function ReceiverDashboardPage() {
         <StatCard
           label="Approved or matched"
           value={requests.filter((item) => ["approved", "matched"].includes(item.status)).length}
-          helper="Admin-reviewed"
+          helper="Ready for coordination"
           icon={ShieldCheck}
           tone="success"
         />
@@ -46,7 +47,17 @@ export default function ReceiverDashboardPage() {
         <SectionIntro
           eyebrow="Recent activity"
           title="My requests"
-          description="Track open demand, confirmed donors, and completed requests from one clean receiver dashboard."
+          description="Track open demand, confirmed donors, support channels, and completed requests from one clean receiver dashboard."
+          actions={
+            <>
+              <Link className="button button-secondary" to="/receiver/available-donors">
+                Browse public donors
+              </Link>
+              <Link className="button button-primary" to="/receiver/create-request">
+                New request
+              </Link>
+            </>
+          }
         />
         {requests.length === 0 ? (
           <EmptyState title="No requests yet" description="Create a blood request to start the admin review and matching flow." />

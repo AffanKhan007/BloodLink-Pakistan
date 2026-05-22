@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import StrEnum
 from typing import Optional
 
-from sqlalchemy import DateTime, Enum, ForeignKey, String, Text, func
+from sqlalchemy import DateTime, Enum, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -38,6 +38,7 @@ class BloodUnit(Base):
     donor_profile_id: Mapped[Optional[int]] = mapped_column(ForeignKey("donor_profiles.id", ondelete="SET NULL"), nullable=True)
     blood_bank_id: Mapped[int] = mapped_column(ForeignKey("blood_banks.id", ondelete="CASCADE"), nullable=False, index=True)
     blood_group: Mapped[str] = mapped_column(String(3), nullable=False, index=True)
+    units_available: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
     component_type: Mapped[str] = mapped_column(String(60), nullable=False, default="whole_blood")
     collected_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)

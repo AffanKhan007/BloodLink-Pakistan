@@ -10,9 +10,11 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  MessageSquare,
   Search,
   ShieldCheck,
   Syringe,
+  University,
   Users,
   Warehouse,
   X,
@@ -29,12 +31,17 @@ const navByRole = {
     { label: "Matching Requests", to: "/donor/requests", icon: Search },
     { label: "My Matches", to: "/donor/matches", icon: HeartHandshake },
     { label: "Notifications", to: "/donor/notifications", icon: Bell },
+    { label: "Chats", to: "/donor/chats", icon: MessageSquare },
   ],
   receiver: [
     { label: "Dashboard", to: "/receiver", icon: LayoutDashboard },
     { label: "Create Request", to: "/receiver/create-request", icon: Droplets },
     { label: "My Requests", to: "/receiver/requests", icon: ClipboardList },
     { label: "Matched Donors", to: "/receiver/matched-donors", icon: HeartHandshake },
+    { label: "Available Donors", to: "/receiver/available-donors", icon: Search },
+    { label: "Blood Banks", to: "/receiver/blood-banks", icon: Warehouse },
+    { label: "Institutions", to: "/receiver/institutions", icon: University },
+    { label: "Chats", to: "/receiver/chats", icon: MessageSquare },
   ],
   admin: [
     { label: "Dashboard", to: "/admin", icon: LayoutDashboard },
@@ -61,17 +68,30 @@ const navByRole = {
   ],
   hospital_admin: [
     { label: "Dashboard", to: "/hospital", icon: LayoutDashboard },
+    { label: "Create Request", to: "/hospital/create-request", icon: Droplets },
     { label: "Requests", to: "/hospital/requests", icon: ClipboardList },
   ],
   hospital_staff: [
     { label: "Dashboard", to: "/hospital", icon: LayoutDashboard },
+    { label: "Create Request", to: "/hospital/create-request", icon: Droplets },
     { label: "Requests", to: "/hospital/requests", icon: ClipboardList },
   ],
   blood_bank_admin: [
+    { label: "Dashboard", to: "/blood-bank", icon: LayoutDashboard },
     { label: "Inventory", to: "/blood-bank/inventory", icon: Warehouse },
+    { label: "Create Unit", to: "/blood-bank/create-unit", icon: Droplets },
+    { label: "City Requests", to: "/blood-bank/city-requests", icon: ClipboardList },
   ],
   blood_bank_staff: [
+    { label: "Dashboard", to: "/blood-bank", icon: LayoutDashboard },
     { label: "Inventory", to: "/blood-bank/inventory", icon: Warehouse },
+    { label: "Create Unit", to: "/blood-bank/create-unit", icon: Droplets },
+    { label: "City Requests", to: "/blood-bank/city-requests", icon: ClipboardList },
+  ],
+  institution_donor: [
+    { label: "Dashboard", to: "/institution", icon: LayoutDashboard },
+    { label: "Profile", to: "/institution/profile", icon: Building2 },
+    { label: "Messages", to: "/institution/messages", icon: MessageSquare },
   ],
 };
 
@@ -120,6 +140,11 @@ const roleMeta = {
     eyebrow: "Blood bank inventory",
     title: "Traceable stock visibility",
     description: "Monitor blood units, testing progress, and storage detail from a focused staff workspace.",
+  },
+  institution_donor: {
+    eyebrow: "Institution donor workspace",
+    title: "Organization-led donor outreach",
+    description: "Publish your institution donor profile, handle city-specific requests, and respond to receiver conversations from one structured portal.",
   },
 };
 

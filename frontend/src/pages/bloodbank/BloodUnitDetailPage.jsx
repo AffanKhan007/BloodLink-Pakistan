@@ -65,6 +65,10 @@ export default function BloodUnitDetailPage() {
             <strong>{unit.component_type}</strong>
           </div>
           <div>
+            <span className="meta-label">Units available</span>
+            <strong>{unit.units_available}</strong>
+          </div>
+          <div>
             <span className="meta-label">Testing</span>
             <strong>{unit.testing_status}</strong>
           </div>
@@ -104,4 +108,3 @@ export default function BloodUnitDetailPage() {
     </div>
   );
 }
-

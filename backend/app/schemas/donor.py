@@ -16,6 +16,7 @@ class DonorProfileCreate(BaseModel):
     gender: str = Field(min_length=1, max_length=30)
     last_donation_date: date | None = None
     availability_status: str = Field(pattern="^(available|unavailable)$")
+    is_publicly_available: bool = False
     health_notes: str | None = Field(default=None, max_length=1000)
 
     @field_validator("blood_group")
@@ -31,6 +32,7 @@ class DonorProfileCreate(BaseModel):
 
 class DonorAvailabilityUpdate(BaseModel):
     availability_status: str = Field(pattern="^(available|unavailable)$")
+    is_publicly_available: bool | None = None
 
 
 class DonorProfileOut(BaseSchema):
@@ -43,6 +45,7 @@ class DonorProfileOut(BaseSchema):
     gender: str
     last_donation_date: date | None
     availability_status: str
+    is_publicly_available: bool
     verification_status: DonorVerificationStatus
     health_notes: str | None
     created_at: datetime
@@ -55,4 +58,3 @@ class DonorWithUserOut(DonorProfileOut):
 
 class DonorVerificationUpdate(BaseModel):
     verification_status: DonorVerificationStatus
-

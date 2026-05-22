@@ -1,13 +1,17 @@
-from . import admin, auth, blood_banks, donors, hospitals, matches, notifications, reports, requests, uploads
+from . import admin, auth, blood_banks, chats, cities, donors, hospitals, institutions, matches, notifications, receiver_profiles, reports, requests, uploads
 
 __all__ = [
     "admin",
     "auth",
     "blood_banks",
+    "chats",
+    "cities",
     "donors",
     "hospitals",
+    "institutions",
     "matches",
     "notifications",
+    "receiver_profiles",
     "reports",
     "requests",
     "uploads",

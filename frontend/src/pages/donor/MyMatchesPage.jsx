@@ -31,7 +31,7 @@ export default function MyMatchesPage() {
   };
 
   if (loading) return <LoadingState label="Loading my matches" />;
-  if (matches.length === 0) return <EmptyState title="No assigned matches" description="Admins will assign requests here once they verify them." />;
+  if (matches.length === 0) return <EmptyState title="No assigned matches" description="Compatible requests will appear here after automatic matching or admin coordination." />;
 
   return (
     <div className="page-stack">
@@ -60,4 +60,3 @@ export default function MyMatchesPage() {
     </div>
   );
 }
-

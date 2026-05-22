@@ -19,6 +19,7 @@ class BloodRequestCreate(BaseModel):
     attendant_name: str = Field(min_length=2, max_length=150)
     attendant_phone: str
     required_by: datetime
+    additional_notes: str | None = Field(default=None, max_length=1000)
 
     @field_validator("blood_group_needed")
     @classmethod
@@ -55,6 +56,7 @@ class BloodRequestOut(BaseSchema):
     attendant_name: str
     attendant_phone: str
     required_by: datetime
+    additional_notes: str | None = None
     status: RequestStatus
     created_at: datetime
     updated_at: datetime

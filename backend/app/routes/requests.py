@@ -8,9 +8,26 @@ from sqlalchemy.orm import Session, joinedload
 from app.core.config import get_settings
 from app.core.database import get_db
 from app.core.deps import get_current_user, require_roles
-from app.models import BloodRequest, DonorProfile, MatchStatus, RequestDocument, RequestStatus, User, UserRole
+from app.models import (
+    BloodBank,
+    BloodRequest,
+    BloodUnit,
+    BloodUnitStatus,
+    DonationMatch,
+    DonorProfile,
+    Institution,
+    MatchStatus,
+    RequestDocument,
+    RequestStatus,
+    TestingStatus,
+    User,
+    UserRole,
+)
+from app.schemas.blood_bank import BloodBankCityInventoryItem, BloodBankDiscoveryOut
 from app.schemas.blood_request import BloodRequestCreate, BloodRequestDetailOut, BloodRequestListOut, BloodRequestOut
-from app.services.matching import count_confirmed_matches
+from app.schemas.donor import DonorWithUserOut
+from app.schemas.institution import InstitutionWithUserOut
+from app.services.matching import compatible_donor_groups, count_confirmed_matches, create_automatic_matches
 from app.utils.validators import ALLOWED_UPLOAD_EXTENSIONS
 
 
@@ -37,8 +54,14 @@ def create_request(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles(UserRole.RECEIVER)),
 ) -> BloodRequestOut:
-    request = BloodRequest(created_by_user_id=current_user.id, **payload.model_dump())
+    request = BloodRequest(
+        created_by_user_id=current_user.id,
+        status=RequestStatus.APPROVED,
+        **payload.model_dump(),
+    )
     db.add(request)
+    db.flush()
+    create_automatic_matches(db, request)
     db.commit()
     db.refresh(request)
     return BloodRequestOut.model_validate(request)
@@ -53,7 +76,20 @@ def list_requests(
     if current_user.role == UserRole.RECEIVER:
         statement = statement.where(BloodRequest.created_by_user_id == current_user.id)
     elif current_user.role == UserRole.DONOR:
-        statement = statement.where(BloodRequest.status.in_([RequestStatus.APPROVED, RequestStatus.MATCHED]))
+        donor = db.scalar(select(DonorProfile).where(DonorProfile.user_id == current_user.id))
+        if not donor:
+            return []
+        request_ids = list(
+            db.scalars(select(DonationMatch.request_id).where(DonationMatch.donor_id == donor.id)).all()
+        )
+        if not request_ids:
+            return []
+        statement = statement.where(BloodRequest.id.in_(request_ids))
+    elif current_user.role == UserRole.BLOOD_BANK_ADMIN or current_user.role == UserRole.BLOOD_BANK_STAFF:
+        if current_user.blood_bank_id:
+            bank = db.get(BloodBank, current_user.blood_bank_id)
+            if bank:
+                statement = statement.where(BloodRequest.city == bank.city)
 
     requests = list(db.scalars(statement).unique().all())
     return [
@@ -72,32 +108,20 @@ def get_request(
     current_user: User = Depends(get_current_user),
 ) -> BloodRequestDetailOut:
     request = _get_request_for_user(db, request_id, current_user)
-    if current_user.role == UserRole.DONOR and request.status not in {RequestStatus.APPROVED, RequestStatus.MATCHED}:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+    if current_user.role == UserRole.DONOR:
+        donor = db.scalar(select(DonorProfile).where(DonorProfile.user_id == current_user.id))
+        if not donor:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+        owned_match = db.scalar(
+            select(DonationMatch).where(DonationMatch.request_id == request_id, DonationMatch.donor_id == donor.id)
+        )
+        if not owned_match:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
     return BloodRequestDetailOut(
         **request.__dict__,
         confirmed_donor_count=count_confirmed_matches(request),
         documents=request.documents,
     )
-
-
-@router.patch("/{request_id}/status", response_model=BloodRequestOut)
-def update_request_status(
-    request_id: int,
-    payload: dict,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.ADMIN)),
-) -> BloodRequestOut:
-    request = db.get(BloodRequest, request_id)
-    if not request:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Request not found")
-    status_value = payload.get("status")
-    if status_value not in {status.value for status in RequestStatus}:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid status")
-    request.status = RequestStatus(status_value)
-    db.commit()
-    db.refresh(request)
-    return BloodRequestOut.model_validate(request)
 
 
 @router.post("/{request_id}/upload-document", response_model=dict, status_code=status.HTTP_201_CREATED)
@@ -134,6 +158,80 @@ async def upload_document(
     return {"id": document.id, "file_url": document.file_url}
 
 
+@router.get("/{request_id}/public-donors", response_model=list[DonorWithUserOut])
+def request_public_donors(
+    request_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(UserRole.RECEIVER)),
+) -> list[DonorWithUserOut]:
+    request = _get_request_for_user(db, request_id, current_user)
+    compatible_groups = compatible_donor_groups(request.blood_group_needed)
+    donors = list(
+        db.scalars(
+            select(DonorProfile)
+            .options(joinedload(DonorProfile.user))
+            .where(DonorProfile.city == request.city)
+            .where(DonorProfile.blood_group.in_(compatible_groups))
+            .where(DonorProfile.availability_status == "available")
+            .where(DonorProfile.is_publicly_available.is_(True))
+            .order_by(DonorProfile.updated_at.desc())
+        ).all()
+    )
+    return [DonorWithUserOut.model_validate(donor) for donor in donors]
+
+
+@router.get("/{request_id}/blood-banks", response_model=list[BloodBankDiscoveryOut])
+def request_city_blood_banks(
+    request_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(UserRole.RECEIVER)),
+) -> list[BloodBankDiscoveryOut]:
+    request = _get_request_for_user(db, request_id, current_user)
+    compatible_groups = compatible_donor_groups(request.blood_group_needed)
+    banks = list(db.scalars(select(BloodBank).where(BloodBank.city == request.city).order_by(BloodBank.name.asc())).all())
+    items: list[BloodBankDiscoveryOut] = []
+    for bank in banks:
+        units = list(
+            db.scalars(
+                select(BloodUnit)
+                .where(BloodUnit.blood_bank_id == bank.id)
+                .where(BloodUnit.blood_group.in_(compatible_groups))
+                .where(BloodUnit.status == BloodUnitStatus.AVAILABLE)
+                .where(BloodUnit.testing_status == TestingStatus.CLEARED)
+            ).all()
+        )
+        grouped: dict[str, int] = {}
+        for unit in units:
+            grouped[unit.blood_group] = grouped.get(unit.blood_group, 0) + unit.units_available
+        contact_user = db.scalar(select(User).where(User.blood_bank_id == bank.id).order_by(User.created_at.asc()))
+        items.append(
+            BloodBankDiscoveryOut(
+                **bank.__dict__,
+                available_inventory=[
+                    BloodBankCityInventoryItem(blood_group=group, total_units=total)
+                    for group, total in sorted(grouped.items())
+                ],
+                contact_user_id=contact_user.id if contact_user else None,
+            )
+        )
+    return items
+
+
+@router.get("/{request_id}/institutions", response_model=list[InstitutionWithUserOut])
+def request_city_institutions(
+    request_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(UserRole.RECEIVER)),
+) -> list[InstitutionWithUserOut]:
+    request = _get_request_for_user(db, request_id, current_user)
+    institutions = list(
+        db.scalars(
+            select(Institution).options(joinedload(Institution.user)).where(Institution.city == request.city).order_by(Institution.institution_name.asc())
+        ).all()
+    )
+    return [InstitutionWithUserOut.model_validate(item) for item in institutions]
+
+
 @router.patch("/{request_id}/mark-fulfilled", response_model=BloodRequestOut)
 def mark_fulfilled(
     request_id: int,
@@ -168,4 +266,3 @@ def cancel_request(
     db.commit()
     db.refresh(request)
     return BloodRequestOut.model_validate(request)
-

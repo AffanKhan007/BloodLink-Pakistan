@@ -21,7 +21,7 @@ def test_auth_register_and_me(client):
         json={
             "full_name": "New User",
             "email": "new.user@test.com",
-            "phone": "+923001111114",
+            "phone": "+923001111117",
             "password": "User12345",
             "role": "receiver",
         },
@@ -40,7 +40,7 @@ def test_donor_profile_create(client):
         json={
             "full_name": "Donor Create",
             "email": "donor.create@test.com",
-            "phone": "+923001111115",
+            "phone": "+923001111118",
             "password": "Donor12345",
             "role": "donor",
         },
@@ -57,22 +57,50 @@ def test_donor_profile_create(client):
             "gender": "female",
             "last_donation_date": str(date.today() - timedelta(days=120)),
             "availability_status": "available",
+            "is_publicly_available": True,
             "health_notes": "No known issues",
         },
     )
     assert response.status_code == 200
     assert response.json()["blood_group"] == "O+"
+    assert response.json()["verification_status"] == "approved"
 
 
-def test_blood_request_creation(client):
+def test_blood_request_creation_creates_auto_matches(client):
     client.post(
         "/auth/register",
         json={
             "full_name": "Receiver Create",
             "email": "receiver.create@test.com",
-            "phone": "+923001111116",
+            "phone": "+923001111119",
             "password": "Receiver12345",
             "role": "receiver",
+        },
+    )
+    donor_register = client.post(
+        "/auth/register",
+        json={
+            "full_name": "Compatible Donor",
+            "email": "compatible@test.com",
+            "phone": "+923001111120",
+            "password": "Donor12345",
+            "role": "donor",
+        },
+    )
+    donor_token = donor_register.json()["access_token"]
+    client.post(
+        "/donors/profile",
+        headers={"Authorization": f"Bearer {donor_token}"},
+        json={
+            "blood_group": "O-",
+            "city": "Lahore",
+            "area": "Model Town",
+            "age": 27,
+            "gender": "male",
+            "last_donation_date": str(date.today() - timedelta(days=120)),
+            "availability_status": "available",
+            "is_publicly_available": True,
+            "health_notes": "Ready",
         },
     )
     token = login(client, "receiver.create@test.com", "Receiver12345")
@@ -89,12 +117,13 @@ def test_blood_request_creation(client):
             "ward_room": "Emergency",
             "urgency_level": "critical",
             "attendant_name": "Receiver Create",
-            "attendant_phone": "+923001111116",
+            "attendant_phone": "+923001111119",
             "required_by": (datetime.now(timezone.utc) + timedelta(hours=6)).isoformat(),
+            "additional_notes": "Auto matching expected",
         },
     )
     assert response.status_code == 201
-    assert response.json()["status"] == "pending_review"
+    assert response.json()["status"] == "matched"
 
 
 def test_matching_service_returns_eligible_donors(seeded_db):
@@ -103,7 +132,67 @@ def test_matching_service_returns_eligible_donors(seeded_db):
     assert donors[0].blood_group == "B+"
 
 
-def test_admin_approval_route(client, seeded_db):
+def test_public_donor_discovery_for_request(client, seeded_db):
+    token = login(client, "receiver@test.com", "Receiver12345")
+    response = client.get(
+        f"/requests/{seeded_db['request'].id}/public-donors",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 200
+    assert response.json()[0]["user"]["full_name"] == "Donor User"
+
+
+def test_chat_creation_with_public_donor(client, seeded_db):
+    token = login(client, "receiver@test.com", "Receiver12345")
+    response = client.post(
+        "/chats",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "target_user_id": seeded_db["donor"].id,
+            "request_id": seeded_db["request"].id,
+            "subject": "Need help",
+            "initial_message": "Can you help with this case?",
+        },
+    )
+    assert response.status_code == 201
+    assert response.json()["counterpart"]["id"] == seeded_db["donor"].id
+    assert response.json()["messages"][0]["message"] == "Can you help with this case?"
+
+
+def test_chat_websocket_receives_realtime_message(client, seeded_db):
+    receiver_token = login(client, "receiver@test.com", "Receiver12345")
+    donor_token = login(client, "donor@test.com", "Donor12345")
+    chat_response = client.post(
+        "/chats",
+        headers={"Authorization": f"Bearer {receiver_token}"},
+        json={
+            "target_user_id": seeded_db["donor"].id,
+            "request_id": seeded_db["request"].id,
+            "subject": "Live support",
+            "initial_message": "Opening a live thread.",
+        },
+    )
+    assert chat_response.status_code == 201
+    chat_id = chat_response.json()["id"]
+
+    with client.websocket_connect(f"/chats/ws/{chat_id}?token={donor_token}") as websocket:
+        connected = websocket.receive_json()
+        assert connected["type"] == "chat.connected"
+
+        send_response = client.post(
+            f"/chats/{chat_id}/messages",
+            headers={"Authorization": f"Bearer {receiver_token}"},
+            json={"message": "This should arrive in real time."},
+        )
+        assert send_response.status_code == 201
+
+        payload = websocket.receive_json()
+        assert payload["type"] == "chat.message"
+        assert payload["chat_id"] == chat_id
+        assert payload["message"]["message"] == "This should arrive in real time."
+
+
+def test_admin_approval_route_still_available(client, seeded_db):
     token = login(client, "admin@test.com", "Admin12345")
     response = client.patch(
         f"/admin/requests/{seeded_db['request'].id}/approve",
@@ -130,4 +219,4 @@ def test_blood_bank_inventory_summary_route(client, seeded_db):
         headers={"Authorization": f"Bearer {token}"},
     )
     assert response.status_code == 200
-    assert response.json()["total_units"] == 1
+    assert response.json()["total_units"] == 3

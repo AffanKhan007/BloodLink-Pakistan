@@ -1,21 +1,26 @@
+import { Building2, HeartHandshake, MessageSquarePlus, Search, Warehouse } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 
 import { apiRequest } from "../../api/client";
 import { useAuth } from "../../auth/AuthContext";
+import ConfirmModal from "../../components/ConfirmModal";
 import { AlertMessage, EmptyState, LoadingState } from "../../components/PageState";
 import StatusBadge from "../../components/StatusBadge";
 import { formatDate } from "../../utils/format";
 
 export default function RequestDetailsPage() {
   const { token } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const { requestId } = useParams();
   const [loading, setLoading] = useState(true);
   const [request, setRequest] = useState(null);
   const [matches, setMatches] = useState([]);
   const [reportForm, setReportForm] = useState({ reported_user_id: "", reason: "" });
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
+  const [message, setMessage] = useState(location.state?.flashSuccess || "");
+  const [error, setError] = useState(location.state?.flashError || "");
+  const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
 
   const load = async () => {
     const [requestData, matchData] = await Promise.all([
@@ -31,6 +36,49 @@ export default function RequestDetailsPage() {
       .catch((loadError) => setError(loadError.message))
       .finally(() => setLoading(false));
   }, [requestId, token]);
+
+  const startChat = async (targetUserId, subject, initialMessage) => {
+    try {
+      const chat = await apiRequest("/chats", {
+        method: "POST",
+        token,
+        body: {
+          target_user_id: targetUserId,
+          request_id: Number(requestId),
+          subject,
+          initial_message: initialMessage,
+        },
+      });
+      navigate("/receiver/chats", { state: { chatId: chat.id } });
+    } catch (chatError) {
+      setError(chatError.message);
+    }
+  };
+
+  const markFulfilled = async () => {
+    setError("");
+    try {
+      const updated = await apiRequest(`/requests/${requestId}/mark-fulfilled`, { method: "PATCH", token });
+      setRequest((current) => ({ ...(current || {}), ...updated }));
+      await load();
+      setMessage("Request marked as fulfilled.");
+    } catch (submitError) {
+      setError(submitError.message);
+    }
+  };
+
+  const cancelRequest = async () => {
+    setError("");
+    try {
+      const updated = await apiRequest(`/requests/${requestId}/cancel`, { method: "PATCH", token });
+      setRequest((current) => ({ ...(current || {}), ...updated }));
+      setConfirmCancelOpen(false);
+      await load();
+      setMessage("Request cancelled successfully.");
+    } catch (submitError) {
+      setError(submitError.message);
+    }
+  };
 
   const uploadDocument = async (event) => {
     const file = event.target.files?.[0];
@@ -109,6 +157,51 @@ export default function RequestDetailsPage() {
             <span className="meta-label">Confirmed donors</span>
             <strong>{request.confirmed_donor_count}</strong>
           </div>
+          {request.additional_notes ? (
+            <div>
+              <span className="meta-label">Additional notes</span>
+              <strong>{request.additional_notes}</strong>
+            </div>
+          ) : null}
+        </div>
+        <div className="card-actions">
+          {request.status !== "fulfilled" ? (
+            <button className="button button-primary" onClick={markFulfilled}>
+              Mark fulfilled
+            </button>
+          ) : null}
+          {request.status !== "cancelled" ? (
+            <button className="button button-secondary" onClick={() => setConfirmCancelOpen(true)}>
+              Cancel request
+            </button>
+          ) : null}
+        </div>
+      </section>
+
+      <section className="content-card">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">Support channels</p>
+            <h2>Find more help in the same city</h2>
+          </div>
+        </div>
+        <div className="card-actions">
+          <Link className="button button-secondary" to="/receiver/available-donors">
+            <Search size={16} />
+            Public donors
+          </Link>
+          <Link className="button button-secondary" to="/receiver/blood-banks">
+            <Warehouse size={16} />
+            Blood banks
+          </Link>
+          <Link className="button button-secondary" to="/receiver/institutions">
+            <Building2 size={16} />
+            Institutions
+          </Link>
+          <Link className="button button-secondary" to="/receiver/chats">
+            <HeartHandshake size={16} />
+            Open chats
+          </Link>
         </div>
       </section>
 
@@ -142,7 +235,7 @@ export default function RequestDetailsPage() {
           </div>
         </div>
         {matches.length === 0 ? (
-          <EmptyState title="No donors assigned yet" description="After admin approval, matches will appear here." />
+          <EmptyState title="No donors assigned yet" description="If compatible donors exist, they will appear here automatically as matching runs." />
         ) : (
           <div className="stacked-cards">
             {matches.map((match) => (
@@ -152,6 +245,21 @@ export default function RequestDetailsPage() {
                   <StatusBadge value={match.status} />
                 </div>
                 <p>{match.donor.blood_group} donor in {match.donor.city}</p>
+                <div className="card-actions">
+                  <button
+                    className="button button-primary button-with-icon"
+                    onClick={() =>
+                      startChat(
+                        match.donor.user.id,
+                        `Request support for ${request.patient_name}`,
+                        `Hello ${match.donor.user.full_name}, I am following up regarding request #${request.id}.`
+                      )
+                    }
+                  >
+                    Message donor
+                    <MessageSquarePlus size={16} />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -200,6 +308,15 @@ export default function RequestDetailsPage() {
           </form>
         )}
       </section>
+
+      <ConfirmModal
+        open={confirmCancelOpen}
+        title="Cancel this request?"
+        description="This closes the request and cancels any remaining pending matches."
+        confirmLabel="Cancel request"
+        onCancel={() => setConfirmCancelOpen(false)}
+        onConfirm={cancelRequest}
+      />
     </div>
   );
 }

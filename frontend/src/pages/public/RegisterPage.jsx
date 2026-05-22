@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowRight, UserPlus } from "lucide-react";
+import { ArrowRight, Building2, HeartHandshake, ShieldCheck } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../auth/AuthContext";
@@ -7,6 +7,7 @@ import AuthShell from "../../components/AuthShell";
 import { AlertMessage } from "../../components/PageState";
 
 function destinationForRole(role) {
+  if (role === "institution_donor") return "/institution";
   return role === "receiver" ? "/receiver" : "/donor";
 }
 
@@ -18,6 +19,7 @@ export default function RegisterPage() {
     email: "",
     phone: "",
     password: "",
+    confirm_password: "",
     role: "donor",
   });
   const [error, setError] = useState("");
@@ -26,9 +28,14 @@ export default function RegisterPage() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
+    if (form.password !== form.confirm_password) {
+      setError("Passwords do not match.");
+      return;
+    }
     setSubmitting(true);
     try {
-      const user = await register(form);
+      const { confirm_password, ...payload } = form;
+      const user = await register(payload);
       navigate(destinationForRole(user.role));
     } catch (submitError) {
       setError(submitError.message);
@@ -38,35 +45,57 @@ export default function RegisterPage() {
   };
 
   return (
-    <AuthShell title="Create a BloodLink account" description="Join as a donor or receiver and move through a safer, more professional blood coordination workflow." accent="New account setup">
+    <AuthShell title="Create your account" description="Set up a BloodLink account and start using the platform." accent="Register">
       <form className="auth-form" onSubmit={handleSubmit}>
         <div className="auth-form-header">
-          <span className="eyebrow eyebrow-inline">
-            <UserPlus size={14} />
-            Simple onboarding
-          </span>
           <h2>Register</h2>
-          <p>Create a donor or receiver account for the MVP.</p>
+          <p>Create your account with the details you will use to sign in.</p>
         </div>
         {error ? <AlertMessage type="error">{error}</AlertMessage> : null}
-        <label>
+        <div className="role-selector-grid role-selector-grid-compact">
+          <button type="button" className={`role-option-card ${form.role === "donor" ? "role-option-card-active" : ""}`} onClick={() => setForm((current) => ({ ...current, role: "donor" }))}>
+            <HeartHandshake size={18} />
+            <div>
+              <strong>Donor</strong>
+              <p>Donate and manage availability.</p>
+            </div>
+          </button>
+          <button type="button" className={`role-option-card ${form.role === "receiver" ? "role-option-card-active" : ""}`} onClick={() => setForm((current) => ({ ...current, role: "receiver" }))}>
+            <ShieldCheck size={18} />
+            <div>
+              <strong>Receiver</strong>
+              <p>Create and track requests.</p>
+            </div>
+          </button>
+          <button type="button" className={`role-option-card ${form.role === "institution_donor" ? "role-option-card-active" : ""}`} onClick={() => setForm((current) => ({ ...current, role: "institution_donor" }))}>
+            <Building2 size={18} />
+            <div>
+              <strong>Institution donor</strong>
+              <p>Represent an organization.</p>
+            </div>
+          </button>
+        </div>
+
+        <label className="field-required">
           Full name
           <input
             value={form.full_name}
             onChange={(event) => setForm((current) => ({ ...current, full_name: event.target.value }))}
+            placeholder="Your full name"
             required
           />
         </label>
-        <label>
+        <label className="field-required">
           Email
           <input
             type="email"
             value={form.email}
             onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
+            placeholder="you@example.com"
             required
           />
         </label>
-        <label>
+        <label className="field-required">
           Phone
           <input
             placeholder="+923001234567"
@@ -75,30 +104,34 @@ export default function RegisterPage() {
             required
           />
         </label>
-        <label>
+        <label className="field-required">
           Password
           <input
             type="password"
             value={form.password}
             onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
             minLength={8}
+            placeholder="At least 8 characters with letters and numbers"
             required
           />
         </label>
-        <label>
-          Role
-          <select value={form.role} onChange={(event) => setForm((current) => ({ ...current, role: event.target.value }))}>
-            <option value="donor">Donor</option>
-            <option value="receiver">Receiver / Patient Attendant</option>
-          </select>
+        <label className="field-required">
+          Confirm password
+          <input
+            type="password"
+            value={form.confirm_password}
+            onChange={(event) => setForm((current) => ({ ...current, confirm_password: event.target.value }))}
+            placeholder="Re-enter your password"
+            required
+          />
         </label>
         <button className="button button-primary button-full button-with-icon" disabled={submitting}>
-          {submitting ? "Creating account..." : "Create account"}
+          {submitting ? "Creating account..." : "Register"}
           <ArrowRight size={16} />
         </button>
       </form>
       <p className="form-footer">
-        Already registered? <Link to="/login">Login here</Link>
+        Already have an account? <Link to="/login">Login</Link>
       </p>
     </AuthShell>
   );

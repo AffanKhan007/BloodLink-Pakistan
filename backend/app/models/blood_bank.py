@@ -15,6 +15,8 @@ class BloodBank(Base):
     hospital_id: Mapped[Optional[int]] = mapped_column(ForeignKey("hospitals.id", ondelete="SET NULL"), nullable=True)
     city: Mapped[str] = mapped_column(String(120), nullable=False, index=True)
     area: Mapped[Optional[str]] = mapped_column(String(120), nullable=True)
+    contact_number: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     address: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     latitude: Mapped[Optional[float]] = mapped_column(Numeric(9, 6), nullable=True)
     longitude: Mapped[Optional[float]] = mapped_column(Numeric(9, 6), nullable=True)
@@ -28,4 +30,3 @@ class BloodBank(Base):
     hospital = relationship("Hospital", back_populates="blood_banks")
     staff_users = relationship("User", back_populates="blood_bank")
     blood_units = relationship("BloodUnit", back_populates="blood_bank")
-

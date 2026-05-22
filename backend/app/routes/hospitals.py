@@ -8,6 +8,7 @@ from app.models import BloodRequest, DonationMatch, Hospital, MatchStatus, Reque
 from app.schemas.blood_request import BloodRequestOut
 from app.schemas.hospital import DonorArrivalConfirm, HospitalBloodRequestCreate, HospitalCreate, HospitalDashboardOut, HospitalOut
 from app.schemas.match import MatchOut
+from app.services.matching import create_automatic_matches
 
 
 router = APIRouter(prefix="/hospitals", tags=["hospitals"])
@@ -95,6 +96,8 @@ def create_hospital_request(
         **payload.model_dump(),
     )
     db.add(request)
+    db.flush()
+    create_automatic_matches(db, request)
     db.commit()
     db.refresh(request)
     return BloodRequestOut.model_validate(request)

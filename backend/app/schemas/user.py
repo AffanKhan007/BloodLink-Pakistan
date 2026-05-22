@@ -20,3 +20,10 @@ class UserSummary(BaseSchema):
 
 class AdminUserSummary(UserSummary):
     phone: str
+
+
+class ChatUserSummary(BaseSchema):
+    id: int
+    full_name: str
+    email: EmailStr
+    role: UserRole

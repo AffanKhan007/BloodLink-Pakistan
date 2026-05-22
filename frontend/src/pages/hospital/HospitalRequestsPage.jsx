@@ -142,7 +142,7 @@ export default function HospitalRequestsPage() {
           </label>
           <div className="form-span form-note">
             <Activity size={16} />
-            <span>Hospital-created requests still move through a verified coordination flow rather than bypassing review rules.</span>
+            <span>Hospital-created requests still use the same matching and tracking flow so the coordination trail stays consistent.</span>
           </div>
           <div className="form-span">
             <button className="button button-primary button-with-icon">

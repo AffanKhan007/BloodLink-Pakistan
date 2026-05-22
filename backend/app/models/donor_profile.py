@@ -2,7 +2,7 @@ from datetime import date, datetime
 from enum import StrEnum
 from typing import Optional
 
-from sqlalchemy import Date, DateTime, Enum, ForeignKey, Integer, String, Text, func
+from sqlalchemy import Boolean, Date, DateTime, Enum, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -27,6 +27,7 @@ class DonorProfile(Base):
     gender: Mapped[str] = mapped_column(String(30), nullable=False)
     last_donation_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     availability_status: Mapped[str] = mapped_column(String(20), default="available", nullable=False, index=True)
+    is_publicly_available: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, index=True)
     verification_status: Mapped[DonorVerificationStatus] = mapped_column(
         Enum(DonorVerificationStatus, name="donor_verification_status"),
         default=DonorVerificationStatus.PENDING,

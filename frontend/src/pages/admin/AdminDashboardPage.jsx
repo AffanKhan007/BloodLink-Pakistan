@@ -1,5 +1,6 @@
 import { ClipboardCheck, Droplets, FileClock, HeartHandshake, ShieldCheck, Users } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 import { apiRequest } from "../../api/client";
 import { useAuth } from "../../auth/AuthContext";
@@ -24,6 +25,16 @@ export default function AdminDashboardPage() {
           eyebrow="Overview"
           title="Platform operations snapshot"
           description="Watch the request lifecycle, donor verification load, and moderation work from a calmer admin control center."
+          actions={
+            <>
+              <Link className="button button-secondary" to="/admin/requests">
+                Review requests
+              </Link>
+              <Link className="button button-primary" to="/admin/reports">
+                Open reports
+              </Link>
+            </>
+          }
         />
       </section>
       <section className="stats-grid">

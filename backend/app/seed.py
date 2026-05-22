@@ -9,18 +9,35 @@ from app.models import (
     BloodRequest,
     BloodUnit,
     BloodUnitStatus,
+    Chat,
+    ChatMessage,
+    City,
     DonationMatch,
     DonorProfile,
     DonorVerificationStatus,
     Hospital,
+    Institution,
     MatchStatus,
     Notification,
+    ReceiverProfile,
     RequestStatus,
     TestingStatus,
     UrgencyLevel,
     User,
     UserRole,
 )
+
+
+PAKISTAN_CITIES = [
+    ("Lahore", "Punjab"),
+    ("Karachi", "Sindh"),
+    ("Islamabad", "Islamabad Capital Territory"),
+    ("Rawalpindi", "Punjab"),
+    ("Faisalabad", "Punjab"),
+    ("Multan", "Punjab"),
+    ("Peshawar", "Khyber Pakhtunkhwa"),
+    ("Quetta", "Balochistan"),
+]
 
 
 def get_or_create_user(db, *, full_name: str, email: str, phone: str, password: str, role: UserRole) -> User:
@@ -43,6 +60,11 @@ def get_or_create_user(db, *, full_name: str, email: str, phone: str, password: 
 def main() -> None:
     db = SessionLocal()
     try:
+        for index, (name, province) in enumerate(PAKISTAN_CITIES, start=1):
+            city = db.scalar(select(City).where(City.name == name))
+            if city is None:
+                db.add(City(name=name, province=province, sort_order=index))
+
         admin = get_or_create_user(
             db,
             full_name="BloodLink Admin",
@@ -95,6 +117,18 @@ def main() -> None:
                 role=UserRole.RECEIVER,
             ),
         ]
+        institution_user = get_or_create_user(
+            db,
+            full_name="Punjab University Donor Desk",
+            email="institution@bloodlink.pk",
+            phone="+923001234568",
+            password="Institution12345",
+            role=UserRole.INSTITUTION_DONOR,
+        )
+
+        for receiver in receiver_users:
+            if db.scalar(select(ReceiverProfile).where(ReceiverProfile.user_id == receiver.id)) is None:
+                db.add(ReceiverProfile(user_id=receiver.id, city="Lahore", area="Model Town"))
 
         hospital = db.scalar(select(Hospital).where(Hospital.name == "Services Hospital Lahore"))
         if hospital is None:
@@ -116,6 +150,8 @@ def main() -> None:
                 hospital_id=hospital.id,
                 city="Lahore",
                 area="Jail Road",
+                contact_number="+9242111555777",
+                email="contact@lahorecentralbloodbank.pk",
                 address="Near Services Hospital Lahore",
                 license_number="LIC-LHR-001",
                 verification_status="verified",
@@ -140,6 +176,24 @@ def main() -> None:
             role=UserRole.BLOOD_BANK_ADMIN,
         ).blood_bank_id = blood_bank.id
 
+        institution = db.scalar(select(Institution).where(Institution.user_id == institution_user.id))
+        if institution is None:
+            db.add(
+                Institution(
+                    user_id=institution_user.id,
+                    institution_name="Punjab University Donor Society",
+                    institution_type="University",
+                    city="Lahore",
+                    area="New Campus",
+                    contact_person="Ayesha Malik",
+                    email="bloodsociety@pu.edu.pk",
+                    phone="+924299211100",
+                    address="Punjab University New Campus, Lahore",
+                    available_blood_groups="A+, B+, O+, O-",
+                    notes="Student donor drive group available during campus hours.",
+                )
+            )
+
         profiles = [
             {
                 "user": donor_users[0],
@@ -148,6 +202,7 @@ def main() -> None:
                 "area": "Model Town",
                 "age": 28,
                 "gender": "male",
+                "public": True,
             },
             {
                 "user": donor_users[1],
@@ -156,6 +211,7 @@ def main() -> None:
                 "area": "Gulshan",
                 "age": 31,
                 "gender": "female",
+                "public": False,
             },
             {
                 "user": donor_users[2],
@@ -164,6 +220,7 @@ def main() -> None:
                 "area": "Johar Town",
                 "age": 35,
                 "gender": "male",
+                "public": True,
             },
         ]
 
@@ -180,6 +237,7 @@ def main() -> None:
                     gender=entry["gender"],
                     last_donation_date=date.today() - timedelta(days=120),
                     availability_status="available",
+                    is_publicly_available=entry["public"],
                     verification_status=DonorVerificationStatus.APPROVED,
                     health_notes="Seeded sample donor",
                 )
@@ -201,7 +259,8 @@ def main() -> None:
                 "attendant_name": "Sara Attendant",
                 "attendant_phone": receiver_users[0].phone,
                 "required_by": datetime.now(timezone.utc) + timedelta(days=1),
-                "status": RequestStatus.APPROVED,
+                "additional_notes": "Need replacement donor urgently.",
+                "status": RequestStatus.MATCHED,
                 "hospital_id": hospital.id,
             },
             {
@@ -217,6 +276,7 @@ def main() -> None:
                 "attendant_name": "Bilal Attendant",
                 "attendant_phone": receiver_users[1].phone,
                 "required_by": datetime.now(timezone.utc) + timedelta(hours=12),
+                "additional_notes": "Crossmatch already in process.",
                 "status": RequestStatus.MATCHED,
             },
             {
@@ -232,7 +292,8 @@ def main() -> None:
                 "attendant_name": "Sara Attendant",
                 "attendant_phone": receiver_users[0].phone,
                 "required_by": datetime.now(timezone.utc) + timedelta(days=2),
-                "status": RequestStatus.PENDING_REVIEW,
+                "additional_notes": "Please message before arrival.",
+                "status": RequestStatus.APPROVED,
             },
         ]
 
@@ -248,7 +309,7 @@ def main() -> None:
         if not db.scalar(select(DonationMatch).limit(1)):
             db.add_all(
                 [
-                    DonationMatch(request_id=requests[0].id, donor_id=donor_profiles[0].id, status=MatchStatus.PENDING),
+                    DonationMatch(request_id=requests[0].id, donor_id=donor_profiles[0].id, status=MatchStatus.ACCEPTED),
                     DonationMatch(
                         request_id=requests[1].id,
                         donor_id=donor_profiles[1].id,
@@ -263,8 +324,8 @@ def main() -> None:
                 [
                     Notification(
                         user_id=receiver_users[0].id,
-                        title="Request approved",
-                        message="Your Lahore request has been approved and is ready for matching.",
+                        title="Receiver chat ready",
+                        message="You can now contact matched donors, blood banks, and institutions from your Lahore request.",
                     ),
                     Notification(
                         user_id=donor_users[0].id,
@@ -283,6 +344,7 @@ def main() -> None:
                         donor_profile_id=donor_profiles[0].id,
                         blood_bank_id=blood_bank.id,
                         blood_group="B+",
+                        units_available=2,
                         component_type="whole_blood",
                         collected_at=datetime.now(timezone.utc) - timedelta(days=2),
                         expires_at=datetime.now(timezone.utc) + timedelta(days=28),
@@ -296,6 +358,7 @@ def main() -> None:
                         donor_profile_id=donor_profiles[2].id,
                         blood_bank_id=blood_bank.id,
                         blood_group="A-",
+                        units_available=1,
                         component_type="packed_rbc",
                         collected_at=datetime.now(timezone.utc) - timedelta(days=1),
                         expires_at=datetime.now(timezone.utc) + timedelta(days=34),
@@ -304,6 +367,23 @@ def main() -> None:
                         storage_location="Testing Bay",
                     ),
                 ]
+            )
+
+        if not db.scalar(select(Chat).limit(1)):
+            chat = Chat(
+                participant_one_id=receiver_users[0].id,
+                participant_two_id=donor_users[0].id,
+                request_id=requests[0].id,
+                subject="Ahmed Hassan",
+            )
+            db.add(chat)
+            db.flush()
+            db.add(
+                ChatMessage(
+                    chat_id=chat.id,
+                    sender_id=receiver_users[0].id,
+                    message="Can you help with a B+ requirement at Services Hospital Lahore?",
+                )
             )
 
         db.commit()

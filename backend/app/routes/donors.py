@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.core.database import get_db
 from app.core.deps import get_current_user, require_roles
-from app.models import BloodRequest, DonationMatch, DonorProfile, MatchStatus, RequestStatus, User, UserRole
+from app.models import BloodRequest, DonationMatch, DonorProfile, DonorVerificationStatus, MatchStatus, RequestStatus, User, UserRole
 from app.schemas.blood_request import BloodRequestListOut
 from app.schemas.donor import DonorAvailabilityUpdate, DonorProfileCreate, DonorProfileOut
 from app.schemas.match import MatchDetailOut
@@ -27,6 +27,7 @@ def upsert_profile(
 
     for field, value in payload.model_dump().items():
         setattr(profile, field, value)
+    profile.verification_status = DonorVerificationStatus.APPROVED
 
     db.commit()
     db.refresh(profile)
@@ -54,6 +55,8 @@ def update_availability(
     if not profile:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Donor profile not found")
     profile.availability_status = payload.availability_status
+    if payload.is_publicly_available is not None:
+        profile.is_publicly_available = payload.is_publicly_available
     db.commit()
     db.refresh(profile)
     return DonorProfileOut.model_validate(profile)
@@ -65,7 +68,7 @@ def matching_requests(
     current_user: User = Depends(require_roles(UserRole.DONOR)),
 ) -> list[BloodRequestListOut]:
     profile = db.scalar(select(DonorProfile).where(DonorProfile.user_id == current_user.id))
-    if not profile or profile.verification_status.value != "approved":
+    if not profile:
         return []
 
     requests = list(
@@ -106,4 +109,3 @@ def donor_history(
         ).all()
     )
     return [MatchDetailOut.model_validate(match) for match in matches]
-
