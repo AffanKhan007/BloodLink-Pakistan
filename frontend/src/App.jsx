@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import Layout from "./components/Layout";
+import InstitutionRouteGuard from "./components/InstitutionRouteGuard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AuditLogsPage from "./pages/admin/AuditLogsPage";
@@ -24,9 +25,14 @@ import HospitalRequestsPage from "./pages/hospital/HospitalRequestsPage";
 import InstitutionDashboardPage from "./pages/institution/InstitutionDashboardPage";
 import InstitutionMessagesPage from "./pages/institution/InstitutionMessagesPage";
 import InstitutionProfilePage from "./pages/institution/InstitutionProfilePage";
+import InstitutionRejectedPage from "./pages/institution/InstitutionRejectedPage";
+import InstitutionSuspendedPage from "./pages/institution/InstitutionSuspendedPage";
+import InstitutionVerificationPendingPage from "./pages/institution/InstitutionVerificationPendingPage";
+import AdminInstitutionsPage from "./pages/admin/AdminInstitutionsPage";
 import LandingPage from "./pages/public/LandingPage";
 import LoginPage from "./pages/public/LoginPage";
 import RegisterPage from "./pages/public/RegisterPage";
+import RegisterInstitutionPage from "./pages/public/RegisterInstitutionPage";
 import AboutPage from "./pages/public/AboutPage";
 import ForgotPasswordPage from "./pages/public/ForgotPasswordPage";
 import HowItWorksPage from "./pages/public/HowItWorksPage";
@@ -50,6 +56,7 @@ export default function App() {
       <Route path="/how-it-works" element={<HowItWorksPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/register/institution" element={<RegisterInstitutionPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
       <Route
@@ -214,6 +221,14 @@ export default function App() {
           }
         />
         <Route
+          path="/admin/institutions"
+          element={
+            <ProtectedRoute roles={adminRoles}>
+              <AdminInstitutionsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/admin/matches"
           element={
             <ProtectedRoute roles={adminRoles}>
@@ -308,7 +323,9 @@ export default function App() {
           path="/institution"
           element={
             <ProtectedRoute roles={["institution_donor"]}>
-              <InstitutionDashboardPage />
+              <InstitutionRouteGuard allowedStatuses={["approved"]}>
+                <InstitutionDashboardPage />
+              </InstitutionRouteGuard>
             </ProtectedRoute>
           }
         />
@@ -316,7 +333,9 @@ export default function App() {
           path="/institution/profile"
           element={
             <ProtectedRoute roles={["institution_donor"]}>
-              <InstitutionProfilePage />
+              <InstitutionRouteGuard allowedStatuses={["approved"]}>
+                <InstitutionProfilePage />
+              </InstitutionRouteGuard>
             </ProtectedRoute>
           }
         />
@@ -324,7 +343,39 @@ export default function App() {
           path="/institution/messages"
           element={
             <ProtectedRoute roles={["institution_donor"]}>
-              <InstitutionMessagesPage />
+              <InstitutionRouteGuard allowedStatuses={["approved"]}>
+                <InstitutionMessagesPage />
+              </InstitutionRouteGuard>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/institution/verification-pending"
+          element={
+            <ProtectedRoute roles={["institution_donor"]}>
+              <InstitutionRouteGuard allowedStatuses={["pending_approval"]}>
+                <InstitutionVerificationPendingPage />
+              </InstitutionRouteGuard>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/institution/rejected"
+          element={
+            <ProtectedRoute roles={["institution_donor"]}>
+              <InstitutionRouteGuard allowedStatuses={["rejected"]}>
+                <InstitutionRejectedPage />
+              </InstitutionRouteGuard>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/institution/suspended"
+          element={
+            <ProtectedRoute roles={["institution_donor"]}>
+              <InstitutionRouteGuard allowedStatuses={["suspended"]}>
+                <InstitutionSuspendedPage />
+              </InstitutionRouteGuard>
             </ProtectedRoute>
           }
         />

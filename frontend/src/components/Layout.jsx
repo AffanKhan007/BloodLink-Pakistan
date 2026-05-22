@@ -19,9 +19,10 @@ import {
   Warehouse,
   X,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 
+import { apiRequest } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
 
 const navByRole = {
@@ -47,6 +48,7 @@ const navByRole = {
     { label: "Dashboard", to: "/admin", icon: LayoutDashboard },
     { label: "Users", to: "/admin/users", icon: Users },
     { label: "Donors", to: "/admin/donors", icon: Syringe },
+    { label: "Institutions", to: "/admin/institutions", icon: Building2 },
     { label: "Blood Requests", to: "/admin/requests", icon: Droplets },
     { label: "Matches", to: "/admin/matches", icon: HeartHandshake },
     { label: "Reports", to: "/admin/reports", icon: ClipboardCheck },
@@ -56,6 +58,7 @@ const navByRole = {
     { label: "Dashboard", to: "/admin", icon: LayoutDashboard },
     { label: "Users", to: "/admin/users", icon: Users },
     { label: "Donors", to: "/admin/donors", icon: Syringe },
+    { label: "Institutions", to: "/admin/institutions", icon: Building2 },
     { label: "Blood Requests", to: "/admin/requests", icon: Droplets },
     { label: "Matches", to: "/admin/matches", icon: HeartHandshake },
     { label: "Reports", to: "/admin/reports", icon: ClipboardCheck },
@@ -93,6 +96,12 @@ const navByRole = {
     { label: "Profile", to: "/institution/profile", icon: Building2 },
     { label: "Messages", to: "/institution/messages", icon: MessageSquare },
   ],
+};
+
+const institutionNavByStatus = {
+  pending_approval: [{ label: "Verification Status", to: "/institution/verification-pending", icon: ShieldCheck }],
+  rejected: [{ label: "Verification Review", to: "/institution/rejected", icon: ShieldCheck }],
+  suspended: [{ label: "Account Status", to: "/institution/suspended", icon: ShieldCheck }],
 };
 
 const roleMeta = {
@@ -149,19 +158,60 @@ const roleMeta = {
 };
 
 export default function Layout() {
-  const { user, logout } = useAuth();
+  const { token, user, logout } = useAuth();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const navItems = navByRole[user?.role] || [];
+  const [institutionStatus, setInstitutionStatus] = useState(null);
+  const navItems = useMemo(() => {
+    const items = navByRole[user?.role] || [];
+    if (user?.role === "institution_donor" && institutionStatus && institutionStatus !== "approved") {
+      return institutionNavByStatus[institutionStatus] || [];
+    }
+    return items;
+  }, [institutionStatus, user?.role]);
   const currentMeta = useMemo(
-    () =>
-      roleMeta[user?.role] || {
-        eyebrow: "BloodLink workspace",
-        title: "Secure blood coordination",
-        description: "Operational visibility for verified donor and blood request workflows.",
-      },
-    [user?.role]
+    () => {
+      if (user?.role === "institution_donor" && institutionStatus === "pending_approval") {
+        return {
+          eyebrow: "Institution approval",
+          title: "Verification in progress",
+          description: "Your institution account is under admin review. Institution features unlock only after approval.",
+        };
+      }
+      if (user?.role === "institution_donor" && institutionStatus === "rejected") {
+        return {
+          eyebrow: "Institution review",
+          title: "Corrections required",
+          description: "Update the submitted verification details and resubmit the institution for review.",
+        };
+      }
+      if (user?.role === "institution_donor" && institutionStatus === "suspended") {
+        return {
+          eyebrow: "Institution access",
+          title: "Account suspended",
+          description: "This institution account is suspended and cannot access institution features until restored by admin.",
+        };
+      }
+      return (
+        roleMeta[user?.role] || {
+          eyebrow: "BloodLink workspace",
+          title: "Secure blood coordination",
+          description: "Operational visibility for verified donor and blood request workflows.",
+        }
+      );
+    },
+    [institutionStatus, user?.role]
   );
+
+  useEffect(() => {
+    if (user?.role !== "institution_donor" || !token) {
+      setInstitutionStatus(null);
+      return;
+    }
+    apiRequest("/institutions/me", { token })
+      .then((profile) => setInstitutionStatus(profile.status))
+      .catch(() => setInstitutionStatus(null));
+  }, [token, user?.role]);
 
   return (
     <div className={`app-shell ${sidebarOpen ? "app-shell-nav-open" : ""}`}>

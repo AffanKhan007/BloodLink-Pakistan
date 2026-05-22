@@ -64,6 +64,12 @@ export function AuthProvider({ children }) {
     return data.user;
   };
 
+  const registerInstitution = async (payload) => {
+    const data = await apiRequest("/auth/register/institution", { method: "POST", body: payload });
+    persistAuth(data.access_token, data.user);
+    return data.user;
+  };
+
   const refreshUser = async () => {
     if (!token) return null;
     const currentUser = await apiRequest("/auth/me", { token });
@@ -79,7 +85,17 @@ export function AuthProvider({ children }) {
   };
 
   const value = useMemo(
-    () => ({ token, user, isLoading, isAuthenticated: Boolean(token), login, register, logout, refreshUser }),
+    () => ({
+      token,
+      user,
+      isLoading,
+      isAuthenticated: Boolean(token),
+      login,
+      register,
+      registerInstitution,
+      logout,
+      refreshUser,
+    }),
     [token, user, isLoading]
   );
 
@@ -93,4 +109,3 @@ export function useAuth() {
   }
   return context;
 }
-

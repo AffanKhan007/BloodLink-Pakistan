@@ -12,8 +12,10 @@ const iconByTone = {
   cancelled: ShieldBan,
   dismissed: ShieldBan,
   pending: Clock3,
+  "pending-approval": Clock3,
   "pending-review": Clock3,
   reviewed: Clock3,
+  suspended: ShieldBan,
   matched: AlertCircle,
   critical: AlertCircle,
 };

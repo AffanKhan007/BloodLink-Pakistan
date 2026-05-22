@@ -18,6 +18,7 @@ from app.models import (
     DonorVerificationStatus,
     Hospital,
     Institution,
+    InstitutionStatus,
     ReceiverProfile,
     TestingStatus,
     UrgencyLevel,
@@ -138,10 +139,13 @@ def seeded_db():
         city="Lahore",
         area="Gulberg",
         contact_person="Coordinator",
+        contact_person_designation="Volunteer Lead",
         email="club@test.edu.pk",
         phone="+924200000000",
         address="Test address Lahore",
+        website_social_link="https://club.test.edu.pk",
         available_blood_groups="B+, O+",
+        status=InstitutionStatus.APPROVED,
     )
     donor_profile = DonorProfile(
         user_id=donor.id,

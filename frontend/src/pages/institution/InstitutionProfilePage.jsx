@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import { apiRequest } from "../../api/client";
 import { useAuth } from "../../auth/AuthContext";
+import InstitutionVerificationForm from "../../components/InstitutionVerificationForm";
 import { AlertMessage, LoadingState } from "../../components/PageState";
 import SectionIntro from "../../components/SectionIntro";
 
@@ -11,9 +12,12 @@ const initialForm = {
   city: "",
   area: "",
   contact_person: "",
+  contact_person_designation: "",
   email: "",
   phone: "",
   address: "",
+  website_social_link: "",
+  proof_document_url: "",
   available_blood_groups: "",
   notes: "",
 };
@@ -57,45 +61,17 @@ export default function InstitutionProfilePage() {
         <SectionIntro
           eyebrow="Institution profile"
           title="Organization details"
-          description="Publish your institution donor profile so receivers can discover and contact your organization for support."
+          description="Keep your institution identity, approval details, and public-facing donor information accurate."
         />
         {message ? <AlertMessage type="success">{message}</AlertMessage> : null}
         {error ? <AlertMessage type="error">{error}</AlertMessage> : null}
-        <form className="grid-form" onSubmit={handleSubmit}>
-          {Object.entries({
-            institution_name: "Institution name",
-            institution_type: "Institution type",
-            city: "City",
-            area: "Area",
-            contact_person: "Contact person",
-            email: "Email",
-            phone: "Phone",
-            address: "Address",
-            available_blood_groups: "Available blood groups",
-            notes: "Notes",
-          }).map(([field, label]) => (
-            <label key={field} className={field === "address" || field === "notes" ? "form-span" : undefined}>
-              {label}
-              {field === "city" ? (
-                <select value={form[field]} onChange={(event) => setForm((current) => ({ ...current, [field]: event.target.value }))} required>
-                  <option value="">Select city</option>
-                  {cities.map((city) => (
-                    <option key={city.id} value={city.name}>
-                      {city.name}
-                    </option>
-                  ))}
-                </select>
-              ) : field === "address" || field === "notes" ? (
-                <textarea rows="3" value={form[field]} onChange={(event) => setForm((current) => ({ ...current, [field]: event.target.value }))} />
-              ) : (
-                <input value={form[field]} onChange={(event) => setForm((current) => ({ ...current, [field]: event.target.value }))} required={field !== "area" && field !== "available_blood_groups"} />
-              )}
-            </label>
-          ))}
-          <div className="form-span">
-            <button className="button button-primary">Save institution profile</button>
-          </div>
-        </form>
+        <InstitutionVerificationForm
+          form={form}
+          setForm={setForm}
+          cities={cities}
+          onSubmit={handleSubmit}
+          submitLabel="Save institution profile"
+        />
       </section>
     </div>
   );

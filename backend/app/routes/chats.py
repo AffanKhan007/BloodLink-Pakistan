@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session, joinedload
 from app.core.database import get_db
 from app.core.deps import get_current_user
 from app.core.security import decode_token
-from app.models import BloodBank, BloodRequest, Chat, ChatMessage, DonationMatch, DonorProfile, Institution, User, UserRole
+from app.models import BloodBank, BloodRequest, Chat, ChatMessage, DonationMatch, DonorProfile, Institution, InstitutionStatus, User, UserRole
 from app.schemas.chat import ChatCreate, ChatDetailOut, ChatMessageCreate, ChatMessageOut, ChatSummaryOut
 from app.schemas.user import ChatUserSummary
 from app.services.chat_realtime import chat_connection_manager
@@ -53,6 +53,21 @@ def _build_chat_detail(chat: Chat, current_user_id: int) -> ChatDetailOut:
 
 def _serialize_message(message: ChatMessage) -> dict:
     return ChatMessageOut.model_validate(message).model_dump(mode="json")
+
+
+def _get_institution_profile(db: Session, user_id: int) -> Institution | None:
+    return db.scalar(select(Institution).where(Institution.user_id == user_id))
+
+
+def _ensure_institution_approved(db: Session, user: User) -> None:
+    if user.role != UserRole.INSTITUTION_DONOR:
+        return
+    institution = _get_institution_profile(db, user.id)
+    if institution is None or institution.status != InstitutionStatus.APPROVED:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Institution approval is required before using messaging.",
+        )
 
 
 async def _broadcast_chat_message(chat: Chat, message: ChatMessage) -> None:
@@ -116,8 +131,12 @@ def _validate_receiver_chat_target(db: Session, receiver: User, target_user: Use
         return request.patient_name
 
     if target_user.role == UserRole.INSTITUTION_DONOR:
-        institution = db.scalar(select(Institution).where(Institution.user_id == target_user.id))
-        if not institution or institution.city != request.city:
+        institution = _get_institution_profile(db, target_user.id)
+        if (
+            not institution
+            or institution.city != request.city
+            or institution.status != InstitutionStatus.APPROVED
+        ):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You cannot contact this institution")
         return request.patient_name
 
@@ -129,6 +148,7 @@ def list_chats(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> list[ChatSummaryOut]:
+    _ensure_institution_approved(db, current_user)
     chats = list(
         db.scalars(
             select(Chat)
@@ -205,6 +225,7 @@ def get_chat(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> ChatDetailOut:
+    _ensure_institution_approved(db, current_user)
     chat = db.scalar(
         select(Chat)
         .options(joinedload(Chat.participant_one), joinedload(Chat.participant_two), joinedload(Chat.messages))
@@ -222,6 +243,7 @@ def send_message(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> ChatMessageOut:
+    _ensure_institution_approved(db, current_user)
     chat = db.get(Chat, chat_id)
     if not chat or current_user.id not in {chat.participant_one_id, chat.participant_two_id}:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Chat not found")
@@ -269,6 +291,7 @@ async def chat_websocket(
 ) -> None:
     try:
         current_user = _get_websocket_user(db, token)
+        _ensure_institution_approved(db, current_user)
     except HTTPException:
         await websocket.close(code=1008)
         return

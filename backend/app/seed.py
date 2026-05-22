@@ -17,6 +17,7 @@ from app.models import (
     DonorVerificationStatus,
     Hospital,
     Institution,
+    InstitutionStatus,
     MatchStatus,
     Notification,
     ReceiverProfile,
@@ -189,8 +190,11 @@ def main() -> None:
                     email="bloodsociety@pu.edu.pk",
                     phone="+924299211100",
                     address="Punjab University New Campus, Lahore",
+                    contact_person_designation="Program Lead",
+                    website_social_link="https://pu.edu.pk",
                     available_blood_groups="A+, B+, O+, O-",
                     notes="Student donor drive group available during campus hours.",
+                    status=InstitutionStatus.APPROVED,
                 )
             )
 

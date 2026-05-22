@@ -34,6 +34,74 @@ def test_auth_register_and_me(client):
     assert me_response.json()["email"] == "new.user@test.com"
 
 
+def test_institution_register_starts_pending_approval(client):
+    register_response = client.post(
+        "/auth/register/institution",
+        json={
+            "institution_name": "City College Blood Circle",
+            "institution_type": "College",
+            "city": "Lahore",
+            "area": "Model Town",
+            "address": "Model Town Lahore",
+            "contact_person": "Nida Khan",
+            "contact_person_designation": "Volunteer Coordinator",
+            "email": "college@test.com",
+            "phone": "+923001111121",
+            "password": "College12345",
+            "website_social_link": "https://college.test",
+        },
+    )
+    assert register_response.status_code == 201
+    token = register_response.json()["access_token"]
+    profile_response = client.get("/institutions/me", headers={"Authorization": f"Bearer {token}"})
+    assert profile_response.status_code == 200
+    assert profile_response.json()["status"] == "pending_approval"
+
+
+def test_pending_institution_cannot_use_profile_update_or_chats(client):
+    register_response = client.post(
+        "/auth/register/institution",
+        json={
+            "institution_name": "Pending Institution",
+            "institution_type": "NGO",
+            "city": "Lahore",
+            "area": "Johar Town",
+            "address": "Johar Town Lahore",
+            "contact_person": "Areeba",
+            "contact_person_designation": "Coordinator",
+            "email": "pending.institution@test.com",
+            "phone": "+923001111123",
+            "password": "Pending12345",
+        },
+    )
+    assert register_response.status_code == 201
+    token = register_response.json()["access_token"]
+
+    profile_update_response = client.post(
+        "/institutions/me",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "institution_name": "Pending Institution",
+            "institution_type": "NGO",
+            "city": "Lahore",
+            "area": "Johar Town",
+            "contact_person": "Areeba",
+            "contact_person_designation": "Coordinator",
+            "email": "pending.institution@test.com",
+            "phone": "+923001111123",
+            "address": "Johar Town Lahore",
+            "website_social_link": "",
+            "proof_document_url": "",
+            "available_blood_groups": "",
+            "notes": "",
+        },
+    )
+    assert profile_update_response.status_code == 403
+
+    chats_response = client.get("/chats", headers={"Authorization": f"Bearer {token}"})
+    assert chats_response.status_code == 403
+
+
 def test_donor_profile_create(client):
     client.post(
         "/auth/register",
@@ -157,6 +225,82 @@ def test_chat_creation_with_public_donor(client, seeded_db):
     assert response.status_code == 201
     assert response.json()["counterpart"]["id"] == seeded_db["donor"].id
     assert response.json()["messages"][0]["message"] == "Can you help with this case?"
+
+
+def test_institution_directory_excludes_unapproved_institutions(client, seeded_db):
+    token = login(client, "receiver@test.com", "Receiver12345")
+    register_response = client.post(
+        "/auth/register/institution",
+        json={
+            "institution_name": "Pending NGO",
+            "institution_type": "NGO",
+            "city": "Lahore",
+            "area": "Johar Town",
+            "address": "Johar Town Lahore",
+            "contact_person": "Areeba",
+            "contact_person_designation": "Coordinator",
+            "email": "pending-ngo@test.com",
+            "phone": "+923001111122",
+            "password": "Ngo123456",
+        },
+    )
+    assert register_response.status_code == 201
+
+    response = client.get(
+        f"/requests/{seeded_db['request'].id}/institutions",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 200
+    names = [item["institution_name"] for item in response.json()]
+    assert "Test University Donor Club" in names
+    assert "Pending NGO" not in names
+
+
+def test_admin_can_approve_institution(client, seeded_db):
+    token = login(client, "admin@test.com", "Admin12345")
+    response = client.patch(
+        f"/admin/institutions/{seeded_db['institution'].id}/status",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"status": "suspended"},
+    )
+    assert response.status_code == 200
+    assert response.json()["status"] == "suspended"
+
+
+def test_rejected_institution_can_resubmit_for_review(client, seeded_db):
+    admin_token = login(client, "admin@test.com", "Admin12345")
+    institution_token = login(client, "institution@test.com", "Institution12345")
+
+    reject_response = client.patch(
+        f"/admin/institutions/{seeded_db['institution'].id}/status",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={"status": "rejected", "rejection_reason": "Provide updated verification details."},
+    )
+    assert reject_response.status_code == 200
+    assert reject_response.json()["status"] == "rejected"
+
+    resubmit_response = client.post(
+        "/institutions/me/resubmit",
+        headers={"Authorization": f"Bearer {institution_token}"},
+        json={
+            "institution_name": "Test University Donor Club",
+            "institution_type": "University",
+            "city": "Lahore",
+            "area": "Gulberg",
+            "contact_person": "Coordinator",
+            "contact_person_designation": "Volunteer Lead",
+            "email": "club@test.edu.pk",
+            "phone": "+924200000000",
+            "address": "Updated address Lahore",
+            "website_social_link": "https://club.test.edu.pk",
+            "proof_document_url": "",
+            "available_blood_groups": "B+, O+",
+            "notes": "Updated",
+        },
+    )
+    assert resubmit_response.status_code == 200
+    assert resubmit_response.json()["status"] == "pending_approval"
+    assert resubmit_response.json()["rejection_reason"] is None
 
 
 def test_chat_websocket_receives_realtime_message(client, seeded_db):

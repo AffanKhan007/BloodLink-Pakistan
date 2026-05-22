@@ -19,7 +19,7 @@ function destinationForRole(role) {
 export default function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [form, setForm] = useState({ email: "", password: "" });
+  const [form, setForm] = useState({ identifier: "", password: "" });
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -46,12 +46,11 @@ export default function LoginPage() {
         </div>
         {error ? <AlertMessage type="error">{error}</AlertMessage> : null}
         <label className="field-required">
-          Email
+          Email or phone
           <input
-            type="email"
-            value={form.email}
-            onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
-            placeholder="you@example.com"
+            value={form.identifier}
+            onChange={(event) => setForm((current) => ({ ...current, identifier: event.target.value }))}
+            placeholder="you@example.com or +923001234567"
             required
           />
         </label>

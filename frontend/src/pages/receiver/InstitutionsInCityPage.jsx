@@ -86,7 +86,8 @@ export default function InstitutionsInCityPage() {
                   <p>{institution.institution_type} / {institution.city}</p>
                 </div>
               </div>
-              <p>{institution.contact_person} / {institution.phone}</p>
+              <p>{institution.contact_person}{institution.contact_person_designation ? ` / ${institution.contact_person_designation}` : ""}</p>
+              <p>{institution.phone}</p>
               <p>{institution.available_blood_groups || "Blood groups not listed"}</p>
               <div className="card-actions">
                 <button className="button button-primary button-with-icon" onClick={() => startChat(institution)}>

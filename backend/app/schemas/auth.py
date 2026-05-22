@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 
 from app.models import UserRole
 from app.schemas.common import BaseSchema
@@ -29,14 +29,21 @@ class RegisterRequest(BaseModel):
     @field_validator("role")
     @classmethod
     def disallow_public_admin(cls, value: UserRole) -> UserRole:
-        if value not in {UserRole.DONOR, UserRole.RECEIVER, UserRole.INSTITUTION_DONOR}:
-            raise ValueError("Only donor, receiver, and institution donor accounts can be self-registered")
+        if value not in {UserRole.DONOR, UserRole.RECEIVER}:
+            raise ValueError("Only donor and receiver accounts can be self-registered here")
         return value
 
 
 class LoginRequest(BaseModel):
-    email: EmailStr
+    identifier: str | None = Field(default=None, min_length=3, max_length=255)
+    email: EmailStr | None = None
     password: str
+
+    @model_validator(mode="after")
+    def validate_identifier(self):
+        if not self.identifier and not self.email:
+            raise ValueError("Email or phone is required")
+        return self
 
 
 class TokenResponse(BaseModel):

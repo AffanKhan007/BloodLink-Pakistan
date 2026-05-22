@@ -1,4 +1,4 @@
-import { ClipboardCheck, Droplets, FileClock, HeartHandshake, ShieldCheck, Users } from "lucide-react";
+import { Building2, ClipboardCheck, Droplets, FileClock, HeartHandshake, ShieldCheck, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -30,6 +30,9 @@ export default function AdminDashboardPage() {
               <Link className="button button-secondary" to="/admin/requests">
                 Review requests
               </Link>
+              <Link className="button button-secondary" to="/admin/institutions">
+                Review institutions
+              </Link>
               <Link className="button button-primary" to="/admin/reports">
                 Open reports
               </Link>
@@ -40,6 +43,7 @@ export default function AdminDashboardPage() {
       <section className="stats-grid">
         <StatCard label="Users" value={stats.total_users} helper="All roles" icon={Users} tone="default" />
         <StatCard label="Approved donors" value={stats.approved_donors} helper={`${stats.total_donors} total donors`} icon={ShieldCheck} tone="success" />
+        <StatCard label="Pending institutions" value={stats.pending_institutions} helper="Needs approval review" icon={Building2} tone="warning" />
         <StatCard label="Pending requests" value={stats.pending_requests} helper="Needs admin review" icon={Droplets} tone="warning" />
         <StatCard label="Active matches" value={stats.active_matches} helper="Pending or accepted" icon={HeartHandshake} tone="accent" />
         <StatCard label="Approved requests" value={stats.approved_requests} helper="Open for coordination" icon={ClipboardCheck} tone="success" />

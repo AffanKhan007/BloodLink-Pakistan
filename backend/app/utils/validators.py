@@ -6,6 +6,7 @@ from fastapi import HTTPException, status
 
 BLOOD_GROUPS = {"A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"}
 PAKISTANI_PHONE_PATTERN = re.compile(r"^(?:\+92|0)3[0-9]{9}$")
+PAKISTANI_CONTACT_PATTERN = re.compile(r"^(?:\+92|0)[0-9]{9,11}$")
 ALLOWED_UPLOAD_EXTENSIONS = {"jpg", "jpeg", "png", "pdf"}
 
 
@@ -15,6 +16,16 @@ def validate_phone_number(phone: str) -> str:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Phone number must be a valid Pakistani mobile number",
+        )
+    return normalized
+
+
+def validate_contact_number(phone: str) -> str:
+    normalized = phone.strip()
+    if not PAKISTANI_CONTACT_PATTERN.match(normalized):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Contact number must be a valid Pakistani phone number",
         )
     return normalized
 
@@ -39,4 +50,3 @@ def validate_required_by(required_by: datetime) -> datetime:
     if required_by < now:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Required by date/time cannot be in the past")
     return required_by
-

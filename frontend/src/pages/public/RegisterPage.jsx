@@ -7,7 +7,6 @@ import AuthShell from "../../components/AuthShell";
 import { AlertMessage } from "../../components/PageState";
 
 function destinationForRole(role) {
-  if (role === "institution_donor") return "/institution";
   return role === "receiver" ? "/receiver" : "/donor";
 }
 
@@ -67,13 +66,17 @@ export default function RegisterPage() {
               <p>Create and track requests.</p>
             </div>
           </button>
-          <button type="button" className={`role-option-card ${form.role === "institution_donor" ? "role-option-card-active" : ""}`} onClick={() => setForm((current) => ({ ...current, role: "institution_donor" }))}>
-            <Building2 size={18} />
-            <div>
-              <strong>Institution donor</strong>
-              <p>Represent an organization.</p>
-            </div>
-          </button>
+        </div>
+
+        <div className="inline-note-card">
+          <Building2 size={18} />
+          <div>
+            <strong>Registering an institution?</strong>
+            <p>Organizations use a separate verification form before they appear publicly.</p>
+            <Link className="text-link" to="/register/institution">
+              Open institution registration
+            </Link>
+          </div>
         </div>
 
         <label className="field-required">

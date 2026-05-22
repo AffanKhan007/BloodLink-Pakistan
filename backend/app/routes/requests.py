@@ -16,6 +16,7 @@ from app.models import (
     DonationMatch,
     DonorProfile,
     Institution,
+    InstitutionStatus,
     MatchStatus,
     RequestDocument,
     RequestStatus,
@@ -226,7 +227,11 @@ def request_city_institutions(
     request = _get_request_for_user(db, request_id, current_user)
     institutions = list(
         db.scalars(
-            select(Institution).options(joinedload(Institution.user)).where(Institution.city == request.city).order_by(Institution.institution_name.asc())
+            select(Institution)
+            .options(joinedload(Institution.user))
+            .where(Institution.city == request.city)
+            .where(Institution.status == InstitutionStatus.APPROVED)
+            .order_by(Institution.institution_name.asc())
         ).all()
     )
     return [InstitutionWithUserOut.model_validate(item) for item in institutions]

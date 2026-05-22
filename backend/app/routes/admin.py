@@ -12,6 +12,8 @@ from app.models import (
     DonationMatch,
     DonorProfile,
     DonorVerificationStatus,
+    Institution,
+    InstitutionStatus,
     MatchStatus,
     Report,
     ReportStatus,
@@ -23,6 +25,7 @@ from app.schemas.admin import DashboardStats
 from app.schemas.blood_request import BloodRequestListOut
 from app.schemas.common import AuditLogOut
 from app.schemas.donor import DonorVerificationUpdate, DonorWithUserOut
+from app.schemas.institution import InstitutionStatusUpdate, InstitutionWithUserOut
 from app.schemas.report import ReportOut, ReportStatusUpdate
 from app.schemas.user import AdminUserSummary
 from app.services.audit import create_audit_log
@@ -43,6 +46,10 @@ def dashboard(
         total_donors=db.scalar(select(func.count(DonorProfile.id))) or 0,
         approved_donors=db.scalar(
             select(func.count(DonorProfile.id)).where(DonorProfile.verification_status == DonorVerificationStatus.APPROVED)
+        )
+        or 0,
+        pending_institutions=db.scalar(
+            select(func.count(Institution.id)).where(Institution.status == InstitutionStatus.PENDING_APPROVAL)
         )
         or 0,
         pending_requests=db.scalar(
@@ -114,6 +121,53 @@ def list_donors(
         db.scalars(select(DonorProfile).options(joinedload(DonorProfile.user)).order_by(DonorProfile.created_at.desc())).all()
     )
     return [DonorWithUserOut.model_validate(donor) for donor in donors]
+
+
+@router.get("/institutions", response_model=list[InstitutionWithUserOut])
+def list_institutions(
+    status_filter: InstitutionStatus | None = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(*ADMIN_ROLES)),
+) -> list[InstitutionWithUserOut]:
+    statement = (
+        select(Institution)
+        .options(joinedload(Institution.user))
+        .order_by(Institution.created_at.desc())
+    )
+    if status_filter is not None:
+        statement = statement.where(Institution.status == status_filter)
+    institutions = list(db.scalars(statement).all())
+    return [InstitutionWithUserOut.model_validate(institution) for institution in institutions]
+
+
+@router.patch("/institutions/{institution_id}/status", response_model=InstitutionWithUserOut)
+def update_institution_status(
+    institution_id: int,
+    payload: InstitutionStatusUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(*ADMIN_ROLES)),
+) -> InstitutionWithUserOut:
+    institution = db.scalar(
+        select(Institution).options(joinedload(Institution.user)).where(Institution.id == institution_id)
+    )
+    if not institution:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Institution not found")
+    if payload.status == InstitutionStatus.REJECTED and not payload.rejection_reason:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Rejection reason is required")
+
+    institution.status = payload.status
+    institution.rejection_reason = payload.rejection_reason if payload.status == InstitutionStatus.REJECTED else None
+    create_audit_log(
+        db,
+        admin_user_id=current_user.id,
+        action="update_institution_status",
+        entity_type="institution",
+        entity_id=institution.id,
+        details={"status": payload.status.value, "institution_name": institution.institution_name},
+    )
+    db.commit()
+    db.refresh(institution)
+    return InstitutionWithUserOut.model_validate(institution)
 
 
 @router.patch("/donors/{donor_id}/verify", response_model=DonorWithUserOut)

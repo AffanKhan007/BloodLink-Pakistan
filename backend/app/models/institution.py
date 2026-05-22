@@ -1,10 +1,18 @@
 from datetime import datetime
+from enum import StrEnum
 from typing import Optional
 
-from sqlalchemy import DateTime, ForeignKey, String, Text, func
+from sqlalchemy import DateTime, Enum, ForeignKey, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
+
+
+class InstitutionStatus(StrEnum):
+    PENDING_APPROVAL = "pending_approval"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    SUSPENDED = "suspended"
 
 
 class Institution(Base):
@@ -17,9 +25,20 @@ class Institution(Base):
     city: Mapped[str] = mapped_column(String(120), nullable=False, index=True)
     area: Mapped[Optional[str]] = mapped_column(String(120), nullable=True)
     contact_person: Mapped[str] = mapped_column(String(150), nullable=False)
+    contact_person_designation: Mapped[Optional[str]] = mapped_column(String(120), nullable=True)
     email: Mapped[str] = mapped_column(String(255), nullable=False)
     phone: Mapped[str] = mapped_column(String(20), nullable=False)
     address: Mapped[str] = mapped_column(Text, nullable=False)
+    website_social_link: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    proof_document_url: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    status: Mapped[InstitutionStatus] = mapped_column(
+        Enum(InstitutionStatus, name="institution_status"),
+        nullable=False,
+        default=InstitutionStatus.PENDING_APPROVAL,
+        server_default=InstitutionStatus.PENDING_APPROVAL.name,
+        index=True,
+    )
+    rejection_reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     available_blood_groups: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)

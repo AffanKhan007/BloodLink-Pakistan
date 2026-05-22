@@ -32,7 +32,7 @@ export default function InstitutionDashboardPage() {
         <SectionIntro
           eyebrow="Institution donor workspace"
           title={profile.institution_name}
-          description="Manage your institution donor profile and respond to incoming conversations from receivers in your city."
+          description="Manage your approved institution profile and respond to receiver conversations from the verified institution portal."
           actions={
             <>
               <Link className="button button-secondary" to="/institution/profile">
@@ -47,6 +47,7 @@ export default function InstitutionDashboardPage() {
       </section>
       <section className="stats-grid">
         <StatCard label="Institution type" value={profile.institution_type} helper={profile.city} icon={Building2} tone="default" />
+        <StatCard label="Approval status" value={profile.status} helper="Admin moderation state" icon={Building2} tone="success" />
         <StatCard label="Open conversations" value={chats.length} helper="Receiver outreach threads" icon={MessageSquare} tone="accent" />
       </section>
     </div>
