@@ -74,12 +74,12 @@ export default function MyRequestsPage() {
                 <Link className="button button-secondary" to={`/receiver/requests/${request.id}`}>
                   View details
                 </Link>
-                {request.status !== "fulfilled" ? (
+                {["pending_review", "approved", "matched"].includes(request.status) ? (
                   <button className="button button-primary" onClick={() => markFulfilled(request.id)}>
                     Mark fulfilled
                   </button>
                 ) : null}
-                {request.status !== "cancelled" ? (
+                {["pending_review", "approved", "matched"].includes(request.status) ? (
                   <button className="button button-secondary" onClick={() => setConfirmId(request.id)}>
                     Cancel
                   </button>

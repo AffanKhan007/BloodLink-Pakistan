@@ -65,6 +65,7 @@ export default function CreateRequestPage() {
       navigate(`/receiver/requests/${request.id}`, {
         state: {
           flashSuccess: "Request created, hospital slip uploaded, and compatible donors have been checked automatically.",
+          createdRequest: request,
         },
       });
     } catch (submitError) {

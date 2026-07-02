@@ -15,7 +15,7 @@ export default function RequestDetailsPage() {
   const navigate = useNavigate();
   const { requestId } = useParams();
   const [loading, setLoading] = useState(true);
-  const [request, setRequest] = useState(null);
+  const [request, setRequest] = useState(location.state?.createdRequest || null);
   const [matches, setMatches] = useState([]);
   const [reportForm, setReportForm] = useState({ reported_user_id: "", reason: "" });
   const [message, setMessage] = useState(location.state?.flashSuccess || "");
@@ -32,6 +32,13 @@ export default function RequestDetailsPage() {
   };
 
   useEffect(() => {
+    if (location.state?.createdRequest) {
+      setLoading(false);
+      apiRequest(`/matches/request/${requestId}`, { token })
+        .then(setMatches)
+        .catch(() => {});
+      return;
+    }
     load()
       .catch((loadError) => setError(loadError.message))
       .finally(() => setLoading(false));
@@ -165,12 +172,12 @@ export default function RequestDetailsPage() {
           ) : null}
         </div>
         <div className="card-actions">
-          {request.status !== "fulfilled" ? (
+          {["pending_review", "approved", "matched"].includes(request.status) ? (
             <button className="button button-primary" onClick={markFulfilled}>
               Mark fulfilled
             </button>
           ) : null}
-          {request.status !== "cancelled" ? (
+          {["pending_review", "approved", "matched"].includes(request.status) ? (
             <button className="button button-secondary" onClick={() => setConfirmCancelOpen(true)}>
               Cancel request
             </button>

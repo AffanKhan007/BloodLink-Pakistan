@@ -24,6 +24,7 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 
 import { apiRequest } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
+import ThemeSwitcher from "./ThemeSwitcher";
 
 const navByRole = {
   donor: [
@@ -277,8 +278,17 @@ export default function Layout() {
         </div>
       </aside>
 
-      <main className="page-area">
-        <header className="page-header">
+      <div className="content-panel">
+        <div className="top-bar">
+          <div className="top-bar-left">
+            <span className="top-bar-title">BloodLink</span>
+          </div>
+          <div className="top-bar-right">
+            <ThemeSwitcher />
+          </div>
+        </div>
+        <main className="page-area">
+          <header className="page-header">
           <div className="page-title-group">
             <p className="eyebrow">{currentMeta.eyebrow}</p>
             <h1>{currentMeta.title}</h1>
@@ -296,5 +306,6 @@ export default function Layout() {
         <Outlet />
       </main>
     </div>
+  </div>
   );
 }
