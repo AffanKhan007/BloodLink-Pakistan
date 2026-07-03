@@ -1,3 +1,5 @@
+import { AnimatePresence } from "framer-motion";
+import { useLocation } from "react-router-dom";
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import Layout from "./components/Layout";
@@ -47,341 +49,344 @@ import ReceiverDashboardPage from "./pages/receiver/ReceiverDashboardPage";
 import RequestDetailsPage from "./pages/receiver/RequestDetailsPage";
 
 export default function App() {
+  const location = useLocation();
   const adminRoles = ["admin", "super_admin", "operations_agent"];
 
   return (
-    <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/about" element={<AboutPage />} />
-      <Route path="/how-it-works" element={<HowItWorksPage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="/register/institution" element={<RegisterInstitutionPage />} />
-      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-
-      <Route
-        element={
-          <ProtectedRoute>
-            <Layout />
-          </ProtectedRoute>
-        }
-      >
-        <Route
-          path="/donor"
-          element={
-            <ProtectedRoute roles={["donor"]}>
-              <DonorDashboardPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/donor/profile"
-          element={
-            <ProtectedRoute roles={["donor"]}>
-              <DonorProfilePage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/donor/requests"
-          element={
-            <ProtectedRoute roles={["donor"]}>
-              <MatchingRequestsPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/donor/matches"
-          element={
-            <ProtectedRoute roles={["donor"]}>
-              <MyMatchesPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/donor/notifications"
-          element={
-            <ProtectedRoute roles={["donor"]}>
-              <NotificationsPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/donor/chats"
-          element={
-            <ProtectedRoute roles={["donor"]}>
-              <DonorChatPage />
-            </ProtectedRoute>
-          }
-        />
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/how-it-works" element={<HowItWorksPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/register/institution" element={<RegisterInstitutionPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
         <Route
-          path="/receiver"
           element={
-            <ProtectedRoute roles={["receiver"]}>
-              <ReceiverDashboardPage />
+            <ProtectedRoute>
+              <Layout />
             </ProtectedRoute>
           }
-        />
-        <Route
-          path="/receiver/create-request"
-          element={
-            <ProtectedRoute roles={["receiver"]}>
-              <CreateRequestPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/receiver/requests"
-          element={
-            <ProtectedRoute roles={["receiver"]}>
-              <MyRequestsPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/receiver/requests/:requestId"
-          element={
-            <ProtectedRoute roles={["receiver"]}>
-              <RequestDetailsPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/receiver/matched-donors"
-          element={
-            <ProtectedRoute roles={["receiver"]}>
-              <MatchedDonorsPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/receiver/available-donors"
-          element={
-            <ProtectedRoute roles={["receiver"]}>
-              <AvailableDonorsPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/receiver/blood-banks"
-          element={
-            <ProtectedRoute roles={["receiver"]}>
-              <BloodBanksInCityPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/receiver/institutions"
-          element={
-            <ProtectedRoute roles={["receiver"]}>
-              <InstitutionsInCityPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/receiver/chats"
-          element={
-            <ProtectedRoute roles={["receiver"]}>
-              <ReceiverChatPage />
-            </ProtectedRoute>
-          }
-        />
+        >
+          <Route
+            path="/donor"
+            element={
+              <ProtectedRoute roles={["donor"]}>
+                <DonorDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/donor/profile"
+            element={
+              <ProtectedRoute roles={["donor"]}>
+                <DonorProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/donor/requests"
+            element={
+              <ProtectedRoute roles={["donor"]}>
+                <MatchingRequestsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/donor/matches"
+            element={
+              <ProtectedRoute roles={["donor"]}>
+                <MyMatchesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/donor/notifications"
+            element={
+              <ProtectedRoute roles={["donor"]}>
+                <NotificationsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/donor/chats"
+            element={
+              <ProtectedRoute roles={["donor"]}>
+                <DonorChatPage />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute roles={adminRoles}>
-              <AdminDashboardPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/users"
-          element={
-            <ProtectedRoute roles={adminRoles}>
-              <UsersPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/donors"
-          element={
-            <ProtectedRoute roles={adminRoles}>
-              <DonorsPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/requests"
-          element={
-            <ProtectedRoute roles={adminRoles}>
-              <BloodRequestsPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/institutions"
-          element={
-            <ProtectedRoute roles={adminRoles}>
-              <AdminInstitutionsPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/matches"
-          element={
-            <ProtectedRoute roles={adminRoles}>
-              <MatchesPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/reports"
-          element={
-            <ProtectedRoute roles={adminRoles}>
-              <ReportsPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/audit-logs"
-          element={
-            <ProtectedRoute roles={adminRoles}>
-              <AuditLogsPage />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/receiver"
+            element={
+              <ProtectedRoute roles={["receiver"]}>
+                <ReceiverDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/receiver/create-request"
+            element={
+              <ProtectedRoute roles={["receiver"]}>
+                <CreateRequestPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/receiver/requests"
+            element={
+              <ProtectedRoute roles={["receiver"]}>
+                <MyRequestsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/receiver/requests/:requestId"
+            element={
+              <ProtectedRoute roles={["receiver"]}>
+                <RequestDetailsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/receiver/matched-donors"
+            element={
+              <ProtectedRoute roles={["receiver"]}>
+                <MatchedDonorsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/receiver/available-donors"
+            element={
+              <ProtectedRoute roles={["receiver"]}>
+                <AvailableDonorsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/receiver/blood-banks"
+            element={
+              <ProtectedRoute roles={["receiver"]}>
+                <BloodBanksInCityPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/receiver/institutions"
+            element={
+              <ProtectedRoute roles={["receiver"]}>
+                <InstitutionsInCityPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/receiver/chats"
+            element={
+              <ProtectedRoute roles={["receiver"]}>
+                <ReceiverChatPage />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/hospital"
-          element={
-            <ProtectedRoute roles={["hospital_admin", "hospital_staff"]}>
-              <HospitalDashboardPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/hospital/requests"
-          element={
-            <ProtectedRoute roles={["hospital_admin", "hospital_staff"]}>
-              <HospitalRequestsPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/hospital/create-request"
-          element={
-            <ProtectedRoute roles={["hospital_admin", "hospital_staff"]}>
-              <HospitalRequestsPage />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute roles={adminRoles}>
+                <AdminDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute roles={adminRoles}>
+                <UsersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/donors"
+            element={
+              <ProtectedRoute roles={adminRoles}>
+                <DonorsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/requests"
+            element={
+              <ProtectedRoute roles={adminRoles}>
+                <BloodRequestsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/institutions"
+            element={
+              <ProtectedRoute roles={adminRoles}>
+                <AdminInstitutionsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/matches"
+            element={
+              <ProtectedRoute roles={adminRoles}>
+                <MatchesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/reports"
+            element={
+              <ProtectedRoute roles={adminRoles}>
+                <ReportsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/audit-logs"
+            element={
+              <ProtectedRoute roles={adminRoles}>
+                <AuditLogsPage />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/blood-bank"
-          element={
-            <ProtectedRoute roles={["blood_bank_admin", "blood_bank_staff"]}>
-              <BloodBankDashboardPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/blood-bank/inventory"
-          element={
-            <ProtectedRoute roles={["blood_bank_admin", "blood_bank_staff"]}>
-              <BloodBankInventoryPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/blood-bank/create-unit"
-          element={
-            <ProtectedRoute roles={["blood_bank_admin", "blood_bank_staff"]}>
-              <BloodBankInventoryPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/blood-bank/city-requests"
-          element={
-            <ProtectedRoute roles={["blood_bank_admin", "blood_bank_staff"]}>
-              <BloodBankCityRequestsPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/blood-bank/units/:unitId"
-          element={
-            <ProtectedRoute roles={["blood_bank_admin", "blood_bank_staff"]}>
-              <BloodUnitDetailPage />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/hospital"
+            element={
+              <ProtectedRoute roles={["hospital_admin", "hospital_staff"]}>
+                <HospitalDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/hospital/requests"
+            element={
+              <ProtectedRoute roles={["hospital_admin", "hospital_staff"]}>
+                <HospitalRequestsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/hospital/create-request"
+            element={
+              <ProtectedRoute roles={["hospital_admin", "hospital_staff"]}>
+                <HospitalRequestsPage />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/institution"
-          element={
-            <ProtectedRoute roles={["institution_donor"]}>
-              <InstitutionRouteGuard allowedStatuses={["approved"]}>
-                <InstitutionDashboardPage />
-              </InstitutionRouteGuard>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/institution/profile"
-          element={
-            <ProtectedRoute roles={["institution_donor"]}>
-              <InstitutionRouteGuard allowedStatuses={["approved"]}>
-                <InstitutionProfilePage />
-              </InstitutionRouteGuard>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/institution/messages"
-          element={
-            <ProtectedRoute roles={["institution_donor"]}>
-              <InstitutionRouteGuard allowedStatuses={["approved"]}>
-                <InstitutionMessagesPage />
-              </InstitutionRouteGuard>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/institution/verification-pending"
-          element={
-            <ProtectedRoute roles={["institution_donor"]}>
-              <InstitutionRouteGuard allowedStatuses={["pending_approval"]}>
-                <InstitutionVerificationPendingPage />
-              </InstitutionRouteGuard>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/institution/rejected"
-          element={
-            <ProtectedRoute roles={["institution_donor"]}>
-              <InstitutionRouteGuard allowedStatuses={["rejected"]}>
-                <InstitutionRejectedPage />
-              </InstitutionRouteGuard>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/institution/suspended"
-          element={
-            <ProtectedRoute roles={["institution_donor"]}>
-              <InstitutionRouteGuard allowedStatuses={["suspended"]}>
-                <InstitutionSuspendedPage />
-              </InstitutionRouteGuard>
-            </ProtectedRoute>
-          }
-        />
-      </Route>
+          <Route
+            path="/blood-bank"
+            element={
+              <ProtectedRoute roles={["blood_bank_admin", "blood_bank_staff"]}>
+                <BloodBankDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/blood-bank/inventory"
+            element={
+              <ProtectedRoute roles={["blood_bank_admin", "blood_bank_staff"]}>
+                <BloodBankInventoryPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/blood-bank/create-unit"
+            element={
+              <ProtectedRoute roles={["blood_bank_admin", "blood_bank_staff"]}>
+                <BloodBankInventoryPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/blood-bank/city-requests"
+            element={
+              <ProtectedRoute roles={["blood_bank_admin", "blood_bank_staff"]}>
+                <BloodBankCityRequestsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/blood-bank/units/:unitId"
+            element={
+              <ProtectedRoute roles={["blood_bank_admin", "blood_bank_staff"]}>
+                <BloodUnitDetailPage />
+              </ProtectedRoute>
+            }
+          />
 
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+          <Route
+            path="/institution"
+            element={
+              <ProtectedRoute roles={["institution_donor"]}>
+                <InstitutionRouteGuard allowedStatuses={["approved"]}>
+                  <InstitutionDashboardPage />
+                </InstitutionRouteGuard>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/institution/profile"
+            element={
+              <ProtectedRoute roles={["institution_donor"]}>
+                <InstitutionRouteGuard allowedStatuses={["approved"]}>
+                  <InstitutionProfilePage />
+                </InstitutionRouteGuard>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/institution/messages"
+            element={
+              <ProtectedRoute roles={["institution_donor"]}>
+                <InstitutionRouteGuard allowedStatuses={["approved"]}>
+                  <InstitutionMessagesPage />
+                </InstitutionRouteGuard>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/institution/verification-pending"
+            element={
+              <ProtectedRoute roles={["institution_donor"]}>
+                <InstitutionRouteGuard allowedStatuses={["pending_approval"]}>
+                  <InstitutionVerificationPendingPage />
+                </InstitutionRouteGuard>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/institution/rejected"
+            element={
+              <ProtectedRoute roles={["institution_donor"]}>
+                <InstitutionRouteGuard allowedStatuses={["rejected"]}>
+                  <InstitutionRejectedPage />
+                </InstitutionRouteGuard>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/institution/suspended"
+            element={
+              <ProtectedRoute roles={["institution_donor"]}>
+                <InstitutionRouteGuard allowedStatuses={["suspended"]}>
+                  <InstitutionSuspendedPage />
+                </InstitutionRouteGuard>
+              </ProtectedRoute>
+            }
+          />
+        </Route>
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </AnimatePresence>
   );
 }

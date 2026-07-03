@@ -24,6 +24,7 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 
 import { apiRequest } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
+import PageTransition from "./PageTransition";
 import ThemeSwitcher from "./ThemeSwitcher";
 
 const navByRole = {
@@ -243,6 +244,7 @@ export default function Layout() {
             <NavLink
               key={item.to}
               to={item.to}
+              end
               className={({ isActive }) => (isActive ? "nav-link nav-link-active" : "nav-link")}
               onClick={() => setSidebarOpen(false)}
             >
@@ -303,7 +305,9 @@ export default function Layout() {
           </div>
         </header>
 
-        <Outlet />
+        <PageTransition>
+          <Outlet />
+        </PageTransition>
       </main>
     </div>
   </div>

@@ -1,6 +1,7 @@
 import { BadgeCheck, Droplets, ShieldCheck, Stethoscope } from "lucide-react";
 import { useState } from "react";
 
+import PageTransition from "../../components/PageTransition";
 import PublicFooter from "../../components/PublicFooter";
 import PublicHeader from "../../components/PublicHeader";
 
@@ -8,6 +9,7 @@ export default function AboutPage() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
+    <PageTransition>
     <div className="marketing-shell">
       <PublicHeader
         ctaLabel="Open workspace"
@@ -67,5 +69,6 @@ export default function AboutPage() {
       </div>
       <PublicFooter />
     </div>
+    </PageTransition>
   );
 }

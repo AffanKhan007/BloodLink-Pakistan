@@ -1,6 +1,7 @@
 import { ClipboardCheck, HeartHandshake, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 
+import PageTransition from "../../components/PageTransition";
 import PublicFooter from "../../components/PublicFooter";
 import PublicHeader from "../../components/PublicHeader";
 
@@ -26,6 +27,7 @@ export default function HowItWorksPage() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
+    <PageTransition>
     <div className="marketing-shell">
       <PublicHeader
         ctaLabel="Start now"
@@ -58,5 +60,6 @@ export default function HowItWorksPage() {
       </div>
       <PublicFooter />
     </div>
+    </PageTransition>
   );
 }

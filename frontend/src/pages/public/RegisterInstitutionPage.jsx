@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { apiRequest } from "../../api/client";
 import { useAuth } from "../../auth/AuthContext";
 import AuthShell from "../../components/AuthShell";
+import PageTransition from "../../components/PageTransition";
 import { AlertMessage } from "../../components/PageState";
 
 const initialForm = {
@@ -55,6 +56,7 @@ export default function RegisterInstitutionPage() {
   };
 
   return (
+    <PageTransition>
     <AuthShell
       title="Register your institution"
       description="Submit organization verification details so BloodLink can review your institution before public visibility."
@@ -138,5 +140,6 @@ export default function RegisterInstitutionPage() {
         Already have an account? <Link to="/login">Login</Link>
       </p>
     </AuthShell>
+    </PageTransition>
   );
 }

@@ -2,6 +2,7 @@ import { ArrowRight, Building2, CalendarClock, CheckCircle2, Droplets, HeartHand
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
+import PageTransition from "../../components/PageTransition";
 import PublicFooter from "../../components/PublicFooter";
 import PublicHeader from "../../components/PublicHeader";
 
@@ -79,6 +80,7 @@ export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
+    <PageTransition>
     <div className="marketing-shell">
       <PublicHeader
         ctaLabel="Get started"
@@ -202,5 +204,6 @@ export default function LandingPage() {
 
       <PublicFooter />
     </div>
+    </PageTransition>
   );
 }

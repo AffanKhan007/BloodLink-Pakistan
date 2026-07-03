@@ -4,10 +4,13 @@ import StatusBadge from "./StatusBadge";
 
 export default function RequestCard({ request, actions, footer, onClick }) {
   const interactive = typeof onClick === "function";
+  const isUrgent =
+    String(request?.urgency_level || "").toLowerCase() === "critical" ||
+    String(request?.urgency_level || "").toLowerCase() === "urgent";
 
   return (
     <article
-      className={`request-card ${interactive ? "request-card-interactive" : ""}`}
+      className={`request-card ${interactive ? "request-card-interactive" : ""} ${isUrgent ? "request-card-urgent" : ""}`}
       onClick={onClick}
       role={interactive ? "button" : undefined}
       tabIndex={interactive ? 0 : undefined}

@@ -1,5 +1,6 @@
 import { Bell, HeartHandshake, Search, ShieldCheck } from "lucide-react";
-import { useEffect, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { apiRequest } from "../../api/client";
@@ -9,9 +10,26 @@ import RequestCard from "../../components/RequestCard";
 import SectionIntro from "../../components/SectionIntro";
 import StatCard from "../../components/StatCard";
 
+const staggerContainer = {
+  initial: {},
+  animate: { transition: { staggerChildren: 0.06 } },
+};
+
+const staggerItem = {
+  initial: { opacity: 0, y: 10 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.19, 1, 0.22, 1] } },
+};
+
 export default function DonorDashboardPage() {
   const { token } = useAuth();
   const [state, setState] = useState({ loading: true, error: "", profile: null, requests: [], matches: [], notifications: [] });
+  const prefersReduced = useReducedMotion();
+  const motionProps = useMemo(() => prefersReduced ? {} : {
+    variants: staggerContainer,
+    initial: "initial",
+    animate: "animate",
+  }, [prefersReduced]);
+  const itemProps = useMemo(() => prefersReduced ? {} : { variants: staggerItem }, [prefersReduced]);
 
   useEffect(() => {
     let mounted = true;
@@ -39,9 +57,9 @@ export default function DonorDashboardPage() {
   if (state.loading) return <LoadingState label="Loading donor dashboard" />;
 
   return (
-    <div className="page-stack">
+    <motion.div className="page-stack" {...motionProps}>
       {state.error ? <AlertMessage type="warning">{state.error}</AlertMessage> : null}
-      <section className="stats-grid">
+      <motion.section className="stats-grid" {...itemProps}>
         <StatCard label="Verification" value={state.profile?.verification_status || "pending"} helper="Admin reviewed" icon={ShieldCheck} tone="success" />
         <StatCard label="Available requests" value={state.requests.length} helper="Based on simple MVP filters" icon={Search} tone="accent" />
         <StatCard label="My matches" value={state.matches.length} helper="Assigned by admin" icon={HeartHandshake} tone="default" />
@@ -52,9 +70,9 @@ export default function DonorDashboardPage() {
           icon={Bell}
           tone="warning"
         />
-      </section>
+      </motion.section>
 
-      <section className="content-card">
+      <motion.section className="content-card" {...itemProps}>
         <SectionIntro
           eyebrow="Matching opportunities"
           title="Requests near your profile"
@@ -79,7 +97,7 @@ export default function DonorDashboardPage() {
             ))}
           </div>
         )}
-      </section>
-    </div>
+      </motion.section>
+    </motion.div>
   );
 }

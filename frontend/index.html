@@ -6,10 +6,14 @@
     <title>BloodLink Pakistan</title>
     <script>
       (function () {
-        var theme = localStorage.getItem("bloodlink-theme");
-        if (["light","dark","crimson"].indexOf(theme) !== -1) {
-          document.documentElement.setAttribute("data-theme", theme);
+        var mode = localStorage.getItem("bloodlink-theme");
+        var theme;
+        if (mode === "dark" || mode === "light") {
+          theme = mode;
+        } else {
+          theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
         }
+        document.documentElement.setAttribute("data-theme", theme);
       })();
     </script>
   </head>
@@ -18,4 +22,3 @@
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
-

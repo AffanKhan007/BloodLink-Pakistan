@@ -1,5 +1,6 @@
 import { ClipboardList, Droplets, HeartHandshake, ShieldCheck } from "lucide-react";
-import { useEffect, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { apiRequest } from "../../api/client";
@@ -9,10 +10,27 @@ import RequestCard from "../../components/RequestCard";
 import SectionIntro from "../../components/SectionIntro";
 import StatCard from "../../components/StatCard";
 
+const staggerContainer = {
+  initial: {},
+  animate: { transition: { staggerChildren: 0.06 } },
+};
+
+const staggerItem = {
+  initial: { opacity: 0, y: 10 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.19, 1, 0.22, 1] } },
+};
+
 export default function ReceiverDashboardPage() {
   const { token } = useAuth();
   const [loading, setLoading] = useState(true);
   const [requests, setRequests] = useState([]);
+  const prefersReduced = useReducedMotion();
+  const motionProps = useMemo(() => prefersReduced ? {} : {
+    variants: staggerContainer,
+    initial: "initial",
+    animate: "animate",
+  }, [prefersReduced]);
+  const itemProps = useMemo(() => prefersReduced ? {} : { variants: staggerItem }, [prefersReduced]);
 
   useEffect(() => {
     apiRequest("/requests", { token })
@@ -23,8 +41,8 @@ export default function ReceiverDashboardPage() {
   if (loading) return <LoadingState label="Loading receiver dashboard" />;
 
   return (
-    <div className="page-stack">
-      <section className="stats-grid">
+    <motion.div className="page-stack" {...motionProps}>
+      <motion.section className="stats-grid" {...itemProps}>
         <StatCard label="Total requests" value={requests.length} helper="Owned by you" icon={ClipboardList} tone="default" />
         <StatCard
           label="Approved or matched"
@@ -41,9 +59,9 @@ export default function ReceiverDashboardPage() {
           icon={HeartHandshake}
           tone="warning"
         />
-      </section>
+      </motion.section>
 
-      <section className="content-card">
+      <motion.section className="content-card" {...itemProps}>
         <SectionIntro
           eyebrow="Recent activity"
           title="My requests"
@@ -68,7 +86,7 @@ export default function ReceiverDashboardPage() {
             ))}
           </div>
         )}
-      </section>
-    </div>
+      </motion.section>
+    </motion.div>
   );
 }

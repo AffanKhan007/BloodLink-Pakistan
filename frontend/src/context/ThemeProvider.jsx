@@ -1,48 +1,53 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 const STORAGE_KEY = "bloodlink-theme";
-const VALID_THEMES = ["light", "dark", "crimson"];
+const VALID_MODES = ["light", "dark", "system"];
+const mq = typeof window !== "undefined" ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+
+function resolveTheme(mode) {
+  if (mode === "system") return mq && mq.matches ? "dark" : "light";
+  return mode;
+}
+
+function getInitialMode() {
+  if (typeof window === "undefined") return "light";
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (stored && VALID_MODES.includes(stored)) return stored;
+  return "system";
+}
 
 const ThemeContext = createContext(null);
 
-function getInitialTheme() {
-  if (typeof window === "undefined") return "light";
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored && VALID_THEMES.includes(stored)) return stored;
-  if (window.matchMedia("(prefers-color-scheme: dark)").matches) return "dark";
-  return "light";
-}
-
 export function ThemeProvider({ children }) {
-  const [theme, setThemeState] = useState(getInitialTheme);
+  const [mode, setModeState] = useState(getInitialMode);
+  const [resolved, setResolved] = useState(() => resolveTheme(getInitialMode()));
 
-  const setTheme = useCallback((next) => {
-    if (!VALID_THEMES.includes(next)) return console.warn("[theme] rejected invalid theme:", next);
-    console.log("[theme] setting data-theme =", next);
-    setThemeState(next);
+  const setMode = useCallback((next) => {
+    if (!VALID_MODES.includes(next)) return;
+    setModeState(next);
     localStorage.setItem(STORAGE_KEY, next);
-    document.documentElement.setAttribute("data-theme", next);
+    setResolved(resolveTheme(next));
   }, []);
 
-  /* sync data-theme attribute whenever state changes */
+  /* Apply data-theme attribute to <html> */
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-  }, [theme]);
+    document.documentElement.setAttribute("data-theme", resolved);
+  }, [resolved]);
 
-  /* listen for OS scheme changes only when user hasn't saved a preference */
+  /* Listen for OS scheme changes when mode is "system" */
   useEffect(() => {
-    const hasSavedPref = localStorage.getItem(STORAGE_KEY) !== null;
-    if (hasSavedPref) return;
-
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = (event) => {
-      setThemeState(event.matches ? "dark" : "light");
-    };
+    if (!mq || mode !== "system") return;
+    const handler = (e) => setResolved(e.matches ? "dark" : "light");
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
-  }, []);
+  }, [mode]);
 
-  const ctx = useMemo(() => ({ theme, setTheme }), [theme, setTheme]);
+  /* Re-resolve when mode changes from system to light/dark or vice versa */
+  useEffect(() => {
+    setResolved(resolveTheme(mode));
+  }, [mode]);
+
+  const ctx = useMemo(() => ({ theme: resolved, mode, setMode }), [resolved, mode, setMode]);
 
   return <ThemeContext.Provider value={ctx}>{children}</ThemeContext.Provider>;
 }

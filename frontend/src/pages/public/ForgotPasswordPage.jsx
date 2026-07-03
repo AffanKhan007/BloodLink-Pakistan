@@ -2,9 +2,11 @@ import { Mail } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import AuthShell from "../../components/AuthShell";
+import PageTransition from "../../components/PageTransition";
 
 export default function ForgotPasswordPage() {
   return (
+    <PageTransition>
     <AuthShell
       title="Password recovery"
       description="Password reset is not automated in this MVP yet. If you need help recovering access, contact the BloodLink administrator or support contact for your organization."
@@ -26,5 +28,6 @@ export default function ForgotPasswordPage() {
         </div>
       </div>
     </AuthShell>
+    </PageTransition>
   );
 }

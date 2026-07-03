@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../auth/AuthContext";
 import AuthShell from "../../components/AuthShell";
+import PageTransition from "../../components/PageTransition";
 import { AlertMessage } from "../../components/PageState";
 
 function destinationForRole(role) {
@@ -44,6 +45,7 @@ export default function RegisterPage() {
   };
 
   return (
+    <PageTransition>
     <AuthShell title="Create your account" description="Set up a BloodLink account and start using the platform." accent="Register">
       <form className="auth-form" onSubmit={handleSubmit}>
         <div className="auth-form-header">
@@ -137,5 +139,6 @@ export default function RegisterPage() {
         Already have an account? <Link to="/login">Login</Link>
       </p>
     </AuthShell>
+    </PageTransition>
   );
 }
