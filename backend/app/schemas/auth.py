@@ -12,7 +12,6 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     phone: str
     password: str = Field(min_length=8, max_length=128)
-    role: UserRole
 
     @field_validator("phone")
     @classmethod
@@ -24,13 +23,6 @@ class RegisterRequest(BaseModel):
     def validate_password(cls, value: str) -> str:
         if not any(ch.isdigit() for ch in value) or not any(ch.isalpha() for ch in value):
             raise ValueError("Password must contain letters and numbers")
-        return value
-
-    @field_validator("role")
-    @classmethod
-    def disallow_public_admin(cls, value: UserRole) -> UserRole:
-        if value not in {UserRole.DONOR, UserRole.RECEIVER}:
-            raise ValueError("Only donor and receiver accounts can be self-registered here")
         return value
 
 

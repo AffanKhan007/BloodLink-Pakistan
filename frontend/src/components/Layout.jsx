@@ -25,9 +25,21 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { apiRequest } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
 import PageTransition from "./PageTransition";
-import ThemeSwitcher from "./ThemeSwitcher";
 
 const navByRole = {
+  user: [
+    { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
+    { label: "My Profile", to: "/donor/profile", icon: Users },
+    { label: "Create Request", to: "/receiver/create-request", icon: Droplets },
+    { label: "My Requests", to: "/receiver/requests", icon: ClipboardList },
+    { label: "Matching Requests", to: "/donor/requests", icon: Search },
+    { label: "My Matches", to: "/donor/matches", icon: HeartHandshake },
+    { label: "Available Donors", to: "/receiver/available-donors", icon: Search },
+    { label: "Blood Banks", to: "/receiver/blood-banks", icon: Warehouse },
+    { label: "Institutions", to: "/receiver/institutions", icon: University },
+    { label: "Notifications", to: "/donor/notifications", icon: Bell },
+    { label: "Chats", to: "/donor/chats", icon: MessageSquare },
+  ],
   donor: [
     { label: "Dashboard", to: "/donor", icon: LayoutDashboard },
     { label: "My Profile", to: "/donor/profile", icon: Users },
@@ -107,6 +119,11 @@ const institutionNavByStatus = {
 };
 
 const roleMeta = {
+  user: {
+    eyebrow: "Your workspace",
+    title: "Donate and request, from one account",
+    description: "Set up a donor profile, create blood requests, track matches, and connect with your community — all from a single dashboard.",
+  },
   donor: {
     eyebrow: "Donor workspace",
     title: "Ready-to-donate coordination",
@@ -285,9 +302,7 @@ export default function Layout() {
           <div className="top-bar-left">
             <span className="top-bar-title">BloodLink</span>
           </div>
-          <div className="top-bar-right">
-            <ThemeSwitcher />
-          </div>
+          <div className="top-bar-right" />
         </div>
         <main className="page-area">
           <header className="page-header">

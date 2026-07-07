@@ -1,15 +1,11 @@
 import { useState } from "react";
-import { ArrowRight, Building2, HeartHandshake, ShieldCheck } from "lucide-react";
+import { ArrowRight, Building2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../auth/AuthContext";
 import AuthShell from "../../components/AuthShell";
 import PageTransition from "../../components/PageTransition";
 import { AlertMessage } from "../../components/PageState";
-
-function destinationForRole(role) {
-  return role === "receiver" ? "/receiver" : "/donor";
-}
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -20,7 +16,6 @@ export default function RegisterPage() {
     phone: "",
     password: "",
     confirm_password: "",
-    role: "donor",
   });
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -36,7 +31,7 @@ export default function RegisterPage() {
     try {
       const { confirm_password, ...payload } = form;
       const user = await register(payload);
-      navigate(destinationForRole(user.role));
+      navigate("/dashboard");
     } catch (submitError) {
       setError(submitError.message);
     } finally {
@@ -53,22 +48,6 @@ export default function RegisterPage() {
           <p>Create your account with the details you will use to sign in.</p>
         </div>
         {error ? <AlertMessage type="error">{error}</AlertMessage> : null}
-        <div className="role-selector-grid role-selector-grid-compact">
-          <button type="button" className={`role-option-card ${form.role === "donor" ? "role-option-card-active" : ""}`} onClick={() => setForm((current) => ({ ...current, role: "donor" }))}>
-            <HeartHandshake size={18} />
-            <div>
-              <strong>Donor</strong>
-              <p>Donate and manage availability.</p>
-            </div>
-          </button>
-          <button type="button" className={`role-option-card ${form.role === "receiver" ? "role-option-card-active" : ""}`} onClick={() => setForm((current) => ({ ...current, role: "receiver" }))}>
-            <ShieldCheck size={18} />
-            <div>
-              <strong>Receiver</strong>
-              <p>Create and track requests.</p>
-            </div>
-          </button>
-        </div>
 
         <div className="inline-note-card">
           <Building2 size={18} />

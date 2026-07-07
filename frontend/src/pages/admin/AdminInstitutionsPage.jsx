@@ -17,6 +17,7 @@ export default function AdminInstitutionsPage() {
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [decision, setDecision] = useState(null);
   const [rejectionReason, setRejectionReason] = useState("");
+  const [selectedInstitutionId, setSelectedInstitutionId] = useState(null);
 
   const loadInstitutions = async (statusFilter = selectedStatus) => {
     const query = statusFilter === "all" ? "" : `?status_filter=${statusFilter}`;
@@ -92,7 +93,19 @@ export default function AdminInstitutionsPage() {
       ) : (
         <div className="stacked-cards">
           {institutions.map((institution) => (
-            <div className="info-card" key={institution.id}>
+            <div
+              className={`info-card${selectedInstitutionId === institution.id ? " info-card-selected" : ""}`}
+              key={institution.id}
+              onClick={() => setSelectedInstitutionId(selectedInstitutionId === institution.id ? null : institution.id)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setSelectedInstitutionId(selectedInstitutionId === institution.id ? null : institution.id);
+                }
+              }}
+            >
               <div className="list-row">
                 <div>
                   <strong>{institution.institution_name}</strong>

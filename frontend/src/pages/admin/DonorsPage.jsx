@@ -17,6 +17,7 @@ export default function DonorsPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [cityFilter, setCityFilter] = useState("all");
+  const [selectedDonorId, setSelectedDonorId] = useState(null);
 
   const loadDonors = async () => {
     const data = await apiRequest("/admin/donors", { token });
@@ -113,7 +114,19 @@ export default function DonorsPage() {
       ) : (
         <div className="stacked-cards">
           {filteredDonors.map((donor) => (
-            <div className="info-card" key={donor.id}>
+            <div
+              className={`info-card${selectedDonorId === donor.id ? " info-card-selected" : ""}`}
+              key={donor.id}
+              onClick={() => setSelectedDonorId(selectedDonorId === donor.id ? null : donor.id)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setSelectedDonorId(selectedDonorId === donor.id ? null : donor.id);
+                }
+              }}
+            >
               <div className="list-row">
                 <div>
                   <strong>{donor.user.full_name}</strong>

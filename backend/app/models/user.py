@@ -9,11 +9,10 @@ from app.core.database import Base
 
 
 class UserRole(StrEnum):
-    SUPER_ADMIN = "super_admin"
-    DONOR = "donor"
-    RECEIVER = "receiver"
+    USER = "user"
     INSTITUTION_DONOR = "institution_donor"
     ADMIN = "admin"
+    SUPER_ADMIN = "super_admin"
     OPERATIONS_AGENT = "operations_agent"
     HOSPITAL_ADMIN = "hospital_admin"
     HOSPITAL_STAFF = "hospital_staff"
@@ -30,7 +29,9 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
     phone: Mapped[str] = mapped_column(String(20), unique=True, nullable=False, index=True)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
-    role: Mapped[UserRole] = mapped_column(Enum(UserRole, name="user_role"), nullable=False, index=True)
+    role: Mapped[UserRole] = mapped_column(
+        Enum(UserRole, name="user_role"), default=UserRole.USER, nullable=False, index=True
+    )
     hospital_id: Mapped[Optional[int]] = mapped_column(ForeignKey("hospitals.id", ondelete="SET NULL"), nullable=True)
     blood_bank_id: Mapped[Optional[int]] = mapped_column(ForeignKey("blood_banks.id", ondelete="SET NULL"), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
@@ -40,7 +41,6 @@ class User(Base):
     )
 
     donor_profile = relationship("DonorProfile", back_populates="user", uselist=False)
-    receiver_profile = relationship("ReceiverProfile", back_populates="user", uselist=False)
     institution_profile = relationship("Institution", back_populates="user", uselist=False)
     created_requests = relationship("BloodRequest", back_populates="created_by_user", foreign_keys="BloodRequest.created_by_user_id")
     notifications = relationship("Notification", back_populates="user")

@@ -19,7 +19,6 @@ from app.models import (
     Hospital,
     Institution,
     InstitutionStatus,
-    ReceiverProfile,
     TestingStatus,
     UrgencyLevel,
     User,
@@ -77,14 +76,14 @@ def seeded_db():
         email="donor@test.com",
         phone="+923001111112",
         password_hash=get_password_hash("Donor12345"),
-        role=UserRole.DONOR,
+        role=UserRole.USER,
     )
     receiver = User(
         full_name="Receiver User",
         email="receiver@test.com",
         phone="+923001111113",
         password_hash=get_password_hash("Receiver12345"),
-        role=UserRole.RECEIVER,
+        role=UserRole.USER,
     )
     institution_user = User(
         full_name="Institution User",
@@ -131,7 +130,6 @@ def seeded_db():
     db.flush()
     blood_bank_staff.blood_bank_id = blood_bank.id
 
-    receiver_profile = ReceiverProfile(user_id=receiver.id, city="Lahore", area="Gulberg")
     institution = Institution(
         user_id=institution_user.id,
         institution_name="Test University Donor Club",
@@ -189,7 +187,7 @@ def seeded_db():
         status=BloodUnitStatus.AVAILABLE,
         storage_location="Fridge A",
     )
-    db.add_all([receiver_profile, institution, donor_profile, request, blood_unit])
+    db.add_all([institution, donor_profile, request, blood_unit])
     db.commit()
     try:
         yield {

@@ -24,9 +24,9 @@ def get_request_document(
     if not document:
         raise HTTPException(status_code=404, detail="Document not found")
     request = document.request
-    if current_user.role == UserRole.RECEIVER and request.created_by_user_id != current_user.id:
+    if current_user.role == UserRole.USER and request.created_by_user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Access denied")
-    if current_user.role == UserRole.DONOR:
+    if current_user.role == UserRole.USER:
         raise HTTPException(status_code=403, detail="Access denied")
 
     file_path = os.path.join(settings.upload_dir, document.file_url)

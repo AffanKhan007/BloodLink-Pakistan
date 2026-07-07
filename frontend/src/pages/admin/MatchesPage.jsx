@@ -10,6 +10,7 @@ export default function MatchesPage() {
   const [loading, setLoading] = useState(true);
   const [requests, setRequests] = useState([]);
   const [matches, setMatches] = useState([]);
+  const [selectedMatchId, setSelectedMatchId] = useState(null);
 
   useEffect(() => {
     apiRequest("/admin/requests", { token })
@@ -29,7 +30,19 @@ export default function MatchesPage() {
   return (
     <div className="stacked-cards">
       {matches.map((match) => (
-        <div className="info-card" key={match.id}>
+        <div
+          className={`info-card${selectedMatchId === match.id ? " info-card-selected" : ""}`}
+          key={match.id}
+          onClick={() => setSelectedMatchId(selectedMatchId === match.id ? null : match.id)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setSelectedMatchId(selectedMatchId === match.id ? null : match.id);
+            }
+          }}
+        >
           <div className="list-row">
             <div>
               <strong>{match.donor.user.full_name}</strong>

@@ -9,7 +9,6 @@ from app.models.hospital import Hospital
 from app.models.institution import Institution, InstitutionStatus
 from app.models.inventory import BloodUnit, BloodUnitStatus, InventoryMovement, TestingStatus
 from app.models.notification import Notification
-from app.models.receiver_profile import ReceiverProfile
 from app.models.report import Report, ReportStatus
 from app.models.user import User, UserRole
 
@@ -34,7 +33,6 @@ __all__ = [
     "InstitutionStatus",
     "InventoryMovement",
     "Notification",
-    "ReceiverProfile",
     "Report",
     "ReportStatus",
     "TestingStatus",

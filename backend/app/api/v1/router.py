@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.routes import admin, auth, blood_banks, chats, cities, donors, hospitals, institutions, matches, notifications, receiver_profiles, reports, requests, uploads
+from app.routes import admin, auth, blood_banks, chats, cities, donors, hospitals, institutions, matches, notifications, reports, requests, uploads
 
 
 api_router = APIRouter(prefix="/api/v1")
@@ -15,6 +15,5 @@ api_router.include_router(uploads.router)
 api_router.include_router(hospitals.router)
 api_router.include_router(blood_banks.router)
 api_router.include_router(institutions.router)
-api_router.include_router(receiver_profiles.router)
 api_router.include_router(chats.router)
 api_router.include_router(cities.router)

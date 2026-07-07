@@ -10,6 +10,7 @@ export default function ReportsPage() {
   const { token } = useAuth();
   const [loading, setLoading] = useState(true);
   const [reports, setReports] = useState([]);
+  const [selectedReportId, setSelectedReportId] = useState(null);
 
   const loadReports = async () => {
     const data = await apiRequest("/admin/reports", { token });
@@ -39,7 +40,19 @@ export default function ReportsPage() {
       </section>
       <div className="stacked-cards">
         {reports.map((report) => (
-          <div className="info-card" key={report.id}>
+          <div
+            className={`info-card${selectedReportId === report.id ? " info-card-selected" : ""}`}
+            key={report.id}
+            onClick={() => setSelectedReportId(selectedReportId === report.id ? null : report.id)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setSelectedReportId(selectedReportId === report.id ? null : report.id);
+              }
+            }}
+          >
             <div className="list-row">
               <div>
                 <strong>Report #{report.id}</strong>

@@ -14,6 +14,7 @@ export default function BloodRequestsPage() {
   const [loading, setLoading] = useState(true);
   const [requests, setRequests] = useState([]);
   const [selectedRequestId, setSelectedRequestId] = useState(null);
+  const [selectedCardRequestId, setSelectedCardRequestId] = useState(null);
   const [candidates, setCandidates] = useState([]);
   const [requestDetail, setRequestDetail] = useState(null);
   const [search, setSearch] = useState("");
@@ -114,6 +115,8 @@ export default function BloodRequestsPage() {
               key={request.id}
               request={request}
               footer={`Confirmed donors: ${request.confirmed_donor_count}`}
+              selected={selectedCardRequestId === request.id}
+              onClick={() => setSelectedCardRequestId(selectedCardRequestId === request.id ? null : request.id)}
               actions={
                 <>
                   <button className="button button-primary" onClick={() => updateStatus(request.id, "approve")}>

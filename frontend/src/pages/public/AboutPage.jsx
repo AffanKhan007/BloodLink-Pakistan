@@ -21,11 +21,11 @@ export default function AboutPage() {
       />
       <div className="public-page public-page-wide">
         <section className="content-card public-hero-card">
-          <span className="alert-pill alert-pill-soft">About the platform</span>
-          <h1>BloodLink makes blood coordination clearer and easier to manage.</h1>
+          <span className="alert-pill alert-pill-soft">About BloodLink</span>
+          <h1>Blood requests in Pakistan are scattered, slow, and hard to verify.</h1>
           <p>
-            BloodLink Pakistan helps organize blood requests, donor responses, and institutional coordination inside
-            one clean workflow designed for urgent situations.
+            Families post on Facebook and WhatsApp hoping someone responds. Donors get duplicate messages. Hospitals
+            can't tell which requests are real. BloodLink puts requests, matching, and communication in one place.
           </p>
         </section>
 
@@ -34,22 +34,22 @@ export default function AboutPage() {
             <div className="feature-icon">
               <ShieldCheck size={18} />
             </div>
-            <h3>Clear request flow</h3>
-            <p>Requests move through a structured path instead of scattered messages and manual follow-up.</p>
+            <h3>Verified requests</h3>
+            <p>Every request includes hospital details and an uploaded slip so donors know it's real before they respond.</p>
           </div>
           <div className="info-card feature-card">
             <div className="feature-icon">
               <Droplets size={18} />
             </div>
-            <h3>Practical matching</h3>
-            <p>The platform keeps matching focused on real-world factors like city, blood group, and availability.</p>
+            <h3>Automatic matching</h3>
+            <p>Donors are matched by city, blood group, and how recently they donated — no more scrolling through comment threads.</p>
           </div>
           <div className="info-card feature-card">
             <div className="feature-icon">
               <BadgeCheck size={18} />
             </div>
-            <h3>Role-based workspaces</h3>
-            <p>Each user type gets a simpler workspace built around the actions they actually need.</p>
+            <h3>Request tracking</h3>
+            <p>Each request shows its current status, who accepted, and what still needs to happen. Nothing falls through the cracks.</p>
           </div>
         </section>
 

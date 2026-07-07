@@ -23,7 +23,6 @@ def test_auth_register_and_me(client):
             "email": "new.user@test.com",
             "phone": "+923001111117",
             "password": "User12345",
-            "role": "receiver",
         },
     )
     assert register_response.status_code == 201
@@ -110,7 +109,6 @@ def test_donor_profile_create(client):
             "email": "donor.create@test.com",
             "phone": "+923001111118",
             "password": "Donor12345",
-            "role": "donor",
         },
     )
     token = login(client, "donor.create@test.com", "Donor12345")
@@ -142,7 +140,6 @@ def test_blood_request_creation_creates_auto_matches(client):
             "email": "receiver.create@test.com",
             "phone": "+923001111119",
             "password": "Receiver12345",
-            "role": "receiver",
         },
     )
     donor_register = client.post(
@@ -152,7 +149,6 @@ def test_blood_request_creation_creates_auto_matches(client):
             "email": "compatible@test.com",
             "phone": "+923001111120",
             "password": "Donor12345",
-            "role": "donor",
         },
     )
     donor_token = donor_register.json()["access_token"]

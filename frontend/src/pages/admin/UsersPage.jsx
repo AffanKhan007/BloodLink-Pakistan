@@ -11,6 +11,7 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedUserId, setSelectedUserId] = useState(null);
 
   const loadUsers = async () => {
     const data = await apiRequest("/admin/users", { token });
@@ -33,7 +34,19 @@ export default function UsersPage() {
   return (
     <div className="stacked-cards">
       {users.map((user) => (
-        <div className="info-card" key={user.id}>
+        <div
+          className={`info-card${selectedUserId === user.id ? " info-card-selected" : ""}`}
+          key={user.id}
+          onClick={() => setSelectedUserId(selectedUserId === user.id ? null : user.id)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setSelectedUserId(selectedUserId === user.id ? null : user.id);
+            }
+          }}
+        >
           <div className="list-row">
             <div>
               <strong>{user.full_name}</strong>

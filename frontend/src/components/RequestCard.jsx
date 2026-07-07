@@ -2,7 +2,7 @@ import { ArrowRight, Clock3, Droplets, MapPin, Users } from "lucide-react";
 
 import StatusBadge from "./StatusBadge";
 
-export default function RequestCard({ request, actions, footer, onClick }) {
+export default function RequestCard({ request, actions, footer, onClick, selected }) {
   const interactive = typeof onClick === "function";
   const isUrgent =
     String(request?.urgency_level || "").toLowerCase() === "critical" ||
@@ -10,7 +10,7 @@ export default function RequestCard({ request, actions, footer, onClick }) {
 
   return (
     <article
-      className={`request-card ${interactive ? "request-card-interactive" : ""} ${isUrgent ? "request-card-urgent" : ""}`}
+      className={`request-card ${interactive ? "request-card-interactive" : ""} ${isUrgent ? "request-card-urgent" : ""} ${selected ? "request-card-selected" : ""}`}
       onClick={onClick}
       role={interactive ? "button" : undefined}
       tabIndex={interactive ? 0 : undefined}

@@ -44,8 +44,15 @@ def _get_request_for_user(db: Session, request_id: int, user: User) -> BloodRequ
     )
     if not request:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Request not found")
-    if user.role == UserRole.RECEIVER and request.created_by_user_id != user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+    if request.created_by_user_id != user.id:
+        donor = db.scalar(select(DonorProfile).where(DonorProfile.user_id == user.id))
+        if not donor:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+        owned_match = db.scalar(
+            select(DonationMatch).where(DonationMatch.request_id == request_id, DonationMatch.donor_id == donor.id)
+        )
+        if not owned_match:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
     return request
 
 
@@ -53,7 +60,7 @@ def _get_request_for_user(db: Session, request_id: int, user: User) -> BloodRequ
 def create_request(
     payload: BloodRequestCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.RECEIVER)),
+    current_user: User = Depends(require_roles(UserRole.USER)),
 ) -> BloodRequestOut:
     request = BloodRequest(
         created_by_user_id=current_user.id,
@@ -74,23 +81,13 @@ def list_requests(
     current_user: User = Depends(get_current_user),
 ) -> list[BloodRequestListOut]:
     statement = select(BloodRequest).options(joinedload(BloodRequest.matches)).order_by(BloodRequest.created_at.desc())
-    if current_user.role == UserRole.RECEIVER:
-        statement = statement.where(BloodRequest.created_by_user_id == current_user.id)
-    elif current_user.role == UserRole.DONOR:
-        donor = db.scalar(select(DonorProfile).where(DonorProfile.user_id == current_user.id))
-        if not donor:
-            return []
-        request_ids = list(
-            db.scalars(select(DonationMatch.request_id).where(DonationMatch.donor_id == donor.id)).all()
-        )
-        if not request_ids:
-            return []
-        statement = statement.where(BloodRequest.id.in_(request_ids))
-    elif current_user.role == UserRole.BLOOD_BANK_ADMIN or current_user.role == UserRole.BLOOD_BANK_STAFF:
+    if current_user.role in {UserRole.BLOOD_BANK_ADMIN, UserRole.BLOOD_BANK_STAFF}:
         if current_user.blood_bank_id:
             bank = db.get(BloodBank, current_user.blood_bank_id)
             if bank:
                 statement = statement.where(BloodRequest.city == bank.city)
+    else:
+        statement = statement.where(BloodRequest.created_by_user_id == current_user.id)
 
     requests = list(db.scalars(statement).unique().all())
     return [
@@ -109,15 +106,6 @@ def get_request(
     current_user: User = Depends(get_current_user),
 ) -> BloodRequestDetailOut:
     request = _get_request_for_user(db, request_id, current_user)
-    if current_user.role == UserRole.DONOR:
-        donor = db.scalar(select(DonorProfile).where(DonorProfile.user_id == current_user.id))
-        if not donor:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
-        owned_match = db.scalar(
-            select(DonationMatch).where(DonationMatch.request_id == request_id, DonationMatch.donor_id == donor.id)
-        )
-        if not owned_match:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
     return BloodRequestDetailOut(
         **request.__dict__,
         confirmed_donor_count=count_confirmed_matches(request),
@@ -131,7 +119,7 @@ async def upload_document(
     document_type: str = Form(...),
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.RECEIVER)),
+    current_user: User = Depends(require_roles(UserRole.USER)),
 ) -> dict:
     request = db.get(BloodRequest, request_id)
     if not request or request.created_by_user_id != current_user.id:
@@ -163,7 +151,7 @@ async def upload_document(
 def request_public_donors(
     request_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.RECEIVER)),
+    current_user: User = Depends(require_roles(UserRole.USER)),
 ) -> list[DonorWithUserOut]:
     request = _get_request_for_user(db, request_id, current_user)
     compatible_groups = compatible_donor_groups(request.blood_group_needed)
@@ -185,7 +173,7 @@ def request_public_donors(
 def request_city_blood_banks(
     request_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.RECEIVER)),
+    current_user: User = Depends(require_roles(UserRole.USER)),
 ) -> list[BloodBankDiscoveryOut]:
     request = _get_request_for_user(db, request_id, current_user)
     compatible_groups = compatible_donor_groups(request.blood_group_needed)
@@ -222,7 +210,7 @@ def request_city_blood_banks(
 def request_city_institutions(
     request_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.RECEIVER)),
+    current_user: User = Depends(require_roles(UserRole.USER)),
 ) -> list[InstitutionWithUserOut]:
     request = _get_request_for_user(db, request_id, current_user)
     institutions = list(
@@ -241,7 +229,7 @@ def request_city_institutions(
 def mark_fulfilled(
     request_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.RECEIVER)),
+    current_user: User = Depends(require_roles(UserRole.USER)),
 ) -> BloodRequestOut:
     request = db.get(BloodRequest, request_id)
     if not request or request.created_by_user_id != current_user.id:
@@ -259,7 +247,7 @@ def mark_fulfilled(
 def cancel_request(
     request_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.RECEIVER)),
+    current_user: User = Depends(require_roles(UserRole.USER)),
 ) -> BloodRequestOut:
     request = db.get(BloodRequest, request_id)
     if not request or request.created_by_user_id != current_user.id:

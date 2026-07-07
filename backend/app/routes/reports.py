@@ -15,7 +15,7 @@ router = APIRouter(prefix="/reports", tags=["reports"])
 def create_report(
     payload: ReportCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.RECEIVER)),
+    current_user: User = Depends(require_roles(UserRole.USER)),
 ) -> ReportOut:
     request = db.get(BloodRequest, payload.request_id)
     if not request or request.created_by_user_id != current_user.id:
@@ -30,7 +30,7 @@ def create_report(
 @router.get("/me", response_model=list[ReportOut])
 def my_reports(
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.RECEIVER)),
+    current_user: User = Depends(require_roles(UserRole.USER)),
 ) -> list[ReportOut]:
     reports = list(
         db.scalars(select(Report).where(Report.reporter_user_id == current_user.id).order_by(Report.created_at.desc())).all()

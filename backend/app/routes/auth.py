@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.deps import get_current_user
 from app.core.security import create_access_token, get_password_hash, verify_password
-from app.models import Institution, InstitutionStatus, ReceiverProfile, User, UserRole
+from app.models import Institution, InstitutionStatus, User, UserRole
 from app.schemas.auth import AuthResponse, LoginRequest, RegisterRequest, UserOut
 from app.schemas.institution import InstitutionRegisterRequest
 
@@ -24,13 +24,11 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)) -> AuthRes
         email=payload.email.lower(),
         phone=payload.phone,
         password_hash=get_password_hash(payload.password),
-        role=payload.role,
+        role=UserRole.USER,
         is_active=True,
     )
     db.add(user)
     db.flush()
-    if user.role == UserRole.RECEIVER:
-        db.add(ReceiverProfile(user_id=user.id))
     db.commit()
     db.refresh(user)
 

@@ -7,18 +7,18 @@ import PublicHeader from "../../components/PublicHeader";
 
 const steps = [
   {
-    title: "Create a request",
-    description: "Receivers add patient details, urgency, and hospital information in one place.",
+    title: "Post a blood request",
+    description: "Enter the patient's blood group, hospital name, city, and urgency level. Upload a hospital slip so donors know the request is real.",
     icon: HeartHandshake,
   },
   {
-    title: "Match the right support",
-    description: "Compatible donors and city-based organizations are surfaced through focused matching rules.",
+    title: "Donors get matched automatically",
+    description: "The system finds approved donors in the same city with the right blood group who haven't donated recently. They receive a notification and can accept or decline.",
     icon: ClipboardCheck,
   },
   {
-    title: "Track and respond",
-    description: "Messages, responses, and request status stay organized through a clean coordination workflow.",
+    title: "Everything stays in one place",
+    description: "Track who accepted, message donors directly, and update the request status. No more chasing replies across different apps.",
     icon: ShieldCheck,
   },
 ];
@@ -39,10 +39,11 @@ export default function HowItWorksPage() {
       />
       <div className="public-page public-page-wide">
         <section className="content-card public-hero-card">
-          <span className="alert-pill alert-pill-soft">How coordination works</span>
-          <h1>A simple workflow designed for urgent coordination.</h1>
+          <span className="alert-pill alert-pill-soft">How it works</span>
+          <h1>From request to donor response in three steps.</h1>
           <p>
-            The platform keeps the process short, clear, and easy to follow for donors, receivers, and operational teams.
+            When someone needs blood, every minute counts. BloodLink connects patients, donors, and hospitals through
+            one system instead of scattered WhatsApp and Facebook posts.
           </p>
         </section>
         <div className="timeline-grid">

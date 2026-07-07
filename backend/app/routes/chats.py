@@ -103,10 +103,8 @@ def _validate_receiver_chat_target(db: Session, receiver: User, target_user: Use
     if not request or request.created_by_user_id != receiver.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Request not found")
 
-    if target_user.role == UserRole.DONOR:
-        donor = db.scalar(select(DonorProfile).where(DonorProfile.user_id == target_user.id))
-        if donor is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Donor profile not found")
+    if target_user.donor_profile is not None:
+        donor = target_user.donor_profile
         existing_match = db.scalar(
             select(DonationMatch)
             .where(DonationMatch.request_id == request.id)
@@ -170,8 +168,6 @@ def create_chat(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> ChatDetailOut:
-    if current_user.role != UserRole.RECEIVER:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only receivers can start new conversations")
     target_user = db.get(User, payload.target_user_id)
     if not target_user or not target_user.is_active:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Target user not found")

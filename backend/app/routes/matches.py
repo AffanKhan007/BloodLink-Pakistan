@@ -24,7 +24,7 @@ def _get_owned_match(db: Session, match_id: int, user: User) -> DonationMatch:
     if not match:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Match not found")
 
-    if user.role == UserRole.DONOR and match.donor.user_id != user.id:
+    if user.role == UserRole.USER and match.donor.user_id != user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
     return match
 
@@ -82,7 +82,7 @@ def list_request_matches(
     request = db.get(BloodRequest, request_id)
     if not request:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Request not found")
-    if current_user.role == UserRole.RECEIVER and request.created_by_user_id != current_user.id:
+    if current_user.role == UserRole.USER and request.created_by_user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
 
     matches = list(
@@ -99,7 +99,7 @@ def list_request_matches(
 @router.get("/me", response_model=list[MatchDetailOut])
 def my_matches(
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.DONOR)),
+    current_user: User = Depends(require_roles(UserRole.USER)),
 ) -> list[MatchDetailOut]:
     donor = db.scalar(select(DonorProfile).where(DonorProfile.user_id == current_user.id))
     if not donor:
@@ -119,7 +119,7 @@ def my_matches(
 def accept_match(
     match_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.DONOR)),
+    current_user: User = Depends(require_roles(UserRole.USER)),
 ) -> MatchOut:
     match = _get_owned_match(db, match_id, current_user)
     match.status = MatchStatus.ACCEPTED
@@ -139,7 +139,7 @@ def accept_match(
 def reject_match(
     match_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.DONOR)),
+    current_user: User = Depends(require_roles(UserRole.USER)),
 ) -> MatchOut:
     match = _get_owned_match(db, match_id, current_user)
     match.status = MatchStatus.REJECTED
@@ -162,7 +162,7 @@ def complete_match(
     current_user: User = Depends(get_current_user),
 ) -> MatchOut:
     match = _get_owned_match(db, match_id, current_user)
-    if current_user.role not in {UserRole.ADMIN, UserRole.DONOR}:
+    if current_user.role not in {UserRole.ADMIN, UserRole.USER}:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
     match.status = MatchStatus.COMPLETED
     match.completed_at = datetime.now(timezone.utc)

@@ -34,6 +34,7 @@ def get_matching_donors(db: Session, request: BloodRequest) -> list[DonorProfile
     compatible_groups = compatible_donor_groups(request.blood_group_needed)
     statement = (
         select(DonorProfile)
+        .where(DonorProfile.user_id != request.created_by_user_id)
         .where(DonorProfile.blood_group.in_(compatible_groups))
         .where(DonorProfile.city == request.city)
         .where(DonorProfile.availability_status == "available")

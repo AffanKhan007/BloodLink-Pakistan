@@ -4,18 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BloodLink Pakistan</title>
-    <script>
-      (function () {
-        var mode = localStorage.getItem("bloodlink-theme");
-        var theme;
-        if (mode === "dark" || mode === "light") {
-          theme = mode;
-        } else {
-          theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-        }
-        document.documentElement.setAttribute("data-theme", theme);
-      })();
-    </script>
   </head>
   <body>
     <div id="root"></div>

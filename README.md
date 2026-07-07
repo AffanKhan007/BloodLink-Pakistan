@@ -42,36 +42,38 @@ Blood donation coordination in Pakistan is often handled through scattered socia
 
 ## Solution
 BloodLink focuses on a realistic MVP:
-- Donors register and create city-based donor profiles.
-- Receivers create blood requests with hospital details and upload a hospital slip in the same flow.
+- Users register with a single account and can optionally set up a donor profile, create blood requests, or both.
+- Donor profiles are city-based with blood-group, availability, and recency tracking.
+- Blood requests include hospital details and slip uploads.
 - Matching happens automatically using city, blood-group compatibility, donor availability, and donation recency rules.
-- Donors can stay private or mark themselves publicly available for compatible receiver outreach in-app.
-- Receivers can also discover blood banks and institution donors in the same city.
+- Donors can stay private or mark themselves publicly available for compatible outreach in-app.
+- Users can discover blood banks and institution donors in the same city.
 - Institution donors register through a separate verification flow and only become publicly visible after admin approval.
-- Chat and notifications keep receiver-to-donor and receiver-to-institution coordination inside the platform.
+- Chat and notifications keep coordination inside the platform.
 - Admins act as the trust and moderation layer, with analytics, audit logs, reports, and system-wide visibility.
 
 ## MVP features
-- Donor registration and login
-- Receiver registration and login
+- User registration and login
 - Institution donor self-registration and login
 - Institution approval flow with pending, approved, rejected, and suspended states
 - Admin login through seed data
 - Donor profile creation, availability management, and public visibility toggle
-- Receiver profile foundation and blood request creation with required hospital slip upload
+- Blood request creation with required hospital slip upload
 - Automatic donor matching by blood-group compatibility, city, availability, and donation recency
+- Automatic exclusion of request creator from own matches
 - Donor accept or reject flow for assigned matches
-- Receiver views for matched donors, public donors, blood banks, and institutions in the request city
+- Views for matched donors, public donors, blood banks, and institutions in the request city
 - Blood bank inventory management with unit creation, summary metrics, and city-request visibility
 - Hospital staff workspace for hospital-originated request intake
 - Institution donor workspace with status-based access control and admin approval gating
-- Simple in-app messaging between receivers and matched donors, public donors, blood banks, and institutions
+- Simple in-app messaging between request creators and matched donors, public donors, blood banks, and institutions
 - FastAPI WebSocket support for real-time chat in active conversation views
 - In-app notifications
 - Basic admin dashboard, analytics, reports, and audit trail
 - Pakistan city seed data with room to extend later
 - Search and filter flows for donors, requests, hospital demand, and blood bank inventory
-- Modern responsive healthcare UI with reusable cards, badges, alerts, modals, and empty states
+- Modern responsive healthcare UI with reusable cards, badges, alerts, modals, empty states, and animated focus styles
+- Simplified single-theme design (no dark mode or theme switching)
 - API versioning at `/api/v1`
 - Redis, MinIO, worker, and scheduler Docker services
 - Docker Compose setup for frontend, backend, and PostgreSQL
@@ -120,43 +122,40 @@ bloodlink-pakistan/
 ```
 
 ## User roles
-- Donor: manages only their own donor profile, sees only relevant requests or matches, can reply in valid chats, and can optionally appear as a public donor in their city.
-- Receiver / Patient Attendant: manages only their own requests, uploads hospital slips, tracks matches, discovers public donors, blood banks, and institutions, and opens role-safe chats.
-- Admin: reviews users, donors, receivers, requests, reports, matches, and audit logs across the whole platform.
+- User: a single account that can both create a donor profile and submit blood requests. Users can optionally set up a donor profile (blood group, city, availability) to appear in matching, or create and track blood requests — or both — from one dashboard.
+- Admin: reviews users, donors, requests, reports, matches, and audit logs across the whole platform.
 - Hospital Staff: works only inside the assigned hospital workspace and creates hospital-originated requests.
 - Blood Bank Staff: works only inside the assigned blood bank scope, manages inventory, and monitors city demand.
 - Institution Donor: registers through a separate verification flow and only gets full institution features after admin approval.
 
 ## Permissions
-- Donor can only manage their own donor profile.
-- Donor can only view requests relevant to the donor experience and respond to their own matches.
-- Donor cannot browse all requests or access admin areas.
-- Donor can only accept or reject matches assigned to them.
-- Receiver can only manage their own blood requests.
-- Receiver can only view matches related to their own requests and only contact valid in-scope donors or organizations.
+- Users create an account as a single identity and can optionally set up a donor profile, create blood requests, or both.
+- Donor profile owners can only manage their own profile and respond to their own matches; they can view matching requests but not browse all requests or access admin areas.
+- Users who create blood requests can only manage their own requests and can only view matches related to those requests.
+- Chat is available only between users connected through a valid request context (match, public donor, blood bank, or institution in the same city as the request).
 - Hospital staff can only operate within their assigned hospital.
 - Blood bank staff can only operate within their assigned blood bank.
-- Pending, rejected, and suspended institutions cannot access full institution features, public visibility, or receiver messaging.
+- Pending, rejected, and suspended institutions cannot access full institution features, public visibility, or request-creator messaging.
 - Approved institution donors can manage their own institution profile and message threads.
 - Admin can manage all users, donors, requests, matches, reports, and audit logs.
 - Admin can approve, reject, or suspend institution accounts from the protected admin workspace.
 
 ## System workflow
-1. A donor or receiver creates an account, or an institution submits a separate verification registration.
-2. A receiver or hospital staff member creates a blood request and uploads the supporting slip.
-3. BloodLink automatically looks for compatible donors in the same city.
-4. Candidate matches are created and donors receive notifications.
-5. Admin reviews institution registrations and approves only legitimate organizations for public visibility.
-6. Receivers can discover public donors, blood banks, and approved institutions in the same city.
-7. Donors accept or reject assigned matches.
-8. Receivers track confirmed donor counts, message valid contacts, and mark the request fulfilled.
-9. Admins monitor users, reports, inventory visibility, and audit history.
+1. A user creates an account, or an institution submits a separate verification registration.
+2. The user can optionally set up a donor profile (blood group, city, availability).
+3. The user or hospital staff creates a blood request with supporting slip upload.
+4. BloodLink automatically looks for compatible donors in the same city, excluding the request creator.
+5. Candidate matches are created and donors receive notifications.
+6. Admin reviews institution registrations and approves only legitimate organizations for public visibility.
+7. Users can discover public donors, blood banks, and approved institutions in their request city.
+8. Donors accept or reject assigned matches.
+9. Users track confirmed donor counts, message valid contacts, and mark the request fulfilled.
+10. Admins monitor users, reports, inventory visibility, and audit history.
 
 ## Database overview
 Core tables in the MVP include:
 - `users`
 - `donor_profiles`
-- `receiver_profiles`
 - `blood_requests`
 - `request_documents`
 - `donation_matches`
@@ -241,31 +240,35 @@ alembic upgrade head
 
 ## Seed data
 Included sample data:
-- 1 admin user
-- 3 donor users with different blood groups
-- 2 receiver users
-- 1 institution donor user
-- 3 sample blood requests
-- 2 sample donation matches
-- 1 sample hospital
-- 1 sample blood bank
-- 1 approved sample institution profile
-- Major Pakistan city seed data
-- Sample notifications and chat history
+- 1 admin user, 1 hospital admin, 1 blood bank admin
+- 8 donor profiles (different cities, blood groups, verification statuses — approved, pending, rejected)
+- 5 users who created blood requests (various statuses — matched, approved, pending review, rejected, cancelled)
+- 2 institution donor users
+- 7 blood requests (different urgency levels and hospitals)
+- 4 donation matches (accepted, pending, rejected)
+- 5 hospitals, 3 blood banks, 5 blood units (various statuses)
+- 2 institution profiles (approved)
+- 2 chat conversations with 3 messages each
+- 7 notifications across different users
+- 2 reports (pending + reviewed)
+- 3 audit logs
+- 8 Pakistan city records
 
 Default test admin:
 - Email: `admin@bloodlink.pk`
 - Password: `Admin12345`
 
 Other useful seeded accounts:
-- Hospital admin: `hospital.admin@bloodlink.pk` / `Hospital12345`
-- Blood bank admin: `bloodbank.admin@bloodlink.pk` / `BloodBank12345`
+- Hospital admin (Services Hospital Lahore): `hospital.admin@bloodlink.pk` / `Hospital12345`
+- Blood bank admin (Lahore Central Blood Bank): `bloodbank.admin@bloodlink.pk` / `BloodBank12345`
 - Institution donor: `institution@bloodlink.pk` / `Institution12345`
+- Sample donor: `ali.donor@bloodlink.pk` / `Donor12345`
+- Sample request creator: `sara.receiver@bloodlink.pk` / `Receiver12345`
 
 Institution approval note:
 - New institution registrations start as `pending_approval`
 - Pending institutions are redirected to a verification progress screen
-- Only `approved` institutions appear in receiver listings and can use institution messaging
+- Only `approved` institutions appear in request-creator listings and can use institution messaging
 - `rejected` institutions can correct details and resubmit for review
 - `suspended` institutions lose institution access until restored by admin
 
@@ -291,7 +294,7 @@ cat backup.sql | docker exec -i bloodlink-postgres psql -U blood_user -d blood_a
 - JWT-based authentication protects private routes.
 - Uploaded files are stored on disk, not in PostgreSQL.
 - Uploaded hospital slips are served only through authorized backend routes.
-- Donor phone numbers are not exposed in receiver-facing match listings.
+- Donor phone numbers are not exposed in request-creator-facing match listings.
 - `.env`, uploads, and generated local artifacts are ignored by Git.
 
 ## Testing
@@ -317,8 +320,9 @@ pytest
 
 Manual frontend verification covers:
 - Public landing, about, and how-it-works pages
-- Donor, receiver, admin, hospital, blood bank, and institution dashboards
-- Receiver request creation with hospital slip upload
+- Unified user dashboard, donor profile, matching, and request management
+- Admin, hospital, blood bank, and institution dashboards
+- Blood request creation with hospital slip upload
 - Public donor, blood bank, institution, and chat flows
 - Responsive layout behavior across mobile and desktop widths
 - Search and filter interactions for donor/request/inventory lists
@@ -339,7 +343,6 @@ This application is not a replacement for hospitals, licensed blood banks, medic
 - No real SMS or WhatsApp notifications in MVP
 - No NADRA verification
 - No medical approval workflow
-- Donor, receiver, and request moderation are auto-approved in the MVP instead of manually reviewed
 - No full production blood bank inventory lifecycle yet beyond the current foundation
 - Real-time chat does not yet include typing indicators, read receipts, or offline sync state
 - No mobile app yet
@@ -350,7 +353,6 @@ This application is not a replacement for hospitals, licensed blood banks, medic
 - Phone OTP
 - CNIC upload
 - Admin approval for donor profiles
-- Admin approval for receiver requests
 - Admin approval for blood requests
 - Admin document review enhancements
 - Donor health questionnaire

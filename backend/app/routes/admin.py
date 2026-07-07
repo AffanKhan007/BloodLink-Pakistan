@@ -84,7 +84,11 @@ def list_receivers(
     current_user: User = Depends(require_roles(*ADMIN_ROLES)),
 ) -> list[AdminUserSummary]:
     users = list(
-        db.scalars(select(User).where(User.role == UserRole.RECEIVER).order_by(User.created_at.desc())).all()
+        db.scalars(
+            select(User)
+            .where(User.created_requests.any())
+            .order_by(User.created_at.desc())
+        ).all()
     )
     return [AdminUserSummary.model_validate(user) for user in users]
 
