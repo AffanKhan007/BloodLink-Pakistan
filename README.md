@@ -1,7 +1,6 @@
-![Project Screenshot](docs/images/screenshot.png)
 # BloodLink Pakistan
 
-A production-style blood donation and blood bank coordination platform for Pakistan that connects donors, receivers, hospitals, blood banks, institution donors, and admins through verified request capture, automatic matching, messaging, and status tracking.
+A production-style blood donation coordination platform for Pakistan that unifies donors, request creators, hospitals, blood banks, institution donors, and admins through a single-account identity model, verified request capture, automatic city-and-blood-group matching, real-time chat, and role-based dashboards.
 
 ## Built with
 
@@ -20,65 +19,61 @@ A production-style blood donation and blood bank coordination platform for Pakis
 </p>
 
 <p align="left">
-  <img src="https://img.shields.io/badge/Alembic-Migrations-6C47FF?style=for-the-badge" alt="Alembic migrations" />
+  <img src="https://img.shields.io/badge/Alembic%20Migrations-6C47FF?style=for-the-badge" alt="Alembic migrations" />
   <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=FFD43B" alt="Python" />
   <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=1F2328" alt="JavaScript" />
 </p>
 
-- Frontend: React + Vite
-- Backend: FastAPI
-- Database: PostgreSQL
-- ORM and migrations: SQLAlchemy + Alembic
-- Cache and queue support: Redis
-- Object storage foundation: MinIO
-- Containerization: Docker + Docker Compose
-
-<!-- ![Project Screenshot](docs/images/screenshot.png) -->
-
-![Demo GIF](docs/images/demo.gif)
+- **Frontend**: React + Vite + Lucide React + custom CSS design system with animated focus rings, skew-based sidebar navigation effects, and a responsive card-friendly layout
+- **Backend**: FastAPI with modular route handlers (auth, donors, requests, matches, chats, notifications, hospitals, blood banks, institutions, reports, admin, uploads, cities)
+- **Database**: PostgreSQL with SQLAlchemy ORM + Alembic migrations
+- **Real-time**: Redis-backed WebSocket chat via FastAPI WebSockets
+- **Object storage**: MinIO for uploaded document storage
+- **Infrastructure**: Docker Compose with frontend, backend, PostgreSQL, Redis, MinIO, worker, and scheduler services
 
 ## Problem statement
-Blood donation coordination in Pakistan is often handled through scattered social posts, informal donor lists, and unverifiable requests. That creates fake appeal risk, poor privacy practices, manual back-and-forth, and weak request tracking once a donor is found.
+
+Blood donation coordination in Pakistan is often handled through scattered social media posts, informal WhatsApp groups, and unverifiable requests. This creates fake appeal risk, poor privacy practices, manual back-and-forth, and weak tracking once a donor is found.
 
 ## Solution
-BloodLink focuses on a realistic MVP:
-- Users register with a single account and can optionally set up a donor profile, create blood requests, or both.
-- Donor profiles are city-based with blood-group, availability, and recency tracking.
-- Blood requests include hospital details and slip uploads.
-- Matching happens automatically using city, blood-group compatibility, donor availability, and donation recency rules.
-- Donors can stay private or mark themselves publicly available for compatible outreach in-app.
-- Users can discover blood banks and institution donors in the same city.
-- Institution donors register through a separate verification flow and only become publicly visible after admin approval.
-- Chat and notifications keep coordination inside the platform.
-- Admins act as the trust and moderation layer, with analytics, audit logs, reports, and system-wide visibility.
+
+BloodLink provides a realistic MVP with a single-account identity model:
+
+- **One account, both roles**: Every user registers with a single `USER` account and can optionally set up a donor profile, create blood requests, or do both — no separate donor/receiver registration.
+- **Donor profiles** are city-based with blood group, availability status, last donation date, and public/private visibility toggle.
+- **Blood requests** include patient details, hospital, ward/room, urgency level, required-by date, supporting document upload.
+- **Matching** runs automatically on city, blood-group compatibility, donor availability, and donation recency — excluding the request creator's own profile.
+- **Donors accept or reject** assigned matches; request creators track confirmed donor counts.
+- **Blood bank inventory** tracks units by blood group, component type, testing status, expiry, and storage location — with QR code identifiers.
+- **Hospital workspace** allows hospital staff to create and manage their own requests independently.
+- **Institution donors** register through a separate verification flow and only become publicly visible after admin approval (with pending/rejected/suspended states).
+- **Chat and notifications** keep coordination inside the platform, with WebSocket real-time messaging.
+- **Admins** act as the trust and moderation layer with analytics, audit logs, reports, and system-wide visibility.
 
 ## MVP features
-- User registration and login
-- Institution donor self-registration and login
-- Institution approval flow with pending, approved, rejected, and suspended states
-- Admin login through seed data
-- Donor profile creation, availability management, and public visibility toggle
-- Blood request creation with required hospital slip upload
+
+- User registration and login (single-account identity, no role picker)
+- Institution donor self-registration with admin approval flow (pending, approved, rejected, suspended)
+- Donor profile creation, availability toggle, and public/private visibility
+- Blood request creation with hospital slip upload
 - Automatic donor matching by blood-group compatibility, city, availability, and donation recency
-- Automatic exclusion of request creator from own matches
-- Donor accept or reject flow for assigned matches
-- Views for matched donors, public donors, blood banks, and institutions in the request city
-- Blood bank inventory management with unit creation, summary metrics, and city-request visibility
-- Hospital staff workspace for hospital-originated request intake
-- Institution donor workspace with status-based access control and admin approval gating
-- Simple in-app messaging between request creators and matched donors, public donors, blood banks, and institutions
-- FastAPI WebSocket support for real-time chat in active conversation views
+- Donor accept/reject flow for assigned matches
+- Matched donors, public donors, blood banks, and institution discovery views
+- Blood bank inventory management with unit creation, testing status, expiry tracking, component types, and city-request visibility
+- Hospital staff workspace for hospital-originated requests
+- Institution donor workspace with status-based access control
+- In-app messaging (WebSocket real-time chat) between matched parties
 - In-app notifications
-- Basic admin dashboard, analytics, reports, and audit trail
-- Pakistan city seed data with room to extend later
-- Search and filter flows for donors, requests, hospital demand, and blood bank inventory
-- Modern responsive healthcare UI with reusable cards, badges, alerts, modals, empty states, and animated focus styles
-- Simplified single-theme design (no dark mode or theme switching)
+- Admin dashboard with user, donor, request, match, report, and audit-log management
+- Reports (user-submitted) with pending/reviewed status
+- Audit log tracking for admin actions (approve/reject donor, approve/reject request, etc.)
+- Pakistan city seed data (8 cities, extensible)
+- Search and filter flows for donors, requests, blood bank inventory, and institutions
+- Responsive UI with reusable card system, badges, alerts, modals, empty/skeleton states, and animated focus rings
+- Single-theme design system — no dark mode or theme switching
 - API versioning at `/api/v1`
 - Redis, MinIO, worker, and scheduler Docker services
-- Docker Compose setup for frontend, backend, and PostgreSQL
-- PostgreSQL backup and restore notes
-- Responsive UI for mobile and desktop
+- Docker Compose setup (frontend, backend, PostgreSQL, Redis, MinIO)
 
 ## Tech stack
 - Frontend: React + Vite + Lucide React + custom modern CSS design system
@@ -90,84 +85,107 @@ BloodLink focuses on a realistic MVP:
 - Containerization: Docker + Docker Compose
 
 ## Project structure
+
 ```text
 bloodlink-pakistan/
-|- frontend/
-|  |- src/
-|  |- public/
-|  |- package.json
-|  |- Dockerfile
-|  `- .env.example
-|- backend/
-|  |- app/
-|  |  |- api/
-|  |  |- core/
-|  |  |- models/
-|  |  |- routes/
-|  |  |- schemas/
-|  |  |- services/
-|  |  |- tests/
-|  |  |- worker.py
-|  |  `- scheduler.py
-|  |- alembic/
-|  |- requirements.txt
-|  |- Dockerfile
-|  `- .env.example
-|- docs/
-|- docker-compose.yml
-|- .env.example
-|- .gitignore
-|- AGENTS.md
-`- README.md
+├── frontend/
+│   ├── src/
+│   │   ├── api/               # API client, request helpers
+│   │   ├── auth/              # Auth context, token management
+│   │   ├── components/        # Layout, PageTransition, PublicHeader,
+│   │   │                     # PublicFooter, SocialRow, request/modals
+│   │   ├── pages/
+│   │   │   ├── public/        # Landing, About, HowItWorks
+│   │   │   ├── auth/          # Login, Register
+│   │   │   └── dashboard/     # User, Admin, Hospital, BloodBank,
+│   │   │                      # Institution dashboards
+│   │   ├── App.jsx
+│   │   ├── main.jsx
+│   │   └── styles.css         # Design system: tokens, cards, forms,
+│   │                          # sidebar nav-skew effect, responsive
+│   ├── public/
+│   ├── package.json
+│   ├── Dockerfile
+│   └── .env.example
+├── backend/
+│   ├── app/
+│   │   ├── core/              # Config, database, security, dependencies
+│   │   ├── models/            # SQLAlchemy models (14 tables)
+│   │   ├── routes/            # auth, donors, requests, matches, chats,
+│   │   │                     # notifications, hospitals, blood_banks,
+│   │   │                     # institutions, reports, admin, uploads, cities
+│   │   ├── schemas/           # Pydantic request/response schemas
+│   │   ├── services/          # matching, notifications, audit, chat_realtime
+│   │   ├── tests/             # pytest test suite
+│   │   ├── main.py            # FastAPI app entry
+│   │   ├── seed.py            # 18 users, 8 donor profiles, 7 requests, etc.
+│   │   ├── worker.py          # Redis task worker
+│   │   └── scheduler.py       # Scheduled job runner
+│   ├── alembic/               # Migration versions (5 migrations)
+│   ├── requirements.txt
+│   ├── Dockerfile
+│   └── .env.example
+├── docs/                      # Assets, image placeholders
+├── docker-compose.yml         # 7 services (frontend, backend, db, redis,
+│                              # minio, worker, scheduler)
+├── .env.example
+├── .gitignore
+├── AGENTS.md
+└── README.md
 ```
 
 ## User roles
-- User: a single account that can both create a donor profile and submit blood requests. Users can optionally set up a donor profile (blood group, city, availability) to appear in matching, or create and track blood requests — or both — from one dashboard.
-- Admin: reviews users, donors, requests, reports, matches, and audit logs across the whole platform.
-- Hospital Staff: works only inside the assigned hospital workspace and creates hospital-originated requests.
-- Blood Bank Staff: works only inside the assigned blood bank scope, manages inventory, and monitors city demand.
-- Institution Donor: registers through a separate verification flow and only gets full institution features after admin approval.
+
+| Role | Description |
+|---|---|
+| `USER` | Single account identity — can create a donor profile, submit blood requests, or both from one dashboard. This is the default registration role. |
+| `ADMIN` | Full system-wide visibility: manages users, donors, requests, matches, reports, audit logs, and institution approvals. |
+| `SUPER_ADMIN` | Extended admin with platform-wide coordination. Same permissions as `ADMIN`. |
+| `OPERATIONS_AGENT` | Focused operational view: manages blood requests and reports. |
+| `HOSPITAL_ADMIN` / `HOSPITAL_STAFF` | Hospital-scoped workspace: creates and manages hospital-originated blood requests within the assigned hospital. |
+| `BLOOD_BANK_ADMIN` / `BLOOD_BANK_STAFF` | Blood-bank-scoped workspace: manages inventory, blood unit lifecycle, testing status, and city-level request visibility. |
+| `INSTITUTION_DONOR` | Organization-level account (university, NGO, blood society). Registers through a separate verification flow. Features unlock only after admin approval. |
 
 ## Permissions
-- Users create an account as a single identity and can optionally set up a donor profile, create blood requests, or both.
-- Donor profile owners can only manage their own profile and respond to their own matches; they can view matching requests but not browse all requests or access admin areas.
-- Users who create blood requests can only manage their own requests and can only view matches related to those requests.
+
+- Every `USER` can create a donor profile, manage their own blood requests, view their matches, chat with matched parties, and discover public donors, blood banks, and approved institutions.
 - Chat is available only between users connected through a valid request context (match, public donor, blood bank, or institution in the same city as the request).
-- Hospital staff can only operate within their assigned hospital.
-- Blood bank staff can only operate within their assigned blood bank.
-- Pending, rejected, and suspended institutions cannot access full institution features, public visibility, or request-creator messaging.
-- Approved institution donors can manage their own institution profile and message threads.
-- Admin can manage all users, donors, requests, matches, reports, and audit logs.
-- Admin can approve, reject, or suspend institution accounts from the protected admin workspace.
+- Hospital staff operate only within their assigned hospital.
+- Blood bank staff operate only within their assigned blood bank.
+- Institution donors with `pending_approval` status see only a verification progress screen. `rejected` institutions can correct and resubmit. `suspended` institutions lose all institution features until restored by admin. Only `approved` institutions appear in public listings and can use messaging.
+- Admin can manage all users, donors, requests, matches, reports, audit logs, and institution approvals.
+- Admin can approve, reject, or suspend institution accounts.
 
 ## System workflow
-1. A user creates an account, or an institution submits a separate verification registration.
-2. The user can optionally set up a donor profile (blood group, city, availability).
-3. The user or hospital staff creates a blood request with supporting slip upload.
-4. BloodLink automatically looks for compatible donors in the same city, excluding the request creator.
-5. Candidate matches are created and donors receive notifications.
+
+1. A user creates an account (`USER` role) or an institution submits a separate verification registration (`INSTITUTION_DONOR` role).
+2. The user can optionally set up a donor profile (blood group, city, availability, public/private toggle).
+3. The user or hospital staff creates a blood request with a supporting hospital slip upload.
+4. BloodLink automatically finds compatible donors in the same city, excluding the request creator's own donor profile.
+5. Candidate matches are created and donors receive in-app notifications.
 6. Admin reviews institution registrations and approves only legitimate organizations for public visibility.
 7. Users can discover public donors, blood banks, and approved institutions in their request city.
 8. Donors accept or reject assigned matches.
-9. Users track confirmed donor counts, message valid contacts, and mark the request fulfilled.
-10. Admins monitor users, reports, inventory visibility, and audit history.
+9. Users track confirmed donor counts, message matched parties via real-time chat, and mark the request fulfilled.
+10. Admins monitor users, reports, inventory visibility, and audit history — with full moderation tools.
 
-## Database overview
-Core tables in the MVP include:
-- `users`
-- `donor_profiles`
-- `blood_requests`
-- `request_documents`
-- `donation_matches`
-- `blood_banks`
-- `blood_units`
-- `institutions`
-- `chats`
-- `chat_messages`
-- `notifications`
-- `reports`
-- `audit_logs`
-- `cities`
+## Database tables
+
+- `users` — single-account identity; stores `role` enum, `hospital_id` and `blood_bank_id` for scoped roles
+- `donor_profiles` — blood group, city, area, age, gender, last donation date, availability, public visibility, verification status, health notes
+- `blood_requests` — patient name, blood group needed, units, hospital name, city, area, ward/room, urgency, required-by, status, attendant info, attachments
+- `request_documents` — uploaded hospital slip files linked to a request
+- `donation_matches` — links a donor to a request; status (pending, accepted, rejected, fulfilled) with timestamps
+- `blood_banks` — name, city, area, contact, license, linked hospital
+- `blood_units` — unit code, QR code, blood group, component type, units available, collection/expiry dates, testing status, storage location, linked to donor and blood bank
+- `hospitals` — name, city, area, address, phone, verification status
+- `institutions` — type, city, area, contact person, blood groups, website, admin approval status
+- `chats` — two participants linked to a request context
+- `chat_messages` — sender, message text, timestamp
+- `notifications` — user, title, message, read status
+- `reports` — reporter, reported user, request, reason, status
+- `audit_logs` — admin user, action, entity type/id, details
+- `cities` — name, province, sort order
 
 ## API documentation
 - FastAPI Swagger docs: [http://localhost:8000/docs](http://localhost:8000/docs)
@@ -208,6 +226,8 @@ Expected local URLs:
 - MinIO API: [http://localhost:9000](http://localhost:9000)
 - MinIO Console: [http://localhost:9001](http://localhost:9001)
 
+> **Note**: If Docker reports a DNS resolution error for apt / pip / npm during build, add `"dns": ["8.8.8.8", "1.1.1.1"]` to Docker Desktop's `daemon.json` and restart Docker.
+
 ## Local setup without Docker
 ### Frontend
 ```bash
@@ -239,38 +259,46 @@ alembic upgrade head
 ```
 
 ## Seed data
-Included sample data:
-- 1 admin user, 1 hospital admin, 1 blood bank admin
-- 8 donor profiles (different cities, blood groups, verification statuses — approved, pending, rejected)
-- 5 users who created blood requests (various statuses — matched, approved, pending review, rejected, cancelled)
-- 2 institution donor users
-- 7 blood requests (different urgency levels and hospitals)
-- 4 donation matches (accepted, pending, rejected)
-- 5 hospitals, 3 blood banks, 5 blood units (various statuses)
-- 2 institution profiles (approved)
-- 2 chat conversations with 3 messages each
-- 7 notifications across different users
-- 2 reports (pending + reviewed)
-- 3 audit logs
-- 8 Pakistan city records
 
-Default test admin:
-- Email: `admin@bloodlink.pk`
-- Password: `Admin12345`
+Run `python -m app.seed` after `alembic upgrade head` to populate sample data.
 
-Other useful seeded accounts:
-- Hospital admin (Services Hospital Lahore): `hospital.admin@bloodlink.pk` / `Hospital12345`
-- Blood bank admin (Lahore Central Blood Bank): `bloodbank.admin@bloodlink.pk` / `BloodBank12345`
-- Institution donor: `institution@bloodlink.pk` / `Institution12345`
-- Sample donor: `ali.donor@bloodlink.pk` / `Donor12345`
-- Sample request creator: `sara.receiver@bloodlink.pk` / `Receiver12345`
+### Counts
 
-Institution approval note:
-- New institution registrations start as `pending_approval`
-- Pending institutions are redirected to a verification progress screen
-- Only `approved` institutions appear in request-creator listings and can use institution messaging
-- `rejected` institutions can correct details and resubmit for review
-- `suspended` institutions lose institution access until restored by admin
+| Entity | Count | Notes |
+|---|---|---|
+| Cities | 8 | Lahore, Karachi, Islamabad, Rawalpindi, Faisalabad, Multan, Peshawar, Quetta |
+| Users | 18 | 1 admin, 1 hospital admin, 1 blood bank admin, 8 donor-profile users, 5 request-creator users, 2 institution users |
+| Donor profiles | 8 | Various blood groups, cities, verification statuses (6 approved, 1 pending, 1 rejected) |
+| Blood requests | 7 | 2 matched, 2 approved, 1 pending review, 1 rejected, 1 cancelled |
+| Donation matches | 4 | 2 accepted, 1 pending, 1 rejected |
+| Hospitals | 5 | Lahore, Karachi, Islamabad, Multan, Peshawar — all verified |
+| Blood banks | 3 | Lahore Central, Jinnah (Karachi), PIMS (Islamabad) |
+| Blood units | 5 | Available, testing pending, reserved, expired |
+| Institutions | 2 | Punjab University Donor Society, Edhi Foundation — both approved |
+| Chats | 2 | 3 messages each |
+| Notifications | 7 | Across donors, request creators, and admin |
+| Reports | 2 | 1 pending, 1 reviewed |
+| Audit logs | 3 | Donor approve, donor reject, request approve |
+
+### Test accounts
+
+| Email | Password | Role |
+|---|---|---|
+| `admin@bloodlink.pk` | `Admin12345` | ADMIN |
+| `hospital.admin@bloodlink.pk` | `Hospital12345` | HOSPITAL_ADMIN |
+| `bloodbank.admin@bloodlink.pk` | `BloodBank12345` | BLOOD_BANK_ADMIN |
+| `institution@bloodlink.pk` | `Institution12345` | INSTITUTION_DONOR |
+| `edhi.institution@bloodlink.pk` | `Institution12345` | INSTITUTION_DONOR |
+| `ali.donor@bloodlink.pk` | `Donor12345` | USER (donor profile) |
+| `sara.receiver@bloodlink.pk` | `Receiver12345` | USER (request creator) |
+
+All 8 donor users use password `Donor12345`. All 5 request creator users use password `Receiver12345`.
+
+### Institution approval note
+
+- New institution registrations start as `pending_approval` and see only a verification-progress screen.
+- Only `approved` institutions appear in public listings and can use messaging.
+- Admin can approve, reject, or suspend institutions.
 
 ## Backup and restore
 Backup:
@@ -282,6 +310,14 @@ Restore:
 ```bash
 cat backup.sql | docker exec -i bloodlink-postgres psql -U blood_user -d blood_app
 ```
+
+## Frontend UI notes
+
+- **Public pages**: Landing, About, and How It Works pages use a clean stacked-card layout with hero stats, feature cards, step timeline, and testimonials — no icons in step cards, varied grid rhythm, sticky scroll-shrink header with backdrop blur.
+- **Sidebar nav**: All nav links across every role use a skewX(-15deg) CTA-style button with a stagger-animated arrow SVG (three paths sliding from translateX offsets) and a color-pulse fill animation on hover. The effect uses hard box-shadow offsets that grow and change color on hover.
+- **Social row**: A compact 3D-skew social media row (Facebook, Twitter, Instagram) appears in the public footer via `react-icons/fa`.
+- **Footer**: Slim two-row layout — brand + tagline on the left, SocialRow on the right, copyright centered below.
+- **Focus ring**: Global animated `:focus-visible` ring with 180ms scale/opacity keyframe. `:focus:not(:focus-visible)` hides the ring on mouse clicks. Respects `prefers-reduced-motion: reduce`.
 
 ## Validation and security notes
 - Valid Pakistani mobile number format is enforced.
@@ -339,73 +375,50 @@ This MVP intentionally avoids paid integrations and complex production orchestra
 ## Medical and legal disclaimer
 This application is not a replacement for hospitals, licensed blood banks, medical screening, or transfusion approval. Final blood testing, crossmatching, and transfusion decisions must be handled by authorized hospitals or blood banks.
 
-## Limitations
-- No real SMS or WhatsApp notifications in MVP
-- No NADRA verification
-- No medical approval workflow
-- No full production blood bank inventory lifecycle yet beyond the current foundation
-- Real-time chat does not yet include typing indicators, read receipts, or offline sync state
-- No mobile app yet
-- No real hospital system integration yet beyond the current hospital workspace foundation
-
 ## Future updates / roadmap
+
 ### Version 1.1: Better verification
-- Phone OTP
-- CNIC upload
-- Admin approval for donor profiles
-- Admin approval for blood requests
-- Admin document review enhancements
+- Phone OTP verification
+- CNIC upload with document review
 - Donor health questionnaire
+- Admin document review enhancements
 - Fake request reporting improvements
-- Better audit logs
+- Enhanced audit logs with diff tracking
 
 ### Version 1.2: Better notifications
-- SMS alerts
+- SMS alerts via Twilio or local provider
 - WhatsApp alerts
-- Email alerts
-- Emergency broadcast
-- Notification preferences
+- Email notifications
+- Emergency broadcast to verified donors
+- Per-user notification preferences
 
-### Version 2: Hospital dashboard
-- Hospital account
-- Hospital-created blood requests
-- Full hospital verification workflow
-- Confirm patient need
-- Confirm donor arrival
-- Mark donation completed
-- Hospital verification badge
-
-### Version 3: Blood bank inventory
-- Blood unit inventory
-- Blood group stock
-- Expiry tracking
-- Testing status
-- Blood component tracking
-- Low-stock alerts
-- Advanced blood bank inventory lifecycle
-
-### Version 4: QR and traceability
-- QR code for blood units
-- Donation record
-- Blood unit movement history
-- Donor-to-blood-bank traceability
-- Blood bank-to-hospital traceability
-
-### Version 5: Mobile app
-- React Native + Expo
-- Same FastAPI backend
-- Same PostgreSQL database
-- Push notifications
-- Camera or gallery upload for documents
-- GPS-based nearby requests
-
-### Version 6: Advanced intelligence
-- AI fake request detection
-- Donor reliability score
-- Demand prediction by city
+### Version 2: Platform intelligence
+- Donor reliability scoring
+- Demand prediction by city / blood group
 - Rare blood group registry
 - Emergency heatmap
-- Advanced analytics
+- Advanced analytics dashboard
+
+### Version 3: Mobile app
+- React Native + Expo
+- Same FastAPI backend and PostgreSQL
+- Push notifications (FCM / APNs)
+- Camera or gallery upload for hospital slips
+- GPS-based nearby requests
+
+### Version 4: Supply chain
+- Full blood unit movement history (donor → bank → hospital → patient)
+- Donor-to-blood-bank traceability
+- Blood bank-to-hospital allocation tracking
+- Low-stock alerts per blood bank
+- Expiry forecast dashboard
+
+### Version 5: Integrations
+- NADRA verification gateway
+- Hospital system API integration (HIS / LIS)
+- Third-party blood bank system integration
+- Real production SMS / WhatsApp provider
+- Payment gateway for institutional donors (optional)
 
 ## License
 MIT. See [LICENSE](LICENSE).
