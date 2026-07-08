@@ -9,7 +9,7 @@ const navLinks = [
 
 export default function PublicHeader({ ctaLabel = "Get started", ctaTo = "/register", compact = false, mobileOpen = false, onToggleMenu, onCloseMenu }) {
   return (
-    <header className={`marketing-header ${compact ? "marketing-header-compact" : ""}`}>
+    <header className="marketing-header">
       <Link className="brand-row" to="/" onClick={onCloseMenu}>
         <div className="brand-mark">
           <Droplets size={18} />
