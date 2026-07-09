@@ -1,7 +1,7 @@
 # AGENTS.md
 
 ## Repo layout
-- `frontend/`: React + Vite web app for public pages and donor, receiver, and admin dashboards.
+- `frontend/`: React + Vite web app for public pages and user, admin, hospital, blood bank, and institution dashboards.
 - `backend/`: FastAPI API, SQLAlchemy models, Alembic migrations, seed script, and tests.
 - `docs/`: documentation assets and placeholder image locations.
 - `docker-compose.yml`: local multi-service development stack.
@@ -30,7 +30,7 @@
 ## Coding conventions
 - Keep the MVP realistic and readable.
 - Prefer explicit route handlers and small service helpers over clever abstractions.
-- Keep backend modules modular: auth, donors, requests, matches, notifications, reports, admin, uploads, audit.
+- Keep backend modules modular: auth, donors, requests, matches, chats, notifications, hospitals, blood_banks, institutions, reports, admin, uploads, cities, audit.
 - Keep frontend responsive and card-friendly on small screens.
 - Use simple readable code over over-engineering.
 - Use descriptive names and avoid hidden business logic in UI components.
@@ -42,7 +42,7 @@
 - Keep uploaded document access behind backend authorization.
 - Preserve role-based access control.
 - Use migrations for database changes.
-- Keep donor contact exposure limited to what the current role actually needs.
+- Keep donor contact exposure limited to what the current role actually needs (phone numbers visible only in confirmed match/chat contexts).
 
 ## Do-not-do rules
 - Do not add roadmap features unless explicitly requested.
@@ -58,10 +58,10 @@
 - Backend docs are available at `/docs`.
 - Users can register and log in.
 - Donors can create profiles.
-- Receivers can create blood requests and upload hospital slips.
-- Admins can approve or reject donors and requests.
+- Users can create blood requests and upload hospital slips.
+- Admins can approve or reject requests and verify institutions.
 - Matching by blood group and city works.
-- Donors can accept or reject assigned matches.
+- Donors can accept or decline assigned matches (declined donors excluded from future matching).
 - Request status updates properly.
 - In-app notifications work.
 - Basic admin dashboard works.
