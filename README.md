@@ -57,7 +57,7 @@ BloodLink provides a realistic MVP with a single-account identity model:
 - Donor profile creation, availability toggle, and public/private visibility
 - Blood request creation with hospital slip upload
 - Automatic donor matching by blood-group compatibility, city, availability, and donation recency
-- Donor accept/reject flow for assigned matches
+- Donor accept/decline flow for assigned matches (declined donors excluded from future matching)
 - Matched donors, public donors, blood banks, and institution discovery views
 - Blood bank inventory management with unit creation, testing status, expiry tracking, component types, and city-request visibility
 - Hospital staff workspace for hospital-originated requests
@@ -69,7 +69,7 @@ BloodLink provides a realistic MVP with a single-account identity model:
 - Audit log tracking for admin actions (approve/reject donor, approve/reject request, etc.)
 - Pakistan city seed data (8 cities, extensible)
 - Search and filter flows for donors, requests, blood bank inventory, and institutions
-- Responsive UI with reusable card system, badges, alerts, modals, empty/skeleton states, and animated focus rings
+- Responsive UI with reusable card system, badges, alerts, modals, empty/skeleton states, and crimson box-shadow glow focus/hover system
 - Single-theme design system — no dark mode or theme switching
 - API versioning at `/api/v1`
 - Redis, MinIO, worker, and scheduler Docker services
@@ -161,11 +161,12 @@ bloodlink-pakistan/
 1. A user creates an account (`USER` role) or an institution submits a separate verification registration (`INSTITUTION_DONOR` role).
 2. The user can optionally set up a donor profile (blood group, city, availability, public/private toggle).
 3. The user or hospital staff creates a blood request with a supporting hospital slip upload.
-4. BloodLink automatically finds compatible donors in the same city, excluding the request creator's own donor profile.
-5. Candidate matches are created and donors receive in-app notifications.
-6. Admin reviews institution registrations and approves only legitimate organizations for public visibility.
+4. Requests start in `pending_review` status and require admin approval to activate matching.
+5. Admin approves or rejects the request; approval triggers automatic match creation with compatible donors.
+6. Matched donors receive in-app notifications and can accept or decline. Declined donors are excluded from future matching.
+7. Admin reviews institution registrations and approves only legitimate organizations for public visibility.
 7. Users can discover public donors, blood banks, and approved institutions in their request city.
-8. Donors accept or reject assigned matches.
+8. Donors accept or decline assigned matches.
 9. Users track confirmed donor counts, message matched parties via real-time chat, and mark the request fulfilled.
 10. Admins monitor users, reports, inventory visibility, and audit history — with full moderation tools.
 
@@ -314,10 +315,10 @@ cat backup.sql | docker exec -i bloodlink-postgres psql -U blood_user -d blood_a
 ## Frontend UI notes
 
 - **Public pages**: Landing, About, and How It Works pages use a clean stacked-card layout with hero stats, feature cards, step timeline, and testimonials — no icons in step cards, varied grid rhythm, sticky scroll-shrink header with backdrop blur.
-- **Sidebar nav**: All nav links across every role use a skewX(-15deg) CTA-style button with a stagger-animated arrow SVG (three paths sliding from translateX offsets) and a color-pulse fill animation on hover. The effect uses hard box-shadow offsets that grow and change color on hover.
+- **Sidebar nav**: All nav links across every role use a skewX(-15deg) CTA-style button with a stagger-animated arrow SVG (three paths sliding from translateX offsets) and a color-pulse fill animation on hover. The effect uses hard box-shadow offsets that grow and change color on hover. The sidebar panel uses a warm-neutral background with inactive items in plain dark text and the active item in solid crimson with white text.
 - **Social row**: A compact 3D-skew social media row (Facebook, Twitter, Instagram) appears in the public footer via `react-icons/fa`.
 - **Footer**: Slim two-row layout — brand + tagline on the left, SocialRow on the right, copyright centered below.
-- **Focus ring**: Global animated `:focus-visible` ring with 180ms scale/opacity keyframe. `:focus:not(:focus-visible)` hides the ring on mouse clicks. Respects `prefers-reduced-motion: reduce`.
+- **Focus ring**: Global `:focus-visible` ring uses a soft crimson box-shadow glow at 3px spread with 180ms transition. `:focus:not(:focus-visible)` hides the ring on mouse clicks. All card hover states use the same crimson glow pattern with `:has()` guards to prevent nested-element stacking. Respects `prefers-reduced-motion: reduce`.
 
 ## Validation and security notes
 - Valid Pakistani mobile number format is enforced.
@@ -330,7 +331,7 @@ cat backup.sql | docker exec -i bloodlink-postgres psql -U blood_user -d blood_a
 - JWT-based authentication protects private routes.
 - Uploaded files are stored on disk, not in PostgreSQL.
 - Uploaded hospital slips are served only through authorized backend routes.
-- Donor phone numbers are not exposed in request-creator-facing match listings.
+- Donor phone numbers are exposed only within confirmed match and chat contexts. Public donor listings do not include phone numbers.
 - `.env`, uploads, and generated local artifacts are ignored by Git.
 
 ## Testing
