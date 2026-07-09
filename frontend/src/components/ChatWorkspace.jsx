@@ -198,7 +198,7 @@ export default function ChatWorkspace({ eyebrow, title, description }) {
                   <div className="form-actions-row">
                     <button className="button button-primary button-with-icon" type="submit">
                       Send reply
-                      <SendHorizontal size={16} />
+                      <SendHorizontal size={14} />
                     </button>
                   </div>
                 </form>

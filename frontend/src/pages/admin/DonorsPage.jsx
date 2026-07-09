@@ -82,7 +82,7 @@ export default function DonorsPage() {
           searchPlaceholder="Search donor, blood group, city, or area"
           summary={
             <span className="toolbar-result">
-              <Search size={15} />
+              <Search size={13} />
               {filteredDonors.length} donor{filteredDonors.length === 1 ? "" : "s"} shown
             </span>
           }
@@ -138,11 +138,11 @@ export default function DonorsPage() {
               </div>
               <div className="inline-pills">
                 <span className="pill pill-soft">
-                  <ShieldCheck size={14} />
+                  <ShieldCheck size={12} />
                   Availability: {donor.availability_status}
                 </span>
                 <span className="pill pill-soft">
-                  <SlidersHorizontal size={14} />
+                  <SlidersHorizontal size={12} />
                   Age {donor.age}
                 </span>
               </div>

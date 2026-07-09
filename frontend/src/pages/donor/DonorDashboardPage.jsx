@@ -1,4 +1,4 @@
-import { Bell, HeartHandshake, Search, ShieldCheck } from "lucide-react";
+import { Bell, HeartHandshake, Search, ShieldCheck, XCircle } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
@@ -23,6 +23,7 @@ const staggerItem = {
 export default function DonorDashboardPage() {
   const { token } = useAuth();
   const [state, setState] = useState({ loading: true, error: "", profile: null, requests: [], matches: [], notifications: [] });
+  const [declining, setDeclining] = useState({});
   const prefersReduced = useReducedMotion();
   const motionProps = useMemo(() => prefersReduced ? {} : {
     variants: staggerContainer,
@@ -54,11 +55,27 @@ export default function DonorDashboardPage() {
     };
   }, [token]);
 
+  const [declineError, setDeclineError] = useState("");
+
+  const declineRequest = async (requestId) => {
+    setDeclining((prev) => ({ ...prev, [requestId]: true }));
+    setDeclineError("");
+    try {
+      await apiRequest(`/requests/${requestId}/decline`, { method: "POST", token });
+      setState((prev) => ({ ...prev, requests: prev.requests.filter((r) => r.id !== requestId) }));
+    } catch (err) {
+      setDeclineError(err.message);
+    } finally {
+      setDeclining((prev) => ({ ...prev, [requestId]: false }));
+    }
+  };
+
   if (state.loading) return <LoadingState label="Loading donor dashboard" />;
 
   return (
     <motion.div className="page-stack" {...motionProps}>
       {state.error ? <AlertMessage type="warning">{state.error}</AlertMessage> : null}
+      {declineError ? <AlertMessage type="error">{declineError}</AlertMessage> : null}
       <motion.section className="stats-grid" {...itemProps}>
         <StatCard label="Verification" value={state.profile?.verification_status || "pending"} helper="Admin reviewed" icon={ShieldCheck} tone="success" />
         <StatCard label="Available requests" value={state.requests.length} helper="Based on simple MVP filters" icon={Search} tone="accent" />
@@ -93,7 +110,21 @@ export default function DonorDashboardPage() {
         ) : (
           <div className="card-list">
             {state.requests.slice(0, 3).map((request) => (
-              <RequestCard key={request.id} request={request} footer={`${request.confirmed_donor_count} confirmed donors so far`} />
+              <RequestCard
+                key={request.id}
+                request={request}
+                footer={`${request.confirmed_donor_count} confirmed donors so far`}
+                actions={
+                  <button
+                    className="button button-secondary button-with-icon"
+                    onClick={() => declineRequest(request.id)}
+                    disabled={declining[request.id]}
+                  >
+                    <XCircle size={14} />
+                    {declining[request.id] ? "Declining..." : "Not available"}
+                  </button>
+                }
+              />
             ))}
           </div>
         )}

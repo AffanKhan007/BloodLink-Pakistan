@@ -94,7 +94,7 @@ export default function AvailableDonorsPage() {
                 <StatusBadge value={donor.verification_status} />
                 <button className="button button-primary button-with-icon" onClick={() => startChat(donor)}>
                   Start chat
-                  <MessageSquarePlus size={16} />
+                  <MessageSquarePlus size={14} />
                 </button>
               </div>
             </div>

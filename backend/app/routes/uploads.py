@@ -2,12 +2,13 @@ import os
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.core.database import get_db
 from app.core.deps import get_current_user
-from app.models import RequestDocument, User, UserRole
+from app.models import DonationMatch, DonorProfile, RequestDocument, User, UserRole
 
 
 router = APIRouter(prefix="/uploads", tags=["uploads"])
@@ -24,10 +25,23 @@ def get_request_document(
     if not document:
         raise HTTPException(status_code=404, detail="Document not found")
     request = document.request
-    if current_user.role == UserRole.USER and request.created_by_user_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Access denied")
     if current_user.role == UserRole.USER:
-        raise HTTPException(status_code=403, detail="Access denied")
+        is_creator = request.created_by_user_id == current_user.id
+        if not is_creator:
+            donor = db.scalar(
+                select(DonorProfile).where(DonorProfile.user_id == current_user.id)
+            )
+            if donor:
+                owned_match = db.scalar(
+                    select(DonationMatch).where(
+                        DonationMatch.donor_id == donor.id,
+                        DonationMatch.request_id == request.id,
+                    )
+                )
+                if not owned_match:
+                    raise HTTPException(status_code=403, detail="Access denied")
+            else:
+                raise HTTPException(status_code=403, detail="Access denied")
 
     file_path = os.path.join(settings.upload_dir, document.file_url)
     if not os.path.exists(file_path):

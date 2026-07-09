@@ -5,7 +5,7 @@ export default function StatCard({ label, value, helper, icon: Icon, tone = "def
         <p>{label}</p>
         {Icon ? (
           <div className="stat-card-icon">
-            <Icon size={18} />
+            <Icon size={15} />
           </div>
         ) : null}
       </div>

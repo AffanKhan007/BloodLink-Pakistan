@@ -1,6 +1,6 @@
 from datetime import date, timedelta
 
-from sqlalchemy import or_, select
+from sqlalchemy import exists, or_, select
 from sqlalchemy.orm import Session
 
 from app.models import BloodRequest, DonationMatch, DonorProfile, DonorVerificationStatus, MatchStatus, RequestStatus
@@ -40,6 +40,15 @@ def get_matching_donors(db: Session, request: BloodRequest) -> list[DonorProfile
         .where(DonorProfile.availability_status == "available")
         .where(DonorProfile.verification_status == DonorVerificationStatus.APPROVED)
         .where(or_(DonorProfile.last_donation_date.is_(None), DonorProfile.last_donation_date <= cutoff_date))
+        .where(
+            ~exists(
+                select(DonationMatch.id).where(
+                    DonationMatch.donor_id == DonorProfile.id,
+                    DonationMatch.request_id == request.id,
+                    DonationMatch.status.in_([MatchStatus.REJECTED, MatchStatus.CANCELLED]),
+                )
+            )
+        )
     )
     return list(db.scalars(statement).all())
 

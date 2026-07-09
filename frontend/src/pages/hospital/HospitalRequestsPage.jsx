@@ -141,13 +141,13 @@ export default function HospitalRequestsPage() {
             <input value={form.attendant_phone} onChange={(event) => setForm((current) => ({ ...current, attendant_phone: event.target.value }))} required />
           </label>
           <div className="form-span form-note">
-            <Activity size={16} />
+            <Activity size={14} />
             <span>Hospital-created requests still use the same matching and tracking flow so the coordination trail stays consistent.</span>
           </div>
           <div className="form-span">
             <button className="button button-primary button-with-icon">
               Create hospital request
-              <ClipboardPlus size={16} />
+              <ClipboardPlus size={14} />
             </button>
           </div>
         </form>
@@ -160,7 +160,7 @@ export default function HospitalRequestsPage() {
           searchPlaceholder="Search patient, hospital, city, or blood group"
           summary={
             <span className="toolbar-result">
-              <Search size={15} />
+              <Search size={13} />
               {filteredRequests.length} request{filteredRequests.length === 1 ? "" : "s"} shown
             </span>
           }

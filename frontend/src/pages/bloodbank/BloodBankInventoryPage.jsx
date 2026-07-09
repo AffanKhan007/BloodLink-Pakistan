@@ -193,7 +193,7 @@ export default function BloodBankInventoryPage() {
           searchPlaceholder="Search unit code, blood group, component, or location"
           summary={
             <span className="toolbar-result">
-              <Search size={15} />
+              <Search size={13} />
               {filteredUnits.length} unit{filteredUnits.length === 1 ? "" : "s"} shown
             </span>
           }
@@ -242,7 +242,7 @@ export default function BloodBankInventoryPage() {
                 <div className="inline-pills">
                   <span className="pill pill-soft">{unit.units_available} units</span>
                   <span className="pill pill-soft">
-                    <Warehouse size={14} />
+                    <Warehouse size={12} />
                     {unit.storage_location || "Storage pending"}
                   </span>
                 </div>

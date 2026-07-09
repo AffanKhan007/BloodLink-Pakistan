@@ -132,7 +132,7 @@ def test_donor_profile_create(client):
     assert response.json()["verification_status"] == "approved"
 
 
-def test_blood_request_creation_creates_auto_matches(client):
+def test_blood_request_creation_starts_pending_review(client):
     client.post(
         "/auth/register",
         json={
@@ -187,7 +187,7 @@ def test_blood_request_creation_creates_auto_matches(client):
         },
     )
     assert response.status_code == 201
-    assert response.json()["status"] == "matched"
+    assert response.json()["status"] == "pending_review"
 
 
 def test_matching_service_returns_eligible_donors(seeded_db):
@@ -339,7 +339,7 @@ def test_admin_approval_route_still_available(client, seeded_db):
         headers={"Authorization": f"Bearer {token}"},
     )
     assert response.status_code == 200
-    assert response.json()["status"] == "approved"
+    assert response.json()["status"] == "matched"
 
 
 def test_hospital_dashboard_route(client, seeded_db):

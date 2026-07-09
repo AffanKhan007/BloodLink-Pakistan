@@ -1,10 +1,10 @@
-import { HeartHandshake, MapPin, Search } from "lucide-react";
+import { HeartHandshake, MapPin, Search, XCircle } from "lucide-react";
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
 
 import { apiRequest } from "../../api/client";
 import { useAuth } from "../../auth/AuthContext";
 import FilterToolbar from "../../components/FilterToolbar";
-import { EmptyState, LoadingState } from "../../components/PageState";
+import { AlertMessage, EmptyState, LoadingState } from "../../components/PageState";
 import RequestCard from "../../components/RequestCard";
 import SectionIntro from "../../components/SectionIntro";
 
@@ -14,12 +14,27 @@ export default function MatchingRequestsPage() {
   const [requests, setRequests] = useState([]);
   const [search, setSearch] = useState("");
   const [urgency, setUrgency] = useState("all");
+  const [error, setError] = useState("");
+  const [declining, setDeclining] = useState({});
 
   useEffect(() => {
     apiRequest("/donors/matching-requests", { token })
       .then(setRequests)
       .finally(() => setLoading(false));
   }, [token]);
+
+  const declineRequest = async (requestId) => {
+    setDeclining((prev) => ({ ...prev, [requestId]: true }));
+    setError("");
+    try {
+      await apiRequest(`/requests/${requestId}/decline`, { method: "POST", token });
+      setRequests((prev) => prev.filter((r) => r.id !== requestId));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setDeclining((prev) => ({ ...prev, [requestId]: false }));
+    }
+  };
 
   const deferredSearch = useDeferredValue(search);
   const filteredRequests = useMemo(() => {
@@ -44,6 +59,7 @@ export default function MatchingRequestsPage() {
 
   return (
     <div className="page-stack">
+      {error ? <AlertMessage type="error">{error}</AlertMessage> : null}
       <section className="content-card">
         <SectionIntro
           eyebrow="Search and filter"
@@ -56,7 +72,7 @@ export default function MatchingRequestsPage() {
           searchPlaceholder="Search by hospital, patient, city, or blood group"
           summary={
             <span className="toolbar-result">
-              <Search size={15} />
+              <Search size={13} />
               {filteredRequests.length} request{filteredRequests.length === 1 ? "" : "s"} shown
             </span>
           }
@@ -87,16 +103,26 @@ export default function MatchingRequestsPage() {
               request={request}
               footer={`${request.hospital_name} / ${request.city}`}
               actions={
-                <div className="inline-pills">
-                  <span className="pill pill-soft">
-                    <MapPin size={14} />
-                    {request.city}
-                  </span>
-                  <span className="pill pill-soft">
-                    <HeartHandshake size={14} />
-                    {request.confirmed_donor_count} confirmed
-                  </span>
-                </div>
+                <>
+                  <div className="inline-pills">
+                    <span className="pill pill-soft">
+                      <MapPin size={12} />
+                      {request.city}
+                    </span>
+                    <span className="pill pill-soft">
+                      <HeartHandshake size={12} />
+                      {request.confirmed_donor_count} confirmed
+                    </span>
+                  </div>
+                  <button
+                    className="button button-secondary button-with-icon"
+                    onClick={() => declineRequest(request.id)}
+                    disabled={declining[request.id]}
+                  >
+                    <XCircle size={14} />
+                    {declining[request.id] ? "Declining..." : "Not available"}
+                  </button>
+                </>
               }
             />
           ))}

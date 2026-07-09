@@ -4,7 +4,7 @@ export function LoadingState({ label = "Loading", description = "Preparing the l
   return (
     <div className="state-card no-theme-transition">
       <div className="state-illustration state-illustration-loading">
-        <LoaderCircle size={28} className="spin-icon" />
+        <LoaderCircle size={22} className="spin-icon" />
       </div>
       <h3>{label}</h3>
       <p>{description}</p>
@@ -21,7 +21,7 @@ export function EmptyState({ title, description, action = null }) {
   return (
     <div className="state-card">
       <div className="state-illustration">
-        <Inbox size={28} />
+        <Inbox size={22} />
       </div>
       <h3>{title}</h3>
       <p>{description}</p>
@@ -33,7 +33,7 @@ export function EmptyState({ title, description, action = null }) {
 export function AlertMessage({ type = "info", children }) {
   return (
     <div className={`alert alert-${type}`}>
-      <CircleAlert size={16} />
+      <CircleAlert size={14} />
       <span>{children}</span>
     </div>
   );

@@ -73,7 +73,7 @@ export default function LoginPage() {
         </div>
         <button className="button button-primary button-full button-with-icon" disabled={submitting}>
           {submitting ? "Signing in..." : "Sign in"}
-          <ArrowRight size={16} />
+          <ArrowRight size={14} />
         </button>
       </form>
       <p className="form-footer">

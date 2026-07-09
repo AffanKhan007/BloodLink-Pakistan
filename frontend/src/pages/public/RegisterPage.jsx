@@ -50,7 +50,7 @@ export default function RegisterPage() {
         {error ? <AlertMessage type="error">{error}</AlertMessage> : null}
 
         <div className="inline-note-card">
-          <Building2 size={18} />
+          <Building2 size={15} />
           <div>
             <strong>Registering an institution?</strong>
             <p>Organizations use a separate verification form before they appear publicly.</p>
@@ -111,7 +111,7 @@ export default function RegisterPage() {
         </label>
         <button className="button button-primary button-full button-with-icon" disabled={submitting}>
           {submitting ? "Creating account..." : "Register"}
-          <ArrowRight size={16} />
+          <ArrowRight size={14} />
         </button>
       </form>
       <p className="form-footer">

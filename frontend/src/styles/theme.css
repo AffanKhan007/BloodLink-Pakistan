@@ -13,6 +13,7 @@
   --border-color:         #E3E1DC;
   --color-urgent:         #C4292E;
   --color-urgent-soft:    #FBEAEA;
+  --crimson-rgb:           155, 29, 36;
 
   --color-success:        #2F6B4F;
   --color-success-soft:   #E7F0EB;
@@ -64,6 +65,22 @@
   --dur-micro:            180ms;
   --dur-transition:       320ms;
   --dur-hero:             900ms;
+
+  /* Sidebar panel — warm neutral */
+  --sidebar-panel-bg:        #E8E3DC;    /* warm stone/taupe */
+
+  /* Sidebar nav — inactive: plain text on warm neutral */
+  --sidebar-nav-bg:           transparent;
+  --sidebar-nav-text:         #2E2D2B;   /* warm dark neutral */
+  --sidebar-nav-hover-bg:     rgba(0, 0, 0, 0.04);
+
+  /* Sidebar nav — active: solid crimson standout */
+  --sidebar-nav-active-bg:    #9B1D24;   /* brand crimson */
+  --sidebar-nav-active-text:  #FFFFFF;
+
+  /* Shadows */
+  --sidebar-nav-shadow:       rgba(0, 0, 0, 0.2);
+  --sidebar-nav-shadow-hover: rgba(155, 29, 36, 0.35);
 
   /* Legacy aliases — map to current palette */
   --color-ink:            var(--text-primary);

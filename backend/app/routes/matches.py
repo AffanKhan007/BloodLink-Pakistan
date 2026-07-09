@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session, joinedload
 from app.core.database import get_db
 from app.core.deps import get_current_user, require_roles
 from app.models import BloodRequest, DonationMatch, DonorProfile, MatchStatus, RequestStatus, User, UserRole
+from app.schemas.donor import DonorWithUserOut
 from app.schemas.match import MatchCreate, MatchDetailOut, MatchOut
 from app.services.audit import create_audit_log
 from app.services.notifications import create_notification
@@ -93,7 +94,14 @@ def list_request_matches(
             .order_by(DonationMatch.created_at.desc())
         ).all()
     )
-    return [MatchDetailOut.model_validate(match) for match in matches]
+    return [
+        MatchDetailOut(
+            **match.__dict__,
+            donor=DonorWithUserOut.model_validate(match.donor),
+            donor_phone=match.donor.user.phone,
+        )
+        for match in matches
+    ]
 
 
 @router.get("/me", response_model=list[MatchDetailOut])
@@ -112,7 +120,14 @@ def my_matches(
             .order_by(DonationMatch.created_at.desc())
         ).all()
     )
-    return [MatchDetailOut.model_validate(match) for match in matches]
+    return [
+        MatchDetailOut(
+            **match.__dict__,
+            donor=DonorWithUserOut.model_validate(match.donor),
+            donor_phone=match.donor.user.phone,
+        )
+        for match in matches
+    ]
 
 
 @router.patch("/{match_id}/accept", response_model=MatchOut)

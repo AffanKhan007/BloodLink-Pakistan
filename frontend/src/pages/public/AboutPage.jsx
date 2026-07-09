@@ -33,13 +33,13 @@ export default function AboutPage() {
           <p className="eyebrow">Why this exists</p>
           <h2>A single identity for giving and receiving</h2>
           <p>
-            BloodLink uses a single-account model — one user can be a donor, a request creator, or both. There is no
+            BloodLink uses a single-account model where one user can be a donor, a request creator, or both. There is no
             separate donor or receiver role. You set up a donor profile when you want to donate, and you create a blood
             request when you need support. The platform matches by city, blood-group compatibility, availability, and
             how recently someone donated.
           </p>
           <p>
-            Institution donors — organizations that coordinate regular donations — register through a separate
+            Institution donors (organizations that coordinate regular donations) register through a separate
             verification flow and only become publicly visible after admin approval. This keeps the platform trustworthy
             without requiring individual donor-level ID verification.
           </p>
@@ -51,7 +51,7 @@ export default function AboutPage() {
               <p className="eyebrow">Medical and legal note</p>
               <h2>Hospitals remain responsible for final clinical decisions</h2>
             </div>
-            <Stethoscope size={20} />
+            <Stethoscope size={16} />
           </div>
           <p>
             This application is not a replacement for hospitals, licensed blood banks, medical screening, or transfusion

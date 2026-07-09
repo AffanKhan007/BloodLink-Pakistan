@@ -92,7 +92,7 @@ export default function InstitutionsInCityPage() {
               <div className="card-actions">
                 <button className="button button-primary button-with-icon" onClick={() => startChat(institution)}>
                   Message institution
-                  <MessageSquarePlus size={16} />
+                  <MessageSquarePlus size={14} />
                 </button>
               </div>
             </div>

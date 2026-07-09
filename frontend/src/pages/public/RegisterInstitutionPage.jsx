@@ -130,7 +130,7 @@ export default function RegisterInstitutionPage() {
         </label>
         <button className="button button-primary button-full button-with-icon" disabled={submitting}>
           {submitting ? "Submitting..." : "Register institution"}
-          <ArrowRight size={16} />
+          <ArrowRight size={14} />
         </button>
       </form>
       <p className="form-footer">

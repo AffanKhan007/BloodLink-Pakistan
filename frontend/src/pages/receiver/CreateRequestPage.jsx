@@ -85,21 +85,21 @@ export default function CreateRequestPage() {
         />
         <div className="metrics-strip">
           <div className="metric-chip">
-            <Building2 size={16} />
+            <Building2 size={14} />
             <div>
               <span>Hospital context</span>
               <strong>Add verified patient location details</strong>
             </div>
           </div>
           <div className="metric-chip">
-            <CalendarClock size={16} />
+            <CalendarClock size={14} />
             <div>
               <span>Required by</span>
               <strong>Set a clear timeline for urgency</strong>
             </div>
           </div>
           <div className="metric-chip">
-            <ShieldCheck size={16} />
+            <ShieldCheck size={14} />
             <div>
               <span>Automatic coordination</span>
               <strong>Matching starts as soon as your request is saved</strong>
@@ -212,7 +212,7 @@ export default function CreateRequestPage() {
             <span className="field-helper">Accepted file types: PDF, JPG, JPEG, and PNG. This document stays behind authorized backend access.</span>
           </label>
           <div className="form-span form-note">
-            <Upload size={16} />
+            <Upload size={14} />
             <span>Your request is saved together with the hospital slip so matched donors and support channels can be coordinated immediately.</span>
           </div>
           <div className="form-span">

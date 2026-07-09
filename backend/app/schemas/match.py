@@ -25,4 +25,5 @@ class MatchOut(BaseSchema):
 
 class MatchDetailOut(MatchOut):
     donor: DonorWithUserOut
+    donor_phone: str | None = None
 

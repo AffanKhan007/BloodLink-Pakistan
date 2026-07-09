@@ -17,26 +17,33 @@ export default function RequestDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [request, setRequest] = useState(location.state?.createdRequest || null);
   const [matches, setMatches] = useState([]);
+  const [matchingDonors, setMatchingDonors] = useState([]);
   const [reportForm, setReportForm] = useState({ reported_user_id: "", reason: "" });
   const [message, setMessage] = useState(location.state?.flashSuccess || "");
   const [error, setError] = useState(location.state?.flashError || "");
   const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
 
   const load = async () => {
-    const [requestData, matchData] = await Promise.all([
+    const [requestData, matchData, donorData] = await Promise.all([
       apiRequest(`/requests/${requestId}`, { token }),
       apiRequest(`/matches/request/${requestId}`, { token }),
+      apiRequest(`/requests/${requestId}/matching-donors`, { token }).catch(() => []),
     ]);
     setRequest(requestData);
     setMatches(matchData);
+    setMatchingDonors(donorData || []);
   };
 
   useEffect(() => {
     if (location.state?.createdRequest) {
       setLoading(false);
-      apiRequest(`/matches/request/${requestId}`, { token })
-        .then(setMatches)
-        .catch(() => {});
+      Promise.all([
+        apiRequest(`/matches/request/${requestId}`, { token }),
+        apiRequest(`/requests/${requestId}/matching-donors`, { token }).catch(() => []),
+      ]).then(([matchData, donorData]) => {
+        setMatches(matchData);
+        setMatchingDonors(donorData || []);
+      });
       return;
     }
     load()
@@ -194,22 +201,61 @@ export default function RequestDetailsPage() {
         </div>
         <div className="card-actions">
           <Link className="button button-secondary" to="/receiver/available-donors">
-            <Search size={16} />
+            <Search size={14} />
             Public donors
           </Link>
           <Link className="button button-secondary" to="/receiver/blood-banks">
-            <Warehouse size={16} />
+            <Warehouse size={14} />
             Blood banks
           </Link>
           <Link className="button button-secondary" to="/receiver/institutions">
-            <Building2 size={16} />
+            <Building2 size={14} />
             Institutions
           </Link>
           <Link className="button button-secondary" to="/receiver/chats">
-            <HeartHandshake size={16} />
+            <HeartHandshake size={14} />
             Open chats
           </Link>
         </div>
+      </section>
+
+      <section className="content-card">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">Available matching donors</p>
+            <h2>Compatible donors in {request.city}</h2>
+          </div>
+        </div>
+        {matchingDonors.length === 0 ? (
+          <EmptyState title="No matching donors found" description="No verified, available donors match your blood group and city right now. Check back later or explore other support channels." />
+        ) : (
+          <div className="stacked-cards">
+            {matchingDonors.map((donor) => (
+              <div className="info-card" key={donor.id}>
+                <div className="list-row">
+                  <strong>{donor.user.full_name}</strong>
+                </div>
+                <p>{donor.blood_group} donor &middot; {donor.city}, {donor.area} &middot; {donor.gender}, {donor.age} yrs</p>
+                <p className="meta-label">{donor.availability_status === "available" ? "Available" : "Unavailable"}</p>
+                <div className="card-actions">
+                  <button
+                    className="button button-primary button-with-icon"
+                    onClick={() =>
+                      startChat(
+                        donor.user.id,
+                        `Blood request for ${request.patient_name}`,
+                        `Hello ${donor.user.full_name}, I have a blood request for ${request.blood_group_needed} in ${request.city}. Are you able to help?`
+                      )
+                    }
+                  >
+                    Message donor
+                    <MessageSquarePlus size={14} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="content-card">
@@ -264,7 +310,7 @@ export default function RequestDetailsPage() {
                     }
                   >
                     Message donor
-                    <MessageSquarePlus size={16} />
+                    <MessageSquarePlus size={14} />
                   </button>
                 </div>
               </div>

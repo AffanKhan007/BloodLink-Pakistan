@@ -14,7 +14,7 @@ export default function ForgotPasswordPage() {
     >
       <div className="auth-placeholder">
         <div className="state-illustration">
-          <Mail size={28} />
+          <Mail size={22} />
         </div>
         <h2>Need help signing in?</h2>
         <p>Use the login page again if you remember your credentials, or contact your platform administrator for account recovery support.</p>

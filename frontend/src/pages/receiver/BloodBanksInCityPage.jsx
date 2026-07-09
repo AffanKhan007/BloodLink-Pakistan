@@ -102,7 +102,7 @@ export default function BloodBanksInCityPage() {
               {bank.contact_user_id ? (
                 <button className="button button-primary button-with-icon" onClick={() => startChat(bank)}>
                   Message blood bank
-                  <MessageSquarePlus size={16} />
+                  <MessageSquarePlus size={14} />
                 </button>
               ) : null}
             </div>

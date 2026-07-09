@@ -1,7 +1,8 @@
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import func, select
+from pydantic import BaseModel
+from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session, joinedload
 
 from app.core.database import get_db
@@ -22,14 +23,18 @@ from app.models import (
     UserRole,
 )
 from app.schemas.admin import DashboardStats
-from app.schemas.blood_request import BloodRequestListOut
+from app.schemas.blood_request import BloodRequestDetailOut, BloodRequestListOut
 from app.schemas.common import AuditLogOut
 from app.schemas.donor import DonorVerificationUpdate, DonorWithUserOut
 from app.schemas.institution import InstitutionStatusUpdate, InstitutionWithUserOut
 from app.schemas.report import ReportOut, ReportStatusUpdate
 from app.schemas.user import AdminUserSummary
 from app.services.audit import create_audit_log
-from app.services.matching import count_confirmed_matches, get_matching_donors
+from app.services.matching import count_confirmed_matches, create_automatic_matches
+
+
+class AdminRequestStatusUpdate(BaseModel):
+    status: RequestStatus
 
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -226,10 +231,13 @@ def approve_request(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles(*ADMIN_ROLES)),
 ) -> BloodRequestListOut:
-    request = db.scalar(select(BloodRequest).options(joinedload(BloodRequest.matches)).where(BloodRequest.id == request_id))
+    request = db.scalar(
+        select(BloodRequest).options(joinedload(BloodRequest.matches), joinedload(BloodRequest.documents)).where(BloodRequest.id == request_id)
+    )
     if not request:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Request not found")
     request.status = RequestStatus.APPROVED
+    create_automatic_matches(db, request)
     create_audit_log(
         db,
         admin_user_id=current_user.id,
@@ -252,10 +260,13 @@ def reject_request(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles(*ADMIN_ROLES)),
 ) -> BloodRequestListOut:
-    request = db.scalar(select(BloodRequest).options(joinedload(BloodRequest.matches)).where(BloodRequest.id == request_id))
+    request = db.scalar(
+        select(BloodRequest).options(joinedload(BloodRequest.matches), joinedload(BloodRequest.documents)).where(BloodRequest.id == request_id)
+    )
     if not request:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Request not found")
     request.status = RequestStatus.REJECTED
+    db.execute(delete(DonationMatch).where(DonationMatch.request_id == request.id))
     create_audit_log(
         db,
         admin_user_id=current_user.id,
@@ -272,17 +283,72 @@ def reject_request(
     )
 
 
-@router.get("/requests/{request_id}/candidates", response_model=list[DonorWithUserOut])
-def matching_candidates(
+@router.patch("/requests/{request_id}/status", response_model=BloodRequestListOut)
+def update_request_status(
+    request_id: int,
+    payload: AdminRequestStatusUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(*ADMIN_ROLES)),
+) -> BloodRequestListOut:
+    request = db.scalar(
+        select(BloodRequest).options(joinedload(BloodRequest.matches), joinedload(BloodRequest.documents)).where(BloodRequest.id == request_id)
+    )
+    if not request:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Request not found")
+
+    old_status = request.status
+    new_status = payload.status
+
+    if new_status == old_status:
+        db.refresh(request)
+        return BloodRequestListOut(
+            **request.__dict__,
+            confirmed_donor_count=count_confirmed_matches(request),
+        )
+
+    if new_status == RequestStatus.APPROVED:
+        request.status = RequestStatus.APPROVED
+        create_automatic_matches(db, request)
+    else:
+        request.status = new_status
+
+    if old_status in (RequestStatus.APPROVED, RequestStatus.MATCHED) and new_status != RequestStatus.APPROVED:
+        db.execute(delete(DonationMatch).where(DonationMatch.request_id == request.id))
+
+    create_audit_log(
+        db,
+        admin_user_id=current_user.id,
+        action="update_request_status",
+        entity_type="blood_request",
+        entity_id=request.id,
+        details={"patient_name": request.patient_name, "from": old_status.value, "to": new_status.value},
+    )
+    db.commit()
+    db.refresh(request)
+    return BloodRequestListOut(
+        **request.__dict__,
+        confirmed_donor_count=count_confirmed_matches(request),
+    )
+
+
+@router.get("/requests/{request_id}/detail", response_model=BloodRequestDetailOut)
+def admin_request_detail(
     request_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles(*ADMIN_ROLES)),
-) -> list[DonorWithUserOut]:
-    request = db.get(BloodRequest, request_id)
+) -> BloodRequestDetailOut:
+    request = db.scalar(
+        select(BloodRequest)
+        .options(joinedload(BloodRequest.documents), joinedload(BloodRequest.matches))
+        .where(BloodRequest.id == request_id)
+    )
     if not request:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Request not found")
-    donors = get_matching_donors(db, request)
-    return [DonorWithUserOut.model_validate(donor) for donor in donors]
+    return BloodRequestDetailOut(
+        **request.__dict__,
+        confirmed_donor_count=count_confirmed_matches(request),
+        documents=request.documents,
+    )
 
 
 @router.get("/reports", response_model=list[ReportOut])

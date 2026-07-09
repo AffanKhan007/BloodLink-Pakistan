@@ -1,8 +1,9 @@
 import os
 import uuid
+from datetime import date, timedelta
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
-from sqlalchemy import select
+from sqlalchemy import exists, or_, select
 from sqlalchemy.orm import Session, joinedload
 
 from app.core.config import get_settings
@@ -15,6 +16,7 @@ from app.models import (
     BloodUnitStatus,
     DonationMatch,
     DonorProfile,
+    DonorVerificationStatus,
     Institution,
     InstitutionStatus,
     MatchStatus,
@@ -64,12 +66,11 @@ def create_request(
 ) -> BloodRequestOut:
     request = BloodRequest(
         created_by_user_id=current_user.id,
-        status=RequestStatus.APPROVED,
+        status=RequestStatus.PENDING_REVIEW,
         **payload.model_dump(),
     )
     db.add(request)
     db.flush()
-    create_automatic_matches(db, request)
     db.commit()
     db.refresh(request)
     return BloodRequestOut.model_validate(request)
@@ -163,6 +164,49 @@ def request_public_donors(
             .where(DonorProfile.blood_group.in_(compatible_groups))
             .where(DonorProfile.availability_status == "available")
             .where(DonorProfile.is_publicly_available.is_(True))
+            .where(
+                ~exists(
+                    select(DonationMatch.id).where(
+                        DonationMatch.donor_id == DonorProfile.id,
+                        DonationMatch.request_id == request.id,
+                        DonationMatch.status.in_([MatchStatus.REJECTED, MatchStatus.CANCELLED]),
+                    )
+                )
+            )
+            .order_by(DonorProfile.updated_at.desc())
+        ).all()
+    )
+    return [DonorWithUserOut.model_validate(donor) for donor in donors]
+
+
+@router.get("/{request_id}/matching-donors", response_model=list[DonorWithUserOut])
+def request_matching_donors(
+    request_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(UserRole.USER)),
+) -> list[DonorWithUserOut]:
+    request = _get_request_for_user(db, request_id, current_user)
+    cutoff_date = date.today() - timedelta(days=90)
+    compatible_groups = compatible_donor_groups(request.blood_group_needed)
+    donors = list(
+        db.scalars(
+            select(DonorProfile)
+            .options(joinedload(DonorProfile.user))
+            .where(DonorProfile.user_id != request.created_by_user_id)
+            .where(DonorProfile.blood_group.in_(compatible_groups))
+            .where(DonorProfile.city == request.city)
+            .where(DonorProfile.availability_status == "available")
+            .where(DonorProfile.verification_status == DonorVerificationStatus.APPROVED)
+            .where(or_(DonorProfile.last_donation_date.is_(None), DonorProfile.last_donation_date <= cutoff_date))
+            .where(
+                ~exists(
+                    select(DonationMatch.id).where(
+                        DonationMatch.donor_id == DonorProfile.id,
+                        DonationMatch.request_id == request.id,
+                        DonationMatch.status.in_([MatchStatus.REJECTED, MatchStatus.CANCELLED]),
+                    )
+                )
+            )
             .order_by(DonorProfile.updated_at.desc())
         ).all()
     )
@@ -259,3 +303,38 @@ def cancel_request(
     db.commit()
     db.refresh(request)
     return BloodRequestOut.model_validate(request)
+
+
+@router.post("/{request_id}/decline")
+def decline_request(
+    request_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(UserRole.USER)),
+) -> dict:
+    donor = db.scalar(select(DonorProfile).where(DonorProfile.user_id == current_user.id))
+    if not donor:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Donor profile required")
+
+    request = db.get(BloodRequest, request_id)
+    if not request:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Request not found")
+    if request.created_by_user_id == current_user.id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot decline your own request")
+
+    existing = db.scalar(
+        select(DonationMatch).where(
+            DonationMatch.request_id == request_id,
+            DonationMatch.donor_id == donor.id,
+        )
+    )
+    if existing:
+        if existing.status == MatchStatus.REJECTED:
+            return {"detail": "Already declined"}
+        existing.status = MatchStatus.REJECTED
+        db.commit()
+        return {"detail": "Declined"}
+
+    match = DonationMatch(request_id=request_id, donor_id=donor.id, status=MatchStatus.REJECTED)
+    db.add(match)
+    db.commit()
+    return {"detail": "Declined"}

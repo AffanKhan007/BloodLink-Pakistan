@@ -1,4 +1,4 @@
-import { MessageSquarePlus } from "lucide-react";
+import { MessageSquarePlus, Phone } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -63,7 +63,7 @@ export default function MatchedDonorsPage() {
         <SectionIntro
           eyebrow="Matched donors"
           title="Confirmed and pending donor assignments"
-          description="Track matched donors for each request and open a conversation without exposing unnecessary private details."
+          description="Track matched donors for each request. Donor phone numbers are visible within confirmed match contexts."
         />
         {error ? <AlertMessage type="error">{error}</AlertMessage> : null}
         <label>
@@ -87,13 +87,14 @@ export default function MatchedDonorsPage() {
                 <div>
                   <strong>{match.donor.user.full_name}</strong>
                   <p>{match.donor.blood_group} donor in {match.donor.city}</p>
+                  {match.donor_phone ? <p className="detail-value"><Phone size={12} /> {match.donor_phone}</p> : null}
                 </div>
                 <StatusBadge value={match.status} />
               </div>
               <div className="card-actions">
                 <button className="button button-primary button-with-icon" onClick={() => startChat(match)}>
                   Message donor
-                  <MessageSquarePlus size={16} />
+                  <MessageSquarePlus size={14} />
                 </button>
               </div>
             </div>

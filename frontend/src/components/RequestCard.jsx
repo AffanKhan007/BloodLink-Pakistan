@@ -29,7 +29,7 @@ export default function RequestCard({ request, actions, footer, onClick, selecte
       <div className="request-card-header">
         <div>
           <p className="eyebrow eyebrow-inline">
-            <Droplets size={14} />
+            <Droplets size={12} />
             {request.blood_group_needed} blood needed
           </p>
           <h3>{request.hospital_name}</h3>
@@ -59,16 +59,16 @@ export default function RequestCard({ request, actions, footer, onClick, selecte
       </div>
       <div className="request-meta-row">
         <span>
-          <MapPin size={14} />
+          <MapPin size={12} />
           {request.ward_room || "Ward pending"}
         </span>
         <span>
-          <Users size={14} />
+          <Users size={12} />
           {request.confirmed_donor_count || 0} confirmed donors
         </span>
         {request.required_by ? (
           <span>
-            <Clock3 size={14} />
+            <Clock3 size={12} />
             Required soon
           </span>
         ) : null}
@@ -80,7 +80,7 @@ export default function RequestCard({ request, actions, footer, onClick, selecte
           {interactive ? (
             <span className="request-card-link-hint">
               Open
-              <ArrowRight size={15} />
+              <ArrowRight size={13} />
             </span>
           ) : null}
         </div>
@@ -88,7 +88,7 @@ export default function RequestCard({ request, actions, footer, onClick, selecte
         <div className="card-actions">
           <span className="request-card-link-hint">
             View details
-            <ArrowRight size={15} />
+            <ArrowRight size={13} />
           </span>
         </div>
       ) : null}

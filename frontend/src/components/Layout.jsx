@@ -7,6 +7,7 @@ import {
   FileClock,
   HeartHandshake,
   Home,
+  Info,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -121,8 +122,8 @@ const institutionNavByStatus = {
 const roleMeta = {
   user: {
     eyebrow: "Your workspace",
-    title: "Donate and request, from one account",
-    description: "Set up a donor profile, create blood requests, track matches, and connect with your community — all from a single dashboard.",
+    title: "Everything you need, in one place",
+    description: "Track your requests, manage your donor profile, and message matches from here.",
   },
   donor: {
     eyebrow: "Donor workspace",
@@ -135,9 +136,9 @@ const roleMeta = {
     description: "Create patient requests, upload supporting slips, and follow each update from review to fulfillment.",
   },
   admin: {
-    eyebrow: "Admin operations",
-    title: "Review, verify, and coordinate",
-    description: "Keep donor approvals, request review, matching, reporting, and audit history in one operational command center.",
+    eyebrow: "Admin",
+    title: "Operations overview",
+    description: "Review requests, verify institutions, and monitor activity across the platform.",
   },
   super_admin: {
     eyebrow: "Super admin operations",
@@ -160,19 +161,19 @@ const roleMeta = {
     description: "Create and manage hospital-side blood requests with clear ownership and status tracking.",
   },
   blood_bank_admin: {
-    eyebrow: "Blood bank inventory",
-    title: "Traceable stock visibility",
-    description: "Track available units, testing status, and inventory movements through a professional dashboard.",
+    eyebrow: "Blood bank workspace",
+    title: "Manage your inventory and demand",
+    description: "Track blood unit stock, monitor city-wide requests, and update availability.",
   },
   blood_bank_staff: {
-    eyebrow: "Blood bank inventory",
-    title: "Traceable stock visibility",
-    description: "Monitor blood units, testing progress, and storage detail from a focused staff workspace.",
+    eyebrow: "Blood bank workspace",
+    title: "Manage your inventory and demand",
+    description: "Track blood unit stock, monitor city-wide requests, and update availability.",
   },
   institution_donor: {
-    eyebrow: "Institution donor workspace",
-    title: "Organization-led donor outreach",
-    description: "Publish your institution donor profile, handle city-specific requests, and respond to receiver conversations from one structured portal.",
+    eyebrow: "Institution workspace",
+    title: "Manage your organization's donor activity",
+    description: "Update your profile, respond to nearby requests, and message receivers directly.",
   },
 };
 
@@ -235,7 +236,7 @@ export default function Layout() {
   return (
     <div className={`app-shell ${sidebarOpen ? "app-shell-nav-open" : ""}`}>
       <button className="icon-button sidebar-toggle" type="button" onClick={() => setSidebarOpen((current) => !current)} aria-label="Toggle sidebar">
-        {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
+        {sidebarOpen ? <X size={15} /> : <Menu size={15} />}
       </button>
 
       <div className={`sidebar-backdrop ${sidebarOpen ? "sidebar-backdrop-visible" : ""}`} onClick={() => setSidebarOpen(false)} />
@@ -243,7 +244,7 @@ export default function Layout() {
       <aside className={`sidebar ${sidebarOpen ? "sidebar-open" : ""}`}>
         <div className="brand-panel">
           <div className="brand-mark">
-            <Droplets size={18} />
+            <Droplets size={15} />
           </div>
           <div>
             <strong>BloodLink</strong>
@@ -252,7 +253,7 @@ export default function Layout() {
         </div>
 
         <div className="workspace-chip">
-          <ShieldCheck size={16} />
+          <ShieldCheck size={14} />
           <span>{currentMeta.eyebrow}</span>
         </div>
 
@@ -266,7 +267,7 @@ export default function Layout() {
               onClick={() => setSidebarOpen(false)}
             >
               <span className="nav-link-body">
-                <item.icon size={18} />
+                <item.icon size={15} />
                 <span>{item.label}</span>
               </span>
               <span className="nav-link-arrow">
@@ -289,7 +290,7 @@ export default function Layout() {
             </div>
           </div>
           <NavLink className="button button-tertiary button-full" to="/" onClick={() => setSidebarOpen(false)}>
-            <Home size={16} />
+            <Home size={14} />
             Public site
           </NavLink>
           <button
@@ -300,7 +301,7 @@ export default function Layout() {
               navigate("/login");
             }}
           >
-            <LogOut size={16} />
+            <LogOut size={14} />
             Sign out
           </button>
         </div>
@@ -321,11 +322,10 @@ export default function Layout() {
             <p className="page-description">{currentMeta.description}</p>
           </div>
           <div className="header-actions">
-            <div className="header-chip">
-              <Building2 size={15} />
-              Pakistan-focused healthcare platform
-            </div>
-            <div className="header-chip header-chip-quiet">Not a transfusion approval system</div>
+            <span className="header-disclaimer">
+              <Info size={11} />
+              Not a transfusion approval system
+            </span>
           </div>
         </header>
 

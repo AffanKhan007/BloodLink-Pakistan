@@ -28,7 +28,7 @@ export default function StatusBadge({ value }) {
 
   return (
     <span className={`status-badge status-${tone}`}>
-      <Icon size={14} />
+      <Icon size={12} />
       {String(value || "").replace(/_/g, " ")}
     </span>
   );

@@ -29,7 +29,7 @@ const benefits = [
   },
   {
     title: "Automatic matching",
-    description: "Donors are matched by city, blood-group compatibility, and donation recency — no manual searching.",
+    description: "Donors are matched by city, blood-group compatibility, and donation recency without manual searching.",
     icon: HeartHandshake,
   },
   {
@@ -58,12 +58,12 @@ export default function LandingPage() {
           <p className="eyebrow">Blood donation coordination</p>
           <h1>One platform instead of scattered posts.</h1>
           <p className="hero-copy">
-            BloodLink connects donors, hospitals, and blood banks through verified requests, automatic matching, and in-app coordination — no more Facebook and WhatsApp threads.
+            BloodLink connects donors, hospitals, and blood banks through verified requests, automatic matching, and in-app coordination. It replaces the scattered Facebook and WhatsApp threads families currently rely on.
           </p>
           <div className="hero-actions">
             <Link className="button button-primary button-with-icon" to="/register">
               Register
-              <ArrowRight size={16} />
+              <ArrowRight size={14} />
             </Link>
             <Link className="button button-secondary" to="/login">
               Login
@@ -80,12 +80,12 @@ export default function LandingPage() {
             </div>
             <div className="hero-preview-grid">
               <div className="mini-stat">
-                <div className="hero-stat-icon"><MapPin size={16} /></div>
+                <div className="hero-stat-icon"><MapPin size={14} /></div>
                 <strong>City &amp; blood-group matching</strong>
                 <p>Donors are surfaced based on city, compatibility, availability, and donation recency.</p>
               </div>
               <div className="mini-stat">
-                <div className="hero-stat-icon"><ClipboardCheck size={16} /></div>
+                <div className="hero-stat-icon"><ClipboardCheck size={14} /></div>
                 <strong>Hospital slip required</strong>
                 <p>Every request includes a supporting document so donors know it is legitimate.</p>
               </div>
@@ -100,7 +100,7 @@ export default function LandingPage() {
             <p className="eyebrow">How it works</p>
             <h2>Three steps from request to response</h2>
             <p className="section-description">
-              BloodLink keeps the process clear and actionable when every minute counts.
+              BloodLink keeps the process clear and actionable for every request.
             </p>
           </div>
         </div>
@@ -129,7 +129,7 @@ export default function LandingPage() {
           {benefits.map((item) => (
             <div className="info-card feature-card" key={item.title}>
               <div className="feature-icon">
-                <item.icon size={18} />
+                <item.icon size={15} />
               </div>
               <h3>{item.title}</h3>
               <p>{item.description}</p>
@@ -146,7 +146,7 @@ export default function LandingPage() {
         <div className="hero-actions" style={{ justifyContent: "center" }}>
           <Link className="button button-primary button-with-icon" to="/register">
             Create account
-            <ArrowRight size={16} />
+            <ArrowRight size={14} />
           </Link>
           <Link className="button button-secondary" to="/login">
             Sign in

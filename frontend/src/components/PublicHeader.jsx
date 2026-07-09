@@ -1,5 +1,5 @@
 import { ArrowRight, Droplets, Menu, X } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 
 const navLinks = [
   { label: "Home", to: "/" },
@@ -12,7 +12,7 @@ export default function PublicHeader({ ctaLabel = "Get started", ctaTo = "/regis
     <header className="marketing-header">
       <Link className="brand-row" to="/" onClick={onCloseMenu}>
         <div className="brand-mark">
-          <Droplets size={18} />
+          <Droplets size={15} />
         </div>
         <div className="brand-copy">
           <strong>BloodLink Pakistan</strong>
@@ -22,9 +22,15 @@ export default function PublicHeader({ ctaLabel = "Get started", ctaTo = "/regis
 
       <nav className={`marketing-nav ${mobileOpen ? "marketing-nav-open" : ""}`}>
         {navLinks.map((item) => (
-          <Link key={item.to} to={item.to} onClick={onCloseMenu}>
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.to === "/"}
+            onClick={onCloseMenu}
+            className={({ isActive }) => `public-nav-link${isActive ? " public-nav-link-active" : ""}`}
+          >
             {item.label}
-          </Link>
+          </NavLink>
         ))}
         <div className="marketing-nav-actions">
           <Link className="button button-tertiary" to="/login" onClick={onCloseMenu}>
@@ -32,7 +38,7 @@ export default function PublicHeader({ ctaLabel = "Get started", ctaTo = "/regis
           </Link>
           <Link className="button button-primary button-with-icon" to={ctaTo} onClick={onCloseMenu}>
             {ctaLabel}
-            <ArrowRight size={16} />
+            <ArrowRight size={14} />
           </Link>
         </div>
       </nav>
@@ -43,12 +49,12 @@ export default function PublicHeader({ ctaLabel = "Get started", ctaTo = "/regis
         </Link>
         <Link className="button button-primary button-with-icon" to={ctaTo}>
           {ctaLabel}
-          <ArrowRight size={16} />
+          <ArrowRight size={14} />
         </Link>
       </div>
 
       <button className="icon-button marketing-menu-button" type="button" onClick={onToggleMenu} aria-label="Toggle navigation">
-        {mobileOpen ? <X size={18} /> : <Menu size={18} />}
+        {mobileOpen ? <X size={15} /> : <Menu size={15} />}
       </button>
     </header>
   );

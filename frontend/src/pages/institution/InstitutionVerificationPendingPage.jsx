@@ -38,7 +38,7 @@ export default function InstitutionVerificationPendingPage() {
                   logout();
                 }}
               >
-                <LogOut size={16} />
+                <LogOut size={14} />
                 Sign out
               </button>
               <Link className="button button-tertiary" to="/">

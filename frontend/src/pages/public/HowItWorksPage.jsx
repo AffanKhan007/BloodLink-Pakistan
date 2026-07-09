@@ -17,7 +17,7 @@ const steps = [
   },
   {
     title: "Everything stays in one place",
-    description: "Track who accepted, message donors directly, and update the request status. No more chasing replies across different apps.",
+    description: "Track who accepted, message donors directly, and update the request status. Everything stays in one place.",
   },
 ];
 
@@ -40,8 +40,7 @@ export default function HowItWorksPage() {
           <p className="eyebrow">How it works</p>
           <h1>From request to donor response in three steps.</h1>
           <p>
-            When someone needs blood, every minute counts. BloodLink connects patients, donors, and hospitals through
-            one system instead of scattered posts.
+            BloodLink connects patients, donors, and hospitals through one system instead of scattered social media posts.
           </p>
         </section>
 
@@ -63,7 +62,7 @@ export default function HowItWorksPage() {
           <div className="hero-actions" style={{ justifyContent: "center" }}>
             <Link className="button button-primary button-with-icon" to="/register">
               Create account
-              <ArrowRight size={16} />
+              <ArrowRight size={14} />
             </Link>
             <Link className="button button-secondary" to="/login">
               Sign in

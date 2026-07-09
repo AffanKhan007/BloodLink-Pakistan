@@ -69,28 +69,28 @@ export default function DonorProfilePage() {
         />
         <div className="metrics-strip">
           <div className="metric-chip">
-            <MapPin size={16} />
+            <MapPin size={14} />
             <div>
               <span>Coverage area</span>
               <strong>{form.city || "Add city"} {form.area ? `/ ${form.area}` : ""}</strong>
             </div>
           </div>
           <div className="metric-chip">
-            <Droplets size={16} />
+            <Droplets size={14} />
             <div>
               <span>Blood group</span>
               <strong>{form.blood_group}</strong>
             </div>
           </div>
           <div className="metric-chip">
-            <ShieldCheck size={16} />
+            <ShieldCheck size={14} />
             <div>
               <span>Availability</span>
               <strong>{form.availability_status}</strong>
             </div>
           </div>
           <div className="metric-chip">
-            <HeartPulse size={16} />
+            <HeartPulse size={14} />
             <div>
               <span>Health note</span>
               <strong>{form.health_notes ? "Added" : "Optional"}</strong>

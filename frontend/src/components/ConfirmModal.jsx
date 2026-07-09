@@ -7,7 +7,7 @@ export default function ConfirmModal({ open, title, description, confirmLabel, o
     <div className="modal-backdrop">
       <div className="modal-card">
         <div className="modal-icon">
-          <AlertTriangle size={20} />
+          <AlertTriangle size={16} />
         </div>
         <h3>{title}</h3>
         <p>{description}</p>
