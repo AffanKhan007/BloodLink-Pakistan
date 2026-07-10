@@ -245,7 +245,7 @@ p {
   width: 3rem;
   height: 3rem;
   border-radius: var(--radius-card, 8px);
-  background: var(--color-logo-bg);
+  background: var(--sidebar-nav-active-bg);
   color: var(--color-logo-icon);
 }
 
