@@ -1141,6 +1141,7 @@ p {
   flex-direction: column;
   height: 100vh;
   overflow: hidden;
+  background: color-mix(in srgb, var(--color-bg-primary) 96%, var(--sidebar-nav-active-bg) 4%);
 }
 
 .top-bar {
