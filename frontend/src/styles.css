@@ -1121,6 +1121,14 @@ p {
   width: 2.8rem;
   height: 2.8rem;
   font-weight: 800;
+  background: var(--sidebar-nav-active-bg);
+  color: #fff;
+}
+
+.sidebar-user strong {
+  display: block;
+  font-size: 1rem;
+  color: var(--text-primary);
 }
 
 .sidebar-toggle,
