@@ -44,6 +44,13 @@
 - Use migrations for database changes.
 - Keep donor contact exposure limited to what the current role actually needs (phone numbers visible only in confirmed match/chat contexts).
 
+## Authentication
+- JWT (python-jose, HS256 algorithm) with `OAuth2PasswordBearer` token extraction from `Authorization: Bearer` header.
+- `create_access_token(str(user.id))` generates tokens; `get_current_user` dependency decodes them and returns the user.
+- Token expiry is configurable via `ACCESS_TOKEN_EXPIRE_MINUTES` (default 60).
+- Passwords hashed with bcrypt via Passlib.
+- Frontend stores token in auth context (in-memory) and attaches it to every API request.
+
 ## Do-not-do rules
 - Do not add roadmap features unless explicitly requested.
 - Do not add real SMS, WhatsApp, NADRA, payment, or hospital integrations in this MVP.

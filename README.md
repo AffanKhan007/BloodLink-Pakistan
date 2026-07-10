@@ -79,6 +79,7 @@ BloodLink provides a realistic MVP with a single-account identity model:
 - Frontend: React + Vite + Lucide React + custom modern CSS design system
 - Backend: FastAPI
 - Database: PostgreSQL
+- Authentication: JWT (python-jose) + OAuth2PasswordBearer + bcrypt (Passlib)
 - Cache / queue broker: Redis
 - Object storage foundation: MinIO
 - ORM and migrations: SQLAlchemy + Alembic
@@ -328,7 +329,7 @@ cat backup.sql | docker exec -i bloodlink-postgres psql -U blood_user -d blood_a
 - Last donation date cannot be in the future.
 - Required-by date and time cannot be empty or in the past.
 - Passwords are hashed with bcrypt through Passlib.
-- JWT-based authentication protects private routes.
+- Authentication uses JWT (python-jose) with HS256 signing. Tokens contain the user ID as the `sub` claim and are sent via `Authorization: Bearer <token>` header. FastAPI's `OAuth2PasswordBearer` extracts the token and `get_current_user` dependency decodes it to identify the requesting user.
 - Uploaded files are stored on disk, not in PostgreSQL.
 - Uploaded hospital slips are served only through authorized backend routes.
 - Donor phone numbers are exposed only within confirmed match and chat contexts. Public donor listings do not include phone numbers.
