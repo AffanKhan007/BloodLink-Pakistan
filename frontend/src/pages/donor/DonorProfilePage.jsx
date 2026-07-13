@@ -1,10 +1,11 @@
-import { Droplets, HeartPulse, MapPin, ShieldCheck } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ChevronDown, Droplets, HeartPulse, MapPin, ShieldCheck, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 import { apiRequest } from "../../api/client";
 import { useAuth } from "../../auth/AuthContext";
 import { AlertMessage, LoadingState } from "../../components/PageState";
 import SectionIntro from "../../components/SectionIntro";
+import citiesList from "../../data/pakistan_cities.json";
 
 const initialForm = {
   blood_group: "A+",
@@ -21,35 +22,79 @@ const initialForm = {
 export default function DonorProfilePage() {
   const { token } = useAuth();
   const [form, setForm] = useState(initialForm);
-  const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [citySearch, setCitySearch] = useState("");
+  const [isOther, setIsOther] = useState(false);
+  const [otherCity, setOtherCity] = useState("");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  const filteredCities = citiesList.filter((c) => c !== "Other" && c.toLowerCase().includes(citySearch.toLowerCase()));
 
   useEffect(() => {
-    Promise.all([apiRequest("/donors/profile/me", { token }).catch(() => null), apiRequest("/cities").catch(() => [])])
-      .then(([profile, cityData]) => {
-        setCities(cityData);
+    apiRequest("/donors/profile/me", { token }).catch(() => null)
+      .then((profile) => {
         if (profile) {
+          const inList = citiesList.includes(profile.city);
           setForm({
             ...profile,
             last_donation_date: profile.last_donation_date || "",
             health_notes: profile.health_notes || "",
           });
+          if (!inList && profile.city) {
+            setIsOther(true);
+            setOtherCity(profile.city);
+          }
         }
       })
       .finally(() => setLoading(false));
   }, [token]);
 
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const selectCity = (city) => {
+    setForm((current) => ({ ...current, city }));
+    setIsOther(false);
+    setOtherCity("");
+    setCitySearch(city);
+    setDropdownOpen(false);
+  };
+
+  const selectOther = () => {
+    setIsOther(true);
+    setDropdownOpen(false);
+    setCitySearch("");
+  };
+
+  const handleOtherChange = (value) => {
+    setOtherCity(value);
+    setForm((current) => ({ ...current, city: value }));
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (isOther && !otherCity.trim()) {
+      setError("Please enter your city name.");
+      return;
+    }
     setError("");
     setMessage("");
     try {
+      const cityValue = isOther ? otherCity.trim() : form.city;
       await apiRequest("/donors/profile", {
         method: "POST",
         token,
-        body: { ...form, last_donation_date: form.last_donation_date || null },
+        body: { ...form, city: cityValue, last_donation_date: form.last_donation_date || null },
       });
       setMessage("Profile saved successfully.");
     } catch (submitError) {
@@ -119,17 +164,61 @@ export default function DonorProfilePage() {
             ))}
           </select>
         </label>
-        <label className="field-required">
+        <label className="field-required city-combo-wrap">
           City
-          <select value={form.city} onChange={(event) => setForm((current) => ({ ...current, city: event.target.value }))} required>
-            <option value="">Select city</option>
-            {cities.map((city) => (
-              <option key={city.id} value={city.name}>
-                {city.name}
-              </option>
-              ))}
-            </select>
-          </label>
+          <div className="city-combo" ref={dropdownRef}>
+            <div className="city-combo-input-wrap">
+              <input
+                className="city-combo-input"
+                type="text"
+                value={isOther ? "" : citySearch}
+                onChange={(e) => {
+                  setCitySearch(e.target.value);
+                  setDropdownOpen(true);
+                  if (!isOther) {
+                    setForm((current) => ({ ...current, city: "" }));
+                  }
+                }}
+                onFocus={() => setDropdownOpen(true)}
+                placeholder={isOther ? otherCity || "Type your city..." : "Search city..."}
+                required={!isOther}
+              />
+              {isOther ? (
+                <button type="button" className="city-combo-clear" onClick={() => { setIsOther(false); setOtherCity(""); setCitySearch(""); }}>
+                  <X size={13} />
+                </button>
+              ) : (
+                <ChevronDown size={14} className={`city-combo-chevron ${dropdownOpen ? "open" : ""}`} />
+              )}
+            </div>
+            {dropdownOpen && !isOther && (
+              <ul className="city-combo-dropdown">
+                {filteredCities.map((city) => (
+                  <li
+                    key={city}
+                    className={`city-combo-option ${form.city === city ? "active" : ""}`}
+                    onClick={() => selectCity(city)}
+                  >
+                    {city}
+                  </li>
+                ))}
+                <li className="city-combo-option city-combo-other" onClick={selectOther}>
+                  Other — type your city
+                </li>
+              </ul>
+            )}
+          </div>
+          {isOther && (
+            <input
+              className="city-other-input"
+              type="text"
+              value={otherCity}
+              onChange={(e) => handleOtherChange(e.target.value)}
+              placeholder="Enter your city name"
+              required
+            />
+          )}
+        </label>
         <label className="field-required">
           Area
           <input value={form.area} onChange={(event) => setForm((current) => ({ ...current, area: event.target.value }))} required />

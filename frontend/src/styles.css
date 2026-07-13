@@ -2271,6 +2271,109 @@ p {
 .social-row li:nth-child(3) a:hover::before { background: #d81c3f; border-color: #d81c3f; }
 .social-row li:nth-child(3) a:hover::after { background: #e46880; border-color: #e46880; }
 
+/* ── City combobox ────────────────────────────────────── */
+.city-combo-wrap {
+  position: relative;
+}
+
+.city-combo {
+  position: relative;
+}
+
+.city-combo-input-wrap {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-input, 8px);
+  background: var(--color-paper);
+  transition: border-color var(--dur-micro, 180ms) var(--ease-glide);
+}
+
+.city-combo-input-wrap:focus-within {
+  border-color: rgba(var(--crimson-rgb), 0.5);
+  box-shadow: 0 0 0 3px rgba(var(--crimson-rgb), 0.25);
+}
+
+.city-combo-input {
+  width: 100%;
+  border: none !important;
+  padding: 0.95rem 0.5rem 0.95rem 1rem;
+  background: transparent;
+  box-shadow: none !important;
+  outline: none;
+}
+
+.city-combo-chevron {
+  flex-shrink: 0;
+  margin-right: 0.75rem;
+  color: var(--muted);
+  transition: transform 0.2s ease;
+}
+
+.city-combo-chevron.open {
+  transform: rotate(180deg);
+}
+
+.city-combo-clear {
+  display: inline-grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-right: 0.5rem;
+  border: none;
+  background: var(--color-surface-alt);
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.city-combo-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  max-height: 220px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0.35rem 0;
+  list-style: none;
+  background: var(--color-paper);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card, 8px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.city-combo-option {
+  padding: 0.55rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.city-combo-option:hover {
+  background: var(--color-surface-alt);
+}
+
+.city-combo-option.active {
+  background: rgba(var(--crimson-rgb), 0.08);
+  font-weight: 600;
+}
+
+.city-combo-other {
+  border-top: 1px solid var(--border);
+  margin-top: 0.2rem;
+  padding-top: 0.65rem;
+  color: var(--muted);
+  font-style: italic;
+  font-size: 0.85rem;
+}
+
+.city-other-input {
+  margin-top: 0.5rem;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .info-card-selected,
   .info-card.selected,
