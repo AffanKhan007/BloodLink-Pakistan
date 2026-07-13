@@ -1,16 +1,18 @@
-import { ArrowRight, Building2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ArrowRight } from "lucide-react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { apiRequest } from "../../api/client";
 import { useAuth } from "../../auth/AuthContext";
 import AuthShell from "../../components/AuthShell";
+import CityCombobox from "../../components/CityCombobox";
 import PageTransition from "../../components/PageTransition";
 import { AlertMessage } from "../../components/PageState";
 
+const institutionTypes = ["Hospital", "Blood Bank", "NGO/Welfare Organization", "Blood Donor Society", "Educational Institution", "Other"];
+
 const initialForm = {
   institution_name: "",
-  institution_type: "",
+  institution_type: "Hospital",
   city: "",
   area: "",
   address: "",
@@ -21,20 +23,16 @@ const initialForm = {
   password: "",
   confirm_password: "",
   website_social_link: "",
-  proof_document_url: "",
+  confirm_authorized: false,
 };
 
 export default function RegisterInstitutionPage() {
   const navigate = useNavigate();
   const { registerInstitution } = useAuth();
-  const [cities, setCities] = useState([]);
   const [form, setForm] = useState(initialForm);
+  const [proofDocument, setProofDocument] = useState(null);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    apiRequest("/cities").then(setCities).catch(() => setCities([]));
-  }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -43,10 +41,23 @@ export default function RegisterInstitutionPage() {
       setError("Passwords do not match.");
       return;
     }
+    if (!proofDocument) {
+      setError("Proof document is required.");
+      return;
+    }
+    if (!form.confirm_authorized) {
+      setError("Please confirm you are authorized to register this institution.");
+      return;
+    }
     setSubmitting(true);
     try {
       const { confirm_password, ...payload } = form;
-      await registerInstitution(payload);
+      const formData = new FormData();
+      Object.entries(payload).forEach(([key, value]) => {
+        formData.append(key, typeof value === "boolean" ? String(value) : value || "");
+      });
+      formData.append("proof_document", proofDocument);
+      await registerInstitution(formData);
       navigate("/institution");
     } catch (submitError) {
       setError(submitError.message);
@@ -75,22 +86,21 @@ export default function RegisterInstitutionPage() {
         </label>
         <label className="field-required">
           Institution type
-          <input value={form.institution_type} onChange={(event) => setForm((current) => ({ ...current, institution_type: event.target.value }))} placeholder="University, company, NGO, government office" required />
-        </label>
-        <label className="field-required">
-          City
-          <select value={form.city} onChange={(event) => setForm((current) => ({ ...current, city: event.target.value }))} required>
-            <option value="">Select city</option>
-            {cities.map((city) => (
-              <option key={city.id} value={city.name}>
-                {city.name}
+          <select value={form.institution_type} onChange={(event) => setForm((current) => ({ ...current, institution_type: event.target.value }))} required>
+            {institutionTypes.map((type) => (
+              <option key={type} value={type}>
+                {type}
               </option>
             ))}
           </select>
         </label>
-        <label>
+        <label className="field-required city-combo-wrap">
+          City
+          <CityCombobox value={form.city} onChange={(city) => setForm((current) => ({ ...current, city }))} required />
+        </label>
+        <label className="field-required">
           Area
-          <input value={form.area} onChange={(event) => setForm((current) => ({ ...current, area: event.target.value }))} placeholder="Gulberg, Model Town, New Campus" />
+          <input value={form.area} onChange={(event) => setForm((current) => ({ ...current, area: event.target.value }))} placeholder="Gulberg, Model Town, New Campus" required />
         </label>
         <label className="field-required">
           Full address
@@ -124,9 +134,19 @@ export default function RegisterInstitutionPage() {
           Website or social link
           <input value={form.website_social_link} onChange={(event) => setForm((current) => ({ ...current, website_social_link: event.target.value }))} placeholder="https://yourinstitution.pk" />
         </label>
-        <label>
-          Proof document link
-          <input value={form.proof_document_url} onChange={(event) => setForm((current) => ({ ...current, proof_document_url: event.target.value }))} placeholder="Optional document URL or hosted file link" />
+        <label className="field-required">
+          Proof document
+          <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={(event) => setProofDocument(event.target.files?.[0] || null)} required />
+          <span className="field-hint">Upload a registration certificate, license, or official proof document.</span>
+        </label>
+        <label className="checkbox-row form-span">
+          <input
+            type="checkbox"
+            checked={form.confirm_authorized}
+            onChange={(event) => setForm((current) => ({ ...current, confirm_authorized: event.target.checked }))}
+            required
+          />
+          <span>I confirm this information is accurate and I am authorized to register on behalf of this organization</span>
         </label>
         <button className="button button-primary button-full button-with-icon" disabled={submitting}>
           {submitting ? "Submitting..." : "Register institution"}

@@ -7,7 +7,7 @@ import { AlertMessage, EmptyState, LoadingState } from "../../components/PageSta
 import SectionIntro from "../../components/SectionIntro";
 import StatusBadge from "../../components/StatusBadge";
 
-const FILTERS = ["all", "pending_approval", "approved", "rejected", "suspended"];
+const FILTERS = ["all", "pending", "approved", "rejected", "suspended"];
 
 export default function AdminInstitutionsPage() {
   const { token } = useAuth();
@@ -18,6 +18,7 @@ export default function AdminInstitutionsPage() {
   const [decision, setDecision] = useState(null);
   const [rejectionReason, setRejectionReason] = useState("");
   const [selectedInstitutionId, setSelectedInstitutionId] = useState(null);
+  const [editingStatusId, setEditingStatusId] = useState(null);
 
   const loadInstitutions = async (statusFilter = selectedStatus) => {
     const query = statusFilter === "all" ? "" : `?status_filter=${statusFilter}`;
@@ -35,7 +36,7 @@ export default function AdminInstitutionsPage() {
         accumulator[institution.status] = (accumulator[institution.status] || 0) + 1;
         return accumulator;
       },
-      { pending_approval: 0, approved: 0, rejected: 0, suspended: 0 }
+      { pending: 0, approved: 0, rejected: 0, suspended: 0 }
     );
   }, [institutions]);
 
@@ -51,7 +52,50 @@ export default function AdminInstitutionsPage() {
     });
     setDecision(null);
     setRejectionReason("");
+    setEditingStatusId(null);
     await loadInstitutions();
+  };
+
+  const actionButton = (institution) => {
+    if (institution.status === "pending") {
+      return (
+        <>
+          <button className="button button-primary" onClick={(event) => { event.stopPropagation(); setDecision({ id: institution.id, status: "approved" }); }}>
+            Approve
+          </button>
+          <button className="button button-secondary" onClick={(event) => { event.stopPropagation(); setDecision({ id: institution.id, status: "rejected" }); }}>
+            Reject
+          </button>
+        </>
+      );
+    }
+
+    if (editingStatusId !== institution.id) {
+      return (
+        <button className="button button-tertiary" onClick={(event) => { event.stopPropagation(); setEditingStatusId(institution.id); }}>
+          Edit status
+        </button>
+      );
+    }
+
+    if (institution.status === "approved") {
+      return (
+        <>
+          <button className="button button-secondary" onClick={(event) => { event.stopPropagation(); setDecision({ id: institution.id, status: "rejected" }); }}>
+            Mark rejected
+          </button>
+          <button className="button button-tertiary" onClick={(event) => { event.stopPropagation(); setDecision({ id: institution.id, status: "suspended" }); }}>
+            Suspend
+          </button>
+        </>
+      );
+    }
+
+    return (
+      <button className="button button-primary" onClick={(event) => { event.stopPropagation(); setDecision({ id: institution.id, status: "approved" }); }}>
+        Restore approval
+      </button>
+    );
   };
 
   if (loading) return <LoadingState label="Loading institutions" />;
@@ -81,7 +125,7 @@ export default function AdminInstitutionsPage() {
           ))}
         </div>
         <div className="inline-metrics">
-          <span>Pending: {counts.pending_approval}</span>
+          <span>Pending: {counts.pending}</span>
           <span>Approved: {counts.approved}</span>
           <span>Rejected: {counts.rejected}</span>
           <span>Suspended: {counts.suspended}</span>
@@ -116,17 +160,10 @@ export default function AdminInstitutionsPage() {
               <p>{institution.contact_person}{institution.contact_person_designation ? `, ${institution.contact_person_designation}` : ""}</p>
               <p>{institution.email} / {institution.phone}</p>
               <p>{institution.address}</p>
+              {institution.approved_at ? <p><strong>Approved at:</strong> {new Date(institution.approved_at).toLocaleString()}</p> : null}
               {institution.rejection_reason ? <p><strong>Rejection reason:</strong> {institution.rejection_reason}</p> : null}
               <div className="card-actions">
-                <button className="button button-primary" onClick={() => setDecision({ id: institution.id, status: "approved" })}>
-                  Approve
-                </button>
-                <button className="button button-secondary" onClick={() => setDecision({ id: institution.id, status: "rejected" })}>
-                  Reject
-                </button>
-                <button className="button button-tertiary" onClick={() => setDecision({ id: institution.id, status: "suspended" })}>
-                  Suspend
-                </button>
+                {actionButton(institution)}
               </div>
             </div>
           ))}

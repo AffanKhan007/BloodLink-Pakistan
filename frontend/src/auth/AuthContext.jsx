@@ -65,7 +65,7 @@ export function AuthProvider({ children }) {
   };
 
   const registerInstitution = async (payload) => {
-    const data = await apiRequest("/auth/register/institution", { method: "POST", body: payload });
+    const data = await apiRequest("/auth/register/institution", { method: "POST", body: payload, isFormData: true });
     persistAuth(data.access_token, data.user);
     return data.user;
   };

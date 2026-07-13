@@ -366,7 +366,7 @@ export default function App() {
             path="/institution/verification-pending"
             element={
               <ProtectedRoute roles={["institution_donor"]}>
-                <InstitutionRouteGuard allowedStatuses={["pending_approval"]}>
+                <InstitutionRouteGuard allowedStatuses={["pending"]}>
                   <InstitutionVerificationPendingPage />
                 </InstitutionRouteGuard>
               </ProtectedRoute>

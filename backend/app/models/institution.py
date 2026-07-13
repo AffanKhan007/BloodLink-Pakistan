@@ -9,7 +9,7 @@ from app.core.database import Base
 
 
 class InstitutionStatus(StrEnum):
-    PENDING_APPROVAL = "pending_approval"
+    PENDING = "pending"
     APPROVED = "approved"
     REJECTED = "rejected"
     SUSPENDED = "suspended"
@@ -34,11 +34,15 @@ class Institution(Base):
     status: Mapped[InstitutionStatus] = mapped_column(
         Enum(InstitutionStatus, name="institution_status"),
         nullable=False,
-        default=InstitutionStatus.PENDING_APPROVAL,
-        server_default=InstitutionStatus.PENDING_APPROVAL.name,
+        default=InstitutionStatus.PENDING,
+        server_default=InstitutionStatus.PENDING.name,
         index=True,
     )
     rejection_reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    approved_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    approved_by_user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    status_changed_by_user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    operating_hours: Mapped[Optional[str]] = mapped_column(String(120), nullable=True)
     available_blood_groups: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -46,4 +50,4 @@ class Institution(Base):
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
     )
 
-    user = relationship("User", back_populates="institution_profile")
+    user = relationship("User", back_populates="institution_profile", foreign_keys=[user_id])

@@ -24,7 +24,7 @@ function formatApiError(detail) {
 }
 
 export async function apiRequest(path, options = {}) {
-  const { token, body, headers, isFormData = false, ...rest } = options;
+  const { token, body, headers, isFormData = false, method, ...rest } = options;
   const requestHeaders = {
     ...(isFormData ? {} : { "Content-Type": "application/json" }),
     ...(headers || {}),
@@ -34,11 +34,18 @@ export async function apiRequest(path, options = {}) {
     requestHeaders.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...rest,
-    headers: requestHeaders,
-    body: body ? (isFormData ? body : JSON.stringify(body)) : undefined,
-  });
+  let response;
+  try {
+    const fetchOptions = {
+      ...(method ? { method } : {}),
+      ...rest,
+      headers: requestHeaders,
+      body: body ? (isFormData ? body : JSON.stringify(body)) : undefined,
+    };
+    response = await fetch(`${API_BASE_URL}${path}`, fetchOptions);
+  } catch (networkError) {
+    throw new Error(`Network error ${(method || "GET")} ${path} — ${networkError.message}`);
+  }
 
   if (!response.ok) {
     let errorMessage = "Something went wrong";
@@ -48,7 +55,7 @@ export async function apiRequest(path, options = {}) {
     } catch {
       errorMessage = response.statusText || errorMessage;
     }
-    throw new Error(errorMessage);
+    throw new Error(`${response.status} ${(method || "GET")} ${path} — ${errorMessage}`);
   }
 
   const contentType = response.headers.get("content-type");

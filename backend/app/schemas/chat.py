@@ -10,7 +10,7 @@ class ChatCreate(BaseModel):
     target_user_id: int
     request_id: int | None = None
     subject: str | None = Field(default=None, max_length=255)
-    initial_message: str = Field(min_length=1, max_length=2000)
+    initial_message: str | None = Field(default=None, min_length=1, max_length=2000)
 
 
 class ChatMessageCreate(BaseModel):

@@ -31,7 +31,7 @@ export default function InstitutionVerificationPendingPage() {
           description="Your institution account is under admin review. You will be able to access your institution dashboard after approval."
           actions={
             <>
-              <StatusBadge value="pending_approval" />
+              <StatusBadge value="pending" />
               <button
                 className="button button-secondary"
                 onClick={() => {

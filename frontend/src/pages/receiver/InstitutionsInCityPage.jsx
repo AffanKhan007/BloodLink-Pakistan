@@ -44,7 +44,6 @@ export default function InstitutionsInCityPage() {
         target_user_id: institution.user.id,
         request_id: selectedRequestId,
         subject: `Institution donor outreach: ${institution.institution_name}`,
-        initial_message: `Hello, I would like to ask whether your institution can help with this blood requirement.`,
       },
     });
     navigate("/receiver/chats", { state: { chatId: chat.id } });

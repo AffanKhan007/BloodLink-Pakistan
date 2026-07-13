@@ -31,6 +31,7 @@ class InstitutionProfileCreate(BaseModel):
     address: str = Field(min_length=5, max_length=500)
     website_social_link: str | None = Field(default=None, max_length=255)
     proof_document_url: str | None = Field(default=None, max_length=255)
+    operating_hours: str | None = Field(default=None, max_length=120)
     available_blood_groups: str | None = Field(default=None, max_length=255)
     notes: str | None = Field(default=None, max_length=1000)
 
@@ -61,6 +62,10 @@ class InstitutionOut(BaseSchema):
     proof_document_url: str | None
     status: InstitutionStatus
     rejection_reason: str | None
+    approved_at: datetime | None
+    approved_by_user_id: int | None
+    status_changed_by_user_id: int | None
+    operating_hours: str | None
     available_blood_groups: str | None
     notes: str | None
     created_at: datetime
@@ -69,33 +74,6 @@ class InstitutionOut(BaseSchema):
 
 class InstitutionWithUserOut(InstitutionOut):
     user: ChatUserSummary
-
-
-class InstitutionRegisterRequest(BaseModel):
-    institution_name: str = Field(min_length=2, max_length=255)
-    institution_type: str = Field(min_length=2, max_length=120)
-    city: str = Field(min_length=2, max_length=120)
-    area: str | None = Field(default=None, max_length=120)
-    address: str = Field(min_length=5, max_length=500)
-    contact_person: str = Field(min_length=2, max_length=150)
-    contact_person_designation: str = Field(min_length=2, max_length=120)
-    email: EmailStr
-    phone: str
-    password: str = Field(min_length=8, max_length=128)
-    website_social_link: str | None = Field(default=None, max_length=255)
-    proof_document_url: str | None = Field(default=None, max_length=255)
-
-    @field_validator("phone")
-    @classmethod
-    def validate_registration_phone(cls, value: str) -> str:
-        return validate_contact_number(value)
-
-    @field_validator("password")
-    @classmethod
-    def validate_registration_password(cls, value: str) -> str:
-        if not any(ch.isdigit() for ch in value) or not any(ch.isalpha() for ch in value):
-            raise ValueError("Password must contain letters and numbers")
-        return value
 
 
 class InstitutionStatusUpdate(BaseModel):

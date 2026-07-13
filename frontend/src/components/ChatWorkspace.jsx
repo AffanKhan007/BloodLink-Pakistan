@@ -1,8 +1,8 @@
-import { MessageSquare, SendHorizontal } from "lucide-react";
+import { ExternalLink, FileText, MessageSquare, SendHorizontal, X, Zap } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 
-import { WS_BASE_URL, apiRequest } from "../api/client";
+import { API_BASE_URL, WS_BASE_URL, apiRequest } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
 import { AlertMessage, EmptyState, LoadingState } from "./PageState";
 import SectionIntro from "./SectionIntro";
@@ -18,6 +18,9 @@ export default function ChatWorkspace({ eyebrow, title, description }) {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [socketStatus, setSocketStatus] = useState("connecting");
+  const [showRequestModal, setShowRequestModal] = useState(false);
+  const [requestData, setRequestData] = useState(null);
+  const [loadingRequest, setLoadingRequest] = useState(false);
   const socketRef = useRef(null);
 
   const loadChats = async () => {
@@ -42,6 +45,8 @@ export default function ChatWorkspace({ eyebrow, title, description }) {
     apiRequest(`/chats/${selectedChatId}`, { token })
       .then(setChatDetail)
       .catch((loadError) => setError(loadError.message));
+    setShowRequestModal(false);
+    setRequestData(null);
   }, [selectedChatId, token]);
 
   useEffect(() => {
@@ -103,29 +108,61 @@ export default function ChatWorkspace({ eyebrow, title, description }) {
     };
   }, [selectedChatId, token]);
 
-  const sendMessage = async (event) => {
-    event.preventDefault();
-    if (!message.trim()) return;
+  const sendMessageText = async (text) => {
+    if (!text.trim()) return;
     setError("");
     try {
       const activeSocket = socketRef.current;
       if (activeSocket && activeSocket.readyState === WebSocket.OPEN) {
-        activeSocket.send(JSON.stringify({ message: message.trim() }));
+        activeSocket.send(JSON.stringify({ message: text.trim() }));
       } else {
         await apiRequest(`/chats/${selectedChatId}/messages`, {
           method: "POST",
           token,
-          body: { message: message.trim() },
+          body: { message: text.trim() },
         });
         await loadChats();
         const detail = await apiRequest(`/chats/${selectedChatId}`, { token });
         setChatDetail(detail);
       }
-      setMessage("");
     } catch (submitError) {
       setError(submitError.message);
     }
   };
+
+  const sendMessage = async (event) => {
+    event.preventDefault();
+    if (!message.trim()) return;
+    await sendMessageText(message);
+    setMessage("");
+  };
+
+  const openRequestDetails = async () => {
+    if (loadingRequest) return;
+    if (requestData) {
+      setShowRequestModal(true);
+      return;
+    }
+    if (!chatDetail?.request_id) {
+      setError("No blood request is linked to this conversation.");
+      return;
+    }
+    setError("");
+    setLoadingRequest(true);
+    try {
+      const data = await apiRequest(`/chats/${selectedChatId}/request`, { token });
+      setRequestData(data);
+      setShowRequestModal(true);
+    } catch (fetchError) {
+      setError(fetchError.message || "Unable to load request details. Please try again.");
+    } finally {
+      setLoadingRequest(false);
+    }
+  };
+
+  const suggestedMessage = chatDetail && chatDetail.messages.length === 0
+    ? "Hello, I would like to ask whether your institution can help with this blood requirement."
+    : "Any updates on this?";
 
   if (loading) return <LoadingState label="Loading chats" />;
 
@@ -173,7 +210,14 @@ export default function ChatWorkspace({ eyebrow, title, description }) {
                 <div className="section-heading section-heading-compact">
                   <div className="section-copy">
                     <p className="eyebrow">Conversation</p>
-                    <h2>{chatDetail.counterpart.full_name}</h2>
+                    {user?.role === "institution_donor" ? (
+                      <button type="button" className="chat-name-btn" onClick={openRequestDetails}>
+                        <h2>{chatDetail.counterpart.full_name}</h2>
+                        <ExternalLink size={13} />
+                      </button>
+                    ) : (
+                      <h2>{chatDetail.counterpart.full_name}</h2>
+                    )}
                     <p className="section-description">{chatDetail.subject || `Messages between ${user?.full_name} and ${chatDetail.counterpart.full_name}`}</p>
                   </div>
                   <span className={`chat-presence chat-presence-${socketStatus}`}>
@@ -190,6 +234,18 @@ export default function ChatWorkspace({ eyebrow, title, description }) {
                     </div>
                   ))}
                 </div>
+                {user?.role !== "institution_donor" && (
+                  <div className="quick-replies">
+                    <button
+                      type="button"
+                      className="quick-reply-chip"
+                      onClick={() => sendMessageText(suggestedMessage)}
+                    >
+                      <Zap size={14} />
+                      <span>{suggestedMessage}</span>
+                    </button>
+                  </div>
+                )}
                 <form className="chat-form" onSubmit={sendMessage}>
                   <label className="form-span">
                     Reply
@@ -207,6 +263,58 @@ export default function ChatWorkspace({ eyebrow, title, description }) {
           </section>
         </div>
       )}
+      {showRequestModal && requestData ? (
+        <div className="modal-overlay" onClick={() => setShowRequestModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Blood Request Details</h3>
+              <button type="button" className="modal-close" onClick={() => setShowRequestModal(false)}>
+                <X size={18} />
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="detail-group">
+                <h4 className="detail-heading">Patient & Request</h4>
+                <div className="detail-field"><span className="detail-label">Patient name</span><span className="detail-value">{requestData.patient_name}</span></div>
+                <div className="detail-field"><span className="detail-label">Blood group needed</span><span className="detail-value">{requestData.blood_group_needed}</span></div>
+                <div className="detail-field"><span className="detail-label">Units required</span><span className="detail-value">{requestData.units_required}</span></div>
+              </div>
+              <div className="detail-group">
+                <h4 className="detail-heading">Hospital Context</h4>
+                <div className="detail-field"><span className="detail-label">Hospital name</span><span className="detail-value">{requestData.hospital_name}</span></div>
+                <div className="detail-field"><span className="detail-label">City</span><span className="detail-value">{requestData.city}</span></div>
+                <div className="detail-field"><span className="detail-label">Area</span><span className="detail-value">{requestData.area}</span></div>
+                <div className="detail-field"><span className="detail-label">Ward / Room</span><span className="detail-value">{requestData.ward_room}</span></div>
+                <div className="detail-field"><span className="detail-label">Urgency</span><span className="detail-value">{requestData.urgency_level}</span></div>
+                <div className="detail-field"><span className="detail-label">Required by</span><span className="detail-value">{new Date(requestData.required_by).toLocaleString("en-PK", { dateStyle: "medium", timeStyle: "short" })}</span></div>
+              </div>
+              <div className="detail-group">
+                <h4 className="detail-heading">Attendant & Verification</h4>
+                <div className="detail-field"><span className="detail-label">Attendant name</span><span className="detail-value">{requestData.attendant_name}</span></div>
+                <div className="detail-field"><span className="detail-label">Attendant phone</span><span className="detail-value">{requestData.attendant_phone}</span></div>
+                {requestData.additional_notes ? (
+                  <div className="detail-field detail-field-notes"><span className="detail-label">Additional notes</span><span className="detail-value">{requestData.additional_notes}</span></div>
+                ) : null}
+              </div>
+              {requestData.documents?.length > 0 ? (
+                <div className="detail-group">
+                  <h4 className="detail-heading">Hospital Slip / Documents</h4>
+                  <ul className="document-list">
+                    {requestData.documents.map((doc) => (
+                      <li key={doc.id}>
+                        <a className="document-link" href={`${API_BASE_URL}/uploads/request-documents/${doc.id}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
+                          <FileText size={14} />
+                          {doc.document_type}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

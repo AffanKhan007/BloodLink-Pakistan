@@ -114,7 +114,7 @@ const navByRole = {
 };
 
 const institutionNavByStatus = {
-  pending_approval: [{ label: "Verification Status", to: "/institution/verification-pending", icon: ShieldCheck }],
+  pending: [{ label: "Verification Status", to: "/institution/verification-pending", icon: ShieldCheck }],
   rejected: [{ label: "Verification Review", to: "/institution/rejected", icon: ShieldCheck }],
   suspended: [{ label: "Account Status", to: "/institution/suspended", icon: ShieldCheck }],
 };
@@ -191,7 +191,7 @@ export default function Layout() {
   }, [institutionStatus, user?.role]);
   const currentMeta = useMemo(
     () => {
-      if (user?.role === "institution_donor" && institutionStatus === "pending_approval") {
+      if (user?.role === "institution_donor" && institutionStatus === "pending") {
         return {
           eyebrow: "Institution approval",
           title: "Verification in progress",

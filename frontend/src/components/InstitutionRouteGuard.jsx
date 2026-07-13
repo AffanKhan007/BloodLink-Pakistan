@@ -6,7 +6,7 @@ import { useAuth } from "../auth/AuthContext";
 import { EmptyState, LoadingState } from "./PageState";
 
 function routeForStatus(status) {
-  if (status === "pending_approval") return "/institution/verification-pending";
+  if (status === "pending") return "/institution/verification-pending";
   if (status === "rejected") return "/institution/rejected";
   if (status === "suspended") return "/institution/suspended";
   return "/institution";

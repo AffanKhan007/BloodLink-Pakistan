@@ -20,6 +20,7 @@ const initialForm = {
   address: "",
   website_social_link: "",
   proof_document_url: "",
+  operating_hours: "",
   available_blood_groups: "",
   notes: "",
 };
@@ -28,7 +29,7 @@ export default function InstitutionRejectedPage() {
   const navigate = useNavigate();
   const { token } = useAuth();
   const [form, setForm] = useState(initialForm);
-  const [cities, setCities] = useState([]);
+  const [proofDocument, setProofDocument] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
@@ -36,9 +37,8 @@ export default function InstitutionRejectedPage() {
   const [profile, setProfile] = useState(null);
 
   useEffect(() => {
-    Promise.all([apiRequest("/institutions/me", { token }).catch(() => null), apiRequest("/cities").catch(() => [])])
-      .then(([profileData, cityData]) => {
-        setCities(cityData);
+    apiRequest("/institutions/me", { token }).catch(() => null)
+      .then((profileData) => {
         setProfile(profileData);
         if (profileData) {
           setForm({ ...initialForm, ...profileData });
@@ -53,7 +53,16 @@ export default function InstitutionRejectedPage() {
     setError("");
     setSubmitting(true);
     try {
-      await apiRequest("/institutions/me/resubmit", { method: "POST", token, body: form });
+      const formData = new FormData();
+      Object.entries(form).forEach(([key, value]) => {
+        if (!["id", "user_id", "status", "rejection_reason", "created_at", "updated_at", "approved_at", "approved_by_user_id", "status_changed_by_user_id"].includes(key)) {
+          formData.append(key, value || "");
+        }
+      });
+      if (proofDocument) {
+        formData.append("proof_document", proofDocument);
+      }
+      await apiRequest("/institutions/me/resubmit", { method: "POST", token, body: formData, isFormData: true });
       setMessage("Institution details resubmitted for admin review.");
       navigate("/institution/verification-pending", { replace: true });
     } catch (submitError) {
@@ -87,10 +96,12 @@ export default function InstitutionRejectedPage() {
         <InstitutionVerificationForm
           form={form}
           setForm={setForm}
-          cities={cities}
           onSubmit={handleSubmit}
           submitLabel="Resubmit for Review"
           submitting={submitting}
+          proofDocument={proofDocument}
+          setProofDocument={setProofDocument}
+          showProfileFields
         />
       </section>
     </div>

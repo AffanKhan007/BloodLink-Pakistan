@@ -1,10 +1,11 @@
 import { Activity, Building2, CalendarClock, ShieldCheck, Upload } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { apiRequest } from "../../api/client";
 import { useAuth } from "../../auth/AuthContext";
 import { AlertMessage } from "../../components/PageState";
+import CityCombobox from "../../components/CityCombobox";
 import SectionIntro from "../../components/SectionIntro";
 
 const initialForm = {
@@ -26,17 +27,10 @@ export default function CreateRequestPage() {
   const { token, user } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ ...initialForm, attendant_name: user?.full_name || "", attendant_phone: user?.phone || "" });
-  const [cities, setCities] = useState([]);
   const [documentFile, setDocumentFile] = useState(null);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    apiRequest("/cities")
-      .then(setCities)
-      .catch(() => setCities([]));
-  }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -146,16 +140,9 @@ export default function CreateRequestPage() {
             Hospital name
             <input value={form.hospital_name} onChange={(event) => setForm((current) => ({ ...current, hospital_name: event.target.value }))} required />
           </label>
-          <label className="field-required">
+          <label className="field-required city-combo-wrap">
             City
-            <select value={form.city} onChange={(event) => setForm((current) => ({ ...current, city: event.target.value }))} required>
-              <option value="">Select city</option>
-              {cities.map((city) => (
-                <option key={city.id} value={city.name}>
-                  {city.name}
-                </option>
-              ))}
-            </select>
+            <CityCombobox value={form.city} onChange={(city) => setForm((current) => ({ ...current, city }))} required />
           </label>
           <label className="field-required">
             Area

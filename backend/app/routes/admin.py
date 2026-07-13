@@ -54,7 +54,7 @@ def dashboard(
         )
         or 0,
         pending_institutions=db.scalar(
-            select(func.count(Institution.id)).where(Institution.status == InstitutionStatus.PENDING_APPROVAL)
+            select(func.count(Institution.id)).where(Institution.status == InstitutionStatus.PENDING)
         )
         or 0,
         pending_requests=db.scalar(
@@ -163,9 +163,24 @@ def update_institution_status(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Institution not found")
     if payload.status == InstitutionStatus.REJECTED and not payload.rejection_reason:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Rejection reason is required")
+    allowed_transitions = {
+        InstitutionStatus.PENDING: {InstitutionStatus.APPROVED, InstitutionStatus.REJECTED},
+        InstitutionStatus.APPROVED: {InstitutionStatus.REJECTED, InstitutionStatus.SUSPENDED},
+        InstitutionStatus.REJECTED: {InstitutionStatus.APPROVED},
+        InstitutionStatus.SUSPENDED: {InstitutionStatus.APPROVED},
+    }
+    if payload.status not in allowed_transitions[institution.status]:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid institution status transition")
 
     institution.status = payload.status
     institution.rejection_reason = payload.rejection_reason if payload.status == InstitutionStatus.REJECTED else None
+    institution.status_changed_by_user_id = current_user.id
+    if payload.status == InstitutionStatus.APPROVED:
+        institution.approved_at = datetime.now(timezone.utc)
+        institution.approved_by_user_id = current_user.id
+    elif payload.status in {InstitutionStatus.REJECTED, InstitutionStatus.SUSPENDED}:
+        institution.approved_at = None
+        institution.approved_by_user_id = None
     create_audit_log(
         db,
         admin_user_id=current_user.id,

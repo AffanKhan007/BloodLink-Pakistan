@@ -41,7 +41,7 @@ class User(Base):
     )
 
     donor_profile = relationship("DonorProfile", back_populates="user", uselist=False)
-    institution_profile = relationship("Institution", back_populates="user", uselist=False)
+    institution_profile = relationship("Institution", back_populates="user", uselist=False, foreign_keys="Institution.user_id")
     created_requests = relationship("BloodRequest", back_populates="created_by_user", foreign_keys="BloodRequest.created_by_user_id")
     notifications = relationship("Notification", back_populates="user")
     filed_reports = relationship("Report", back_populates="reporter", foreign_keys="Report.reporter_user_id")

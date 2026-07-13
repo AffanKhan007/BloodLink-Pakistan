@@ -9,6 +9,29 @@ def login(client, email: str, password: str) -> str:
     return response.json()["access_token"]
 
 
+def institution_registration_data(**overrides):
+    data = {
+        "institution_name": "City College Blood Circle",
+        "institution_type": "Educational Institution",
+        "city": "Lahore",
+        "area": "Model Town",
+        "address": "Model Town Lahore",
+        "contact_person": "Nida Khan",
+        "contact_person_designation": "Volunteer Coordinator",
+        "email": "college@test.com",
+        "phone": "+923001111121",
+        "password": "College12345",
+        "confirm_authorized": "true",
+        "website_social_link": "https://college.test",
+    }
+    data.update(overrides)
+    return data
+
+
+def proof_file(filename: str = "proof.pdf"):
+    return {"proof_document": (filename, b"%PDF-1.4 test proof", "application/pdf")}
+
+
 def test_health_route(client):
     response = client.get("/health")
     assert response.status_code == 200
@@ -33,45 +56,35 @@ def test_auth_register_and_me(client):
     assert me_response.json()["email"] == "new.user@test.com"
 
 
-def test_institution_register_starts_pending_approval(client):
+def test_institution_register_starts_pending(client):
     register_response = client.post(
         "/auth/register/institution",
-        json={
-            "institution_name": "City College Blood Circle",
-            "institution_type": "College",
-            "city": "Lahore",
-            "area": "Model Town",
-            "address": "Model Town Lahore",
-            "contact_person": "Nida Khan",
-            "contact_person_designation": "Volunteer Coordinator",
-            "email": "college@test.com",
-            "phone": "+923001111121",
-            "password": "College12345",
-            "website_social_link": "https://college.test",
-        },
+        data=institution_registration_data(),
+        files=proof_file(),
     )
     assert register_response.status_code == 201
     token = register_response.json()["access_token"]
     profile_response = client.get("/institutions/me", headers={"Authorization": f"Bearer {token}"})
     assert profile_response.status_code == 200
-    assert profile_response.json()["status"] == "pending_approval"
+    assert profile_response.json()["status"] == "pending"
 
 
 def test_pending_institution_cannot_use_profile_update_or_chats(client):
     register_response = client.post(
         "/auth/register/institution",
-        json={
-            "institution_name": "Pending Institution",
-            "institution_type": "NGO",
-            "city": "Lahore",
-            "area": "Johar Town",
-            "address": "Johar Town Lahore",
-            "contact_person": "Areeba",
-            "contact_person_designation": "Coordinator",
-            "email": "pending.institution@test.com",
-            "phone": "+923001111123",
-            "password": "Pending12345",
-        },
+        data=institution_registration_data(
+            institution_name="Pending Institution",
+            institution_type="NGO/Welfare Organization",
+            area="Johar Town",
+            address="Johar Town Lahore",
+            contact_person="Areeba",
+            contact_person_designation="Coordinator",
+            email="pending.institution@test.com",
+            phone="+923001111123",
+            password="Pending12345",
+            website_social_link="",
+        ),
+        files=proof_file("pending-proof.pdf"),
     )
     assert register_response.status_code == 201
     token = register_response.json()["access_token"]
@@ -79,9 +92,9 @@ def test_pending_institution_cannot_use_profile_update_or_chats(client):
     profile_update_response = client.post(
         "/institutions/me",
         headers={"Authorization": f"Bearer {token}"},
-        json={
+        data={
             "institution_name": "Pending Institution",
-            "institution_type": "NGO",
+            "institution_type": "NGO/Welfare Organization",
             "city": "Lahore",
             "area": "Johar Town",
             "contact_person": "Areeba",
@@ -90,7 +103,7 @@ def test_pending_institution_cannot_use_profile_update_or_chats(client):
             "phone": "+923001111123",
             "address": "Johar Town Lahore",
             "website_social_link": "",
-            "proof_document_url": "",
+            "operating_hours": "",
             "available_blood_groups": "",
             "notes": "",
         },
@@ -227,18 +240,19 @@ def test_institution_directory_excludes_unapproved_institutions(client, seeded_d
     token = login(client, "receiver@test.com", "Receiver12345")
     register_response = client.post(
         "/auth/register/institution",
-        json={
-            "institution_name": "Pending NGO",
-            "institution_type": "NGO",
-            "city": "Lahore",
-            "area": "Johar Town",
-            "address": "Johar Town Lahore",
-            "contact_person": "Areeba",
-            "contact_person_designation": "Coordinator",
-            "email": "pending-ngo@test.com",
-            "phone": "+923001111122",
-            "password": "Ngo123456",
-        },
+        data=institution_registration_data(
+            institution_name="Pending NGO",
+            institution_type="NGO/Welfare Organization",
+            area="Johar Town",
+            address="Johar Town Lahore",
+            contact_person="Areeba",
+            contact_person_designation="Coordinator",
+            email="pending-ngo@test.com",
+            phone="+923001111122",
+            password="Ngo123456",
+            website_social_link="",
+        ),
+        files=proof_file("ngo-proof.pdf"),
     )
     assert register_response.status_code == 201
 
@@ -278,9 +292,9 @@ def test_rejected_institution_can_resubmit_for_review(client, seeded_db):
     resubmit_response = client.post(
         "/institutions/me/resubmit",
         headers={"Authorization": f"Bearer {institution_token}"},
-        json={
+        data={
             "institution_name": "Test University Donor Club",
-            "institution_type": "University",
+            "institution_type": "Educational Institution",
             "city": "Lahore",
             "area": "Gulberg",
             "contact_person": "Coordinator",
@@ -289,13 +303,13 @@ def test_rejected_institution_can_resubmit_for_review(client, seeded_db):
             "phone": "+924200000000",
             "address": "Updated address Lahore",
             "website_social_link": "https://club.test.edu.pk",
-            "proof_document_url": "",
+            "operating_hours": "24/7",
             "available_blood_groups": "B+, O+",
             "notes": "Updated",
         },
     )
     assert resubmit_response.status_code == 200
-    assert resubmit_response.json()["status"] == "pending_approval"
+    assert resubmit_response.json()["status"] == "pending"
     assert resubmit_response.json()["rejection_reason"] is None
 
 

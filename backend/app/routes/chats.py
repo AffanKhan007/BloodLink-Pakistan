@@ -9,9 +9,10 @@ from app.core.deps import get_current_user
 from app.core.security import decode_token
 from app.models import BloodBank, BloodRequest, Chat, ChatMessage, DonationMatch, DonorProfile, Institution, InstitutionStatus, User, UserRole
 from app.schemas.chat import ChatCreate, ChatDetailOut, ChatMessageCreate, ChatMessageOut, ChatSummaryOut
+from app.schemas.blood_request import BloodRequestDetailOut
 from app.schemas.user import ChatUserSummary
 from app.services.chat_realtime import chat_connection_manager
-from app.services.matching import compatible_donor_groups
+from app.services.matching import compatible_donor_groups, count_confirmed_matches
 from app.services.notifications import create_notification
 
 
@@ -194,24 +195,33 @@ def create_chat(
         db.add(chat)
         db.flush()
 
-    message = ChatMessage(chat_id=chat.id, sender_id=current_user.id, message=payload.initial_message)
-    db.add(message)
-    chat.updated_at = datetime.now(timezone.utc)
-    create_notification(
-        db,
-        user_id=target_user.id,
-        title="New chat message",
-        message=f"{current_user.full_name} sent you a message in BloodLink.",
-    )
-    db.commit()
-    db.refresh(chat)
-    db.refresh(message)
-    chat = db.scalar(
-        select(Chat)
-        .options(joinedload(Chat.participant_one), joinedload(Chat.participant_two), joinedload(Chat.messages))
-        .where(Chat.id == chat.id)
-    )
-    _schedule_broadcast(chat, message)
+    if payload.initial_message:
+        message = ChatMessage(chat_id=chat.id, sender_id=current_user.id, message=payload.initial_message)
+        db.add(message)
+        chat.updated_at = datetime.now(timezone.utc)
+        create_notification(
+            db,
+            user_id=target_user.id,
+            title="New chat message",
+            message=f"{current_user.full_name} sent you a message in BloodLink.",
+        )
+        db.commit()
+        db.refresh(chat)
+        db.refresh(message)
+        chat = db.scalar(
+            select(Chat)
+            .options(joinedload(Chat.participant_one), joinedload(Chat.participant_two), joinedload(Chat.messages))
+            .where(Chat.id == chat.id)
+        )
+        _schedule_broadcast(chat, message)
+    else:
+        db.commit()
+        db.refresh(chat)
+        chat = db.scalar(
+            select(Chat)
+            .options(joinedload(Chat.participant_one), joinedload(Chat.participant_two), joinedload(Chat.messages))
+            .where(Chat.id == chat.id)
+        )
     return _build_chat_detail(chat, current_user.id)
 
 
@@ -230,6 +240,33 @@ def get_chat(
     if not chat or current_user.id not in {chat.participant_one_id, chat.participant_two_id}:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Chat not found")
     return _build_chat_detail(chat, current_user.id)
+
+
+@router.get("/{chat_id}/request", response_model=BloodRequestDetailOut)
+def get_chat_request(
+    chat_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> BloodRequestDetailOut:
+    _ensure_institution_approved(db, current_user)
+    chat = db.scalar(
+        select(Chat)
+        .where(Chat.id == chat_id)
+    )
+    if not chat or current_user.id not in {chat.participant_one_id, chat.participant_two_id}:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Chat not found")
+    if not chat.request_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No request linked to this conversation")
+    request = db.scalar(
+        select(BloodRequest)
+        .options(joinedload(BloodRequest.documents))
+        .where(BloodRequest.id == chat.request_id)
+    )
+    if not request:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Request not found")
+    result = BloodRequestDetailOut.model_validate(request)
+    result.confirmed_donor_count = count_confirmed_matches(request)
+    return result
 
 
 @router.post("/{chat_id}/messages", response_model=ChatMessageOut, status_code=status.HTTP_201_CREATED)
