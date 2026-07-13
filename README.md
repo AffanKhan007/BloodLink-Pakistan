@@ -153,7 +153,7 @@ bloodlink-pakistan/
 - Chat is available only between users connected through a valid request context (match, public donor, blood bank, or institution in the same city as the request).
 - Hospital staff operate only within their assigned hospital.
 - Blood bank staff operate only within their assigned blood bank.
-- Institution donors with `pending_approval` status see only a verification progress screen. `rejected` institutions can correct and resubmit. `suspended` institutions lose all institution features until restored by admin. Only `approved` institutions appear in public listings and can use messaging.
+- Institution donors with `pending` status see only a verification progress screen. `rejected` institutions can correct and resubmit. `suspended` institutions lose all institution features until restored by admin. Only `approved` institutions appear in public listings and can use messaging.
 - Admin can manage all users, donors, requests, matches, reports, audit logs, and institution approvals.
 - Admin can approve, reject, or suspend institution accounts.
 
@@ -166,10 +166,10 @@ bloodlink-pakistan/
 5. Admin approves or rejects the request; approval triggers automatic match creation with compatible donors.
 6. Matched donors receive in-app notifications and can accept or decline. Declined donors are excluded from future matching.
 7. Admin reviews institution registrations and approves only legitimate organizations for public visibility.
-7. Users can discover public donors, blood banks, and approved institutions in their request city.
-8. Donors accept or decline assigned matches.
-9. Users track confirmed donor counts, message matched parties via real-time chat, and mark the request fulfilled.
-10. Admins monitor users, reports, inventory visibility, and audit history — with full moderation tools.
+8. Users can discover public donors, blood banks, and approved institutions in their request city.
+9. Donors accept or decline assigned matches.
+10. Users track confirmed donor counts, message matched parties via real-time chat, and mark the request fulfilled.
+11. Admins monitor users, reports, inventory visibility, and audit history — with full moderation tools.
 
 ## Database tables
 
@@ -298,7 +298,7 @@ All 8 donor users use password `Donor12345`. All 5 request creator users use pas
 
 ### Institution approval note
 
-- New institution registrations start as `pending_approval` and see only a verification-progress screen.
+- New institution registrations start as `pending` and see only a verification-progress screen.
 - Only `approved` institutions appear in public listings and can use messaging.
 - Admin can approve, reject, or suspend institutions.
 
