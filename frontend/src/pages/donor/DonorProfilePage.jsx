@@ -43,7 +43,9 @@ export default function DonorProfilePage() {
             last_donation_date: profile.last_donation_date || "",
             health_notes: profile.health_notes || "",
           });
-          if (!inList && profile.city) {
+          if (inList && profile.city) {
+            setCitySearch(profile.city);
+          } else if (profile.city) {
             setIsOther(true);
             setOtherCity(profile.city);
           }
@@ -71,7 +73,10 @@ export default function DonorProfilePage() {
   };
 
   const selectOther = () => {
+    const typed = citySearch.trim();
     setIsOther(true);
+    setOtherCity(typed);
+    setForm((current) => ({ ...current, city: typed }));
     setDropdownOpen(false);
     setCitySearch("");
   };
@@ -167,57 +172,54 @@ export default function DonorProfilePage() {
         <label className="field-required city-combo-wrap">
           City
           <div className="city-combo" ref={dropdownRef}>
-            <div className="city-combo-input-wrap">
-              <input
-                className="city-combo-input"
-                type="text"
-                value={isOther ? "" : citySearch}
-                onChange={(e) => {
-                  setCitySearch(e.target.value);
-                  setDropdownOpen(true);
-                  if (!isOther) {
-                    setForm((current) => ({ ...current, city: "" }));
-                  }
-                }}
-                onFocus={() => setDropdownOpen(true)}
-                placeholder={isOther ? otherCity || "Type your city..." : "Search city..."}
-                required={!isOther}
-              />
-              {isOther ? (
-                <button type="button" className="city-combo-clear" onClick={() => { setIsOther(false); setOtherCity(""); setCitySearch(""); }}>
-                  <X size={13} />
-                </button>
-              ) : (
-                <ChevronDown size={14} className={`city-combo-chevron ${dropdownOpen ? "open" : ""}`} />
-              )}
-            </div>
-            {dropdownOpen && !isOther && (
-              <ul className="city-combo-dropdown">
-                {filteredCities.map((city) => (
-                  <li
-                    key={city}
-                    className={`city-combo-option ${form.city === city ? "active" : ""}`}
-                    onClick={() => selectCity(city)}
-                  >
-                    {city}
-                  </li>
-                ))}
-                <li className="city-combo-option city-combo-other" onClick={selectOther}>
-                  Other — type your city
-                </li>
-              </ul>
+            {isOther ? (
+              <>
+                <div className="city-combo-input-wrap">
+                  <input
+                    className="city-combo-input"
+                    type="text"
+                    value={otherCity}
+                    onChange={(e) => handleOtherChange(e.target.value)}
+                    placeholder="Enter your city name"
+                    required
+                  />
+                  <button type="button" className="city-combo-clear" onClick={() => { setIsOther(false); setOtherCity(""); setCitySearch(form.city || ""); }}>
+                    <X size={13} />
+                  </button>
+                </div>
+                <p className="city-other-hint">Custom city — click × to pick from the list instead.</p>
+              </>
+            ) : (
+              <>
+                <div className="city-combo-input-wrap">
+                  <input
+                    className="city-combo-input"
+                    type="text"
+                    value={citySearch}
+                    onChange={(e) => { setCitySearch(e.target.value); setDropdownOpen(true); }}
+                    onFocus={() => setDropdownOpen(true)}
+                    placeholder="Search city..."
+                    required
+                  />
+                  <ChevronDown size={14} className={`city-combo-chevron ${dropdownOpen ? "open" : ""}`} />
+                </div>
+                {dropdownOpen && (
+                  <ul className="city-combo-dropdown">
+                    {filteredCities.length === 0 ? (
+                      <li className="city-combo-empty">No matching city</li>
+                    ) : (
+                      filteredCities.map((city) => (
+                        <li key={city} className={`city-combo-option ${form.city === city ? "active" : ""}`} onClick={() => selectCity(city)}>
+                          {city}
+                        </li>
+                      ))
+                    )}
+                    <li className="city-combo-option city-combo-other" onClick={selectOther}>+ Can't find your city? Enter it manually</li>
+                  </ul>
+                )}
+              </>
             )}
           </div>
-          {isOther && (
-            <input
-              className="city-other-input"
-              type="text"
-              value={otherCity}
-              onChange={(e) => handleOtherChange(e.target.value)}
-              placeholder="Enter your city name"
-              required
-            />
-          )}
         </label>
         <label className="field-required">
           Area
