@@ -28,6 +28,7 @@ export default function ChatWorkspace({ eyebrow, title, description }) {
   const [docLoading, setDocLoading] = useState(false);
   const [docError, setDocError] = useState("");
   const socketRef = useRef(null);
+  const messagesEndRef = useRef(null);
 
   const loadChats = async () => {
     const data = await apiRequest("/chats", { token });
@@ -113,6 +114,12 @@ export default function ChatWorkspace({ eyebrow, title, description }) {
       socket.close();
     };
   }, [selectedChatId, token]);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
+    }
+  }, [chatDetail?.messages]);
 
   const sendMessageText = async (text) => {
     if (!text.trim()) return;
@@ -202,6 +209,22 @@ export default function ChatWorkspace({ eyebrow, title, description }) {
     setDocError("");
   };
 
+  const groupMessages = (messages) => {
+    if (!messages || messages.length === 0) return [];
+    const groups = [];
+    let currentGroup = [messages[0]];
+    for (let i = 1; i < messages.length; i++) {
+      if (messages[i].sender_id === messages[i - 1].sender_id) {
+        currentGroup.push(messages[i]);
+      } else {
+        groups.push(currentGroup);
+        currentGroup = [messages[i]];
+      }
+    }
+    groups.push(currentGroup);
+    return groups;
+  };
+
   const suggestedMessage = chatDetail && chatDetail.messages.length === 0
     ? "Hello, I would like to ask whether your institution can help with this blood requirement."
     : "Any updates on this?";
@@ -266,15 +289,55 @@ export default function ChatWorkspace({ eyebrow, title, description }) {
                     {socketStatus === "live" ? "Live" : socketStatus === "connecting" ? "Connecting" : socketStatus === "error" ? "Connection issue" : "Offline"}
                   </span>
                 </div>
-                <div className="chat-messages">
-                  {chatDetail.messages.map((item) => (
-                    <div
-                      key={item.id}
-                      className={`chat-bubble ${item.sender_id === user?.id ? "chat-bubble-own" : "chat-bubble-other"}`}
-                    >
-                      <span>{item.message}</span>
+                <div className="chat-messages" ref={messagesEndRef}>
+                  {chatDetail.messages.length === 0 ? (
+                    <div className="chat-empty-state">
+                      <MessageSquare size={32} />
+                      <p>No messages yet — say hello</p>
                     </div>
-                  ))}
+                  ) : (
+                    groupMessages(chatDetail.messages).map((group, groupIndex) =>
+                      group.map((msg, msgIndex) => {
+                        const isOwn = msg.sender_id === user?.id;
+                        const isLastInGroup = msgIndex === group.length - 1;
+                        const isFirstInGroup = msgIndex === 0;
+                        const initial = isOwn
+                          ? (user?.full_name?.[0] || "?")
+                          : (chatDetail?.counterpart?.full_name?.[0] || "?");
+                        return (
+                          <div
+                            key={msg.id}
+                            className={`chat-bubble-row ${isOwn ? "chat-bubble-row-own" : "chat-bubble-row-other"}${groupIndex > 0 && isFirstInGroup ? " chat-bubble-row-gap" : ""}`}
+                          >
+                            {!isOwn && (
+                              isLastInGroup ? (
+                                <div className="chat-avatar">{initial}</div>
+                              ) : (
+                                <div className="chat-avatar-spacer" />
+                              )
+                            )}
+                            <div className="chat-bubble-content">
+                              <div className={`chat-bubble ${isOwn ? "chat-bubble-own" : "chat-bubble-other"}`}>
+                                <span>{msg.message}</span>
+                              </div>
+                              {isLastInGroup && (
+                                <span className="chat-bubble-time">
+                                  {new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                                </span>
+                              )}
+                            </div>
+                            {isOwn && (
+                              isLastInGroup ? (
+                                <div className="chat-avatar">{initial}</div>
+                              ) : (
+                                <div className="chat-avatar-spacer" />
+                              )
+                            )}
+                          </div>
+                        );
+                      })
+                    )
+                  )}
                 </div>
                 {user?.role !== "institution_donor" && (
                   <div className="quick-replies">
@@ -294,7 +357,7 @@ export default function ChatWorkspace({ eyebrow, title, description }) {
                     <textarea rows="3" value={message} onChange={(event) => setMessage(event.target.value)} placeholder="Write a message..." />
                   </label>
                   <div className="form-actions-row">
-                    <button className="button button-primary button-with-icon" type="submit">
+                    <button className="button button-primary button-with-icon" type="submit" disabled={!message.trim()}>
                       Send reply
                       <SendHorizontal size={14} />
                     </button>
