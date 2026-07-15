@@ -27,7 +27,7 @@ from app.models import (
     UserRole,
 )
 from app.schemas.blood_bank import BloodBankCityInventoryItem, BloodBankDiscoveryOut
-from app.schemas.blood_request import BloodRequestCreate, BloodRequestDetailOut, BloodRequestListOut, BloodRequestOut
+from app.schemas.blood_request import BloodRequestCreate, BloodRequestDetailOut, BloodRequestListOut, BloodRequestOut, RequestDocumentOut
 from app.schemas.donor import DonorWithUserOut
 from app.schemas.institution import InstitutionWithUserOut
 from app.services.matching import compatible_donor_groups, count_confirmed_matches, create_automatic_matches
@@ -108,9 +108,26 @@ def get_request(
 ) -> BloodRequestDetailOut:
     request = _get_request_for_user(db, request_id, current_user)
     return BloodRequestDetailOut(
-        **request.__dict__,
+        id=request.id,
+        created_by_user_id=request.created_by_user_id,
+        hospital_id=request.hospital_id,
+        patient_name=request.patient_name,
+        blood_group_needed=request.blood_group_needed,
+        units_required=request.units_required,
+        hospital_name=request.hospital_name,
+        city=request.city,
+        area=request.area,
+        ward_room=request.ward_room,
+        urgency_level=request.urgency_level,
+        attendant_name=request.attendant_name,
+        attendant_phone=request.attendant_phone,
+        required_by=request.required_by,
+        additional_notes=request.additional_notes,
+        status=request.status,
+        created_at=request.created_at,
+        updated_at=request.updated_at,
         confirmed_donor_count=count_confirmed_matches(request),
-        documents=request.documents,
+        documents=[RequestDocumentOut.model_validate(d) for d in request.documents],
     )
 
 
@@ -160,6 +177,7 @@ def request_public_donors(
         db.scalars(
             select(DonorProfile)
             .options(joinedload(DonorProfile.user))
+            .where(DonorProfile.user_id != request.created_by_user_id)
             .where(DonorProfile.city == request.city)
             .where(DonorProfile.blood_group.in_(compatible_groups))
             .where(DonorProfile.availability_status == "available")

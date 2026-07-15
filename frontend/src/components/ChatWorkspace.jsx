@@ -226,7 +226,9 @@ export default function ChatWorkspace({ eyebrow, title, description }) {
   };
 
   const suggestedMessage = chatDetail && chatDetail.messages.length === 0
-    ? "Hello, I would like to ask whether your institution can help with this blood requirement."
+    ? chatDetail.counterpart.role === "institution_donor"
+      ? "Hello, I would like to ask whether your institution can help with this blood requirement."
+      : `Hello ${chatDetail.counterpart.full_name}, I am reaching out about my blood requirement.`
     : "Any updates on this?";
 
   if (loading) return <LoadingState label="Loading chats" />;

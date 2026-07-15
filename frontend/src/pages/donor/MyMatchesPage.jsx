@@ -1,18 +1,62 @@
-import { ChevronDown, ChevronUp, FileText, Phone, User } from "lucide-react";
+import { ChevronDown, ChevronUp, Download, FileText, User, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { apiRequest } from "../../api/client";
+import { API_BASE_URL, apiRequest } from "../../api/client";
 import { useAuth } from "../../auth/AuthContext";
 import { AlertMessage, EmptyState, LoadingState } from "../../components/PageState";
+import SectionIntro from "../../components/SectionIntro";
 import StatusBadge from "../../components/StatusBadge";
 
-function RequestDetailPanel({ request, uploadUrl }) {
+function RequestDetailPanel({ request, token }) {
+  const [showDocModal, setShowDocModal] = useState(false);
+  const [docPreviewUrl, setDocPreviewUrl] = useState(null);
+  const [docContentType, setDocContentType] = useState("");
+  const [docFileName, setDocFileName] = useState("");
+  const [docLoading, setDocLoading] = useState(false);
+  const [docError, setDocError] = useState("");
+
   const field = (label, value) => value ? (
     <div className="detail-field" key={label}>
       <span className="detail-label">{label}</span>
       <span className="detail-value">{value}</span>
     </div>
   ) : null;
+
+  const openDocument = async (doc) => {
+    setDocLoading(true);
+    setDocError("");
+    try {
+      const response = await fetch(`${API_BASE_URL}/uploads/request-documents/${doc.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.detail || `Failed to load document (${response.status})`);
+      }
+      const blob = await response.blob();
+      const contentType = response.headers.get("content-type") || "";
+      const url = URL.createObjectURL(blob);
+      setDocPreviewUrl(url);
+      setDocContentType(contentType);
+      setDocFileName(doc.file_url);
+      setShowDocModal(true);
+    } catch (err) {
+      setDocError(err.message);
+    } finally {
+      setDocLoading(false);
+    }
+  };
+
+  const closeDocModal = () => {
+    if (docPreviewUrl) {
+      URL.revokeObjectURL(docPreviewUrl);
+    }
+    setShowDocModal(false);
+    setDocPreviewUrl(null);
+    setDocContentType("");
+    setDocFileName("");
+    setDocError("");
+  };
 
   return (
     <div className="request-detail-section">
@@ -44,19 +88,52 @@ function RequestDetailPanel({ request, uploadUrl }) {
           <ul className="document-list">
             {request.documents.map((doc) => (
               <li key={doc.id}>
-                <a
-                  href={`${uploadUrl}/request-documents/${doc.id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="document-link"
-                >
+                <button type="button" className="document-link" onClick={() => openDocument(doc)}>
                   <FileText size={14} />
                   {doc.document_type}
-                </a>
+                </button>
               </li>
             ))}
           </ul>
         </>
+      ) : null}
+
+      {showDocModal ? (
+        <div className="modal-overlay" onClick={closeDocModal}>
+          <div className="modal-content document-preview-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>{docFileName}</h3>
+              <div className="modal-header-actions">
+                {docPreviewUrl ? (
+                  <a className="button button-primary button-with-icon" href={docPreviewUrl} download={docFileName} onClick={(e) => e.stopPropagation()}>
+                    <Download size={14} /> Download
+                  </a>
+                ) : null}
+                <button type="button" className="modal-close" onClick={closeDocModal}>
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+            <div className="modal-body document-preview-body">
+              {docLoading ? (
+                <p className="muted-label">Loading document...</p>
+              ) : docError ? (
+                <p className="error-text">{docError}</p>
+              ) : docContentType.startsWith("image/") ? (
+                <img src={docPreviewUrl} alt={docFileName} className="document-preview-img" />
+              ) : docContentType === "application/pdf" ? (
+                <iframe src={docPreviewUrl} title={docFileName} className="document-preview-pdf" />
+              ) : (
+                <div className="document-preview-fallback">
+                  <p className="muted-label">Preview not available for this file type.</p>
+                  {docPreviewUrl ? (
+                    <a className="button button-primary" href={docPreviewUrl} download={docFileName}>Download file</a>
+                  ) : null}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       ) : null}
     </div>
   );
@@ -70,8 +147,6 @@ export default function MyMatchesPage() {
   const [requestDetails, setRequestDetails] = useState({});
   const [loadingRequest, setLoadingRequest] = useState({});
   const [error, setError] = useState("");
-
-  const uploadUrl = import.meta.env.VITE_API_URL?.replace("/api", "") || "http://localhost:8000";
 
   const loadMatches = async () => {
     const data = await apiRequest("/matches/me", { token });
@@ -112,11 +187,18 @@ export default function MyMatchesPage() {
   };
 
   if (loading) return <LoadingState label="Loading my matches" />;
-  if (matches.length === 0) return <EmptyState title="No assigned matches" description="Compatible requests will appear here after automatic matching or admin coordination." />;
+  if (matches.length === 0) return <EmptyState title="No assigned matches" description="Once a request is formally assigned to you (pending match), it will appear here for you to accept or decline." />;
 
   return (
     <div className="page-stack">
       {error ? <AlertMessage type="error">{error}</AlertMessage> : null}
+      <section className="content-card">
+        <SectionIntro
+          eyebrow="Active assignments"
+          title="My Matches"
+          description="Requests formally matched to you. Accept to proceed or reject if you are unable to donate."
+        />
+      </section>
       {matches.map((match) => {
         const isExpanded = expandedMatchId === match.id;
         const detail = requestDetails[match.request_id];
@@ -159,7 +241,7 @@ export default function MyMatchesPage() {
                 {loadingReq ? (
                   <LoadingState label="Loading request details" />
                 ) : detail ? (
-                  <RequestDetailPanel request={detail} uploadUrl={uploadUrl} />
+                  <RequestDetailPanel request={detail} token={token} />
                 ) : null}
               </div>
             ) : null}

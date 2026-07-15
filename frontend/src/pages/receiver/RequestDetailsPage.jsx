@@ -24,34 +24,49 @@ export default function RequestDetailsPage() {
   const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
 
   const load = async () => {
-    const [requestData, matchData, donorData] = await Promise.all([
-      apiRequest(`/requests/${requestId}`, { token }),
-      apiRequest(`/matches/request/${requestId}`, { token }),
-      apiRequest(`/requests/${requestId}/matching-donors`, { token }).catch(() => []),
-    ]);
-    setRequest(requestData);
-    setMatches(matchData);
-    setMatchingDonors(donorData || []);
+    setLoading(true);
+    setError("");
+    try {
+      const requestData = await apiRequest(`/requests/${requestId}`, { token });
+      if (!requestData) {
+        setError("Request data returned empty");
+        setLoading(false);
+        return;
+      }
+      setRequest(requestData);
+    } catch (loadError) {
+      setError(loadError.message);
+      setLoading(false);
+      return;
+    }
+
+    apiRequest(`/matches/request/${requestId}`, { token })
+      .then(setMatches)
+      .catch(() => {});
+
+    apiRequest(`/requests/${requestId}/matching-donors`, { token })
+      .then((data) => setMatchingDonors(data || []))
+      .catch(() => {});
+
+    setLoading(false);
   };
+
+  useEffect(() => {
+    if (!requestId) {
+      setError("No request ID specified");
+      setLoading(false);
+    }
+  }, [requestId]);
 
   useEffect(() => {
     if (location.state?.createdRequest) {
       setLoading(false);
-      Promise.all([
-        apiRequest(`/matches/request/${requestId}`, { token }),
-        apiRequest(`/requests/${requestId}/matching-donors`, { token }).catch(() => []),
-      ]).then(([matchData, donorData]) => {
-        setMatches(matchData);
-        setMatchingDonors(donorData || []);
-      });
       return;
     }
-    load()
-      .catch((loadError) => setError(loadError.message))
-      .finally(() => setLoading(false));
+    load();
   }, [requestId, token]);
 
-  const startChat = async (targetUserId, subject, initialMessage) => {
+  const startChat = async (targetUserId, subject) => {
     try {
       const chat = await apiRequest("/chats", {
         method: "POST",
@@ -60,7 +75,6 @@ export default function RequestDetailsPage() {
           target_user_id: targetUserId,
           request_id: Number(requestId),
           subject,
-          initial_message: initialMessage,
         },
       });
       navigate("/receiver/chats", { state: { chatId: chat.id } });
@@ -139,6 +153,7 @@ export default function RequestDetailsPage() {
   };
 
   if (loading) return <LoadingState label="Loading request details" />;
+  if (error) return <div className="page-stack"><AlertMessage type="error">{error}</AlertMessage></div>;
   if (!request) return <EmptyState title="Request not found" description="This request may have been removed." />;
 
   return (
@@ -243,8 +258,7 @@ export default function RequestDetailsPage() {
                     onClick={() =>
                       startChat(
                         donor.user.id,
-                        `Blood request for ${request.patient_name}`,
-                        `Hello ${donor.user.full_name}, I have a blood request for ${request.blood_group_needed} in ${request.city}. Are you able to help?`
+                        `Blood request for ${request.patient_name}`
                       )
                     }
                   >
@@ -304,8 +318,7 @@ export default function RequestDetailsPage() {
                     onClick={() =>
                       startChat(
                         match.donor.user.id,
-                        `Request support for ${request.patient_name}`,
-                        `Hello ${match.donor.user.full_name}, I am following up regarding request #${request.id}.`
+                        `Request support for ${request.patient_name}`
                       )
                     }
                   >

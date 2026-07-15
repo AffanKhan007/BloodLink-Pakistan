@@ -45,7 +45,6 @@ export default function MatchedDonorsPage() {
           target_user_id: match.donor.user.id,
           request_id: selectedRequestId,
           subject: `Matched donor follow-up for request #${selectedRequestId}`,
-          initial_message: `Hello ${match.donor.user.full_name}, I am reaching out about the matched blood request.`,
         },
       });
       navigate("/receiver/chats", { state: { chatId: chat.id } });

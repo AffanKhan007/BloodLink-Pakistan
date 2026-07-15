@@ -80,15 +80,16 @@ def matching_requests(
     )
 
     matching_ids = {req.id for req in requests if any(d.id == profile.id for d in get_matching_donors(db, req))}
+
+    existing = {m.request_id for m in db.scalars(select(DonationMatch).where(DonationMatch.donor_id == profile.id)).all()}
+    matching_ids -= existing
+
     items: list[BloodRequestListOut] = []
     for request in requests:
         if request.id in matching_ids:
-            items.append(
-                BloodRequestListOut(
-                    **request.__dict__,
-                    confirmed_donor_count=count_confirmed_matches(request),
-                )
-            )
+            result = BloodRequestListOut.model_validate(request, from_attributes=True)
+            result.confirmed_donor_count = count_confirmed_matches(request)
+            items.append(result)
     return items
 
 

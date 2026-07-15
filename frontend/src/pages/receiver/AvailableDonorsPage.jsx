@@ -45,7 +45,6 @@ export default function AvailableDonorsPage() {
         target_user_id: donor.user.id,
         request_id: selectedRequestId,
         subject: `Request for ${donor.blood_group} support`,
-        initial_message: `Hello ${donor.user.full_name}, I am requesting help for this blood requirement.`,
       },
     });
     navigate("/receiver/chats", { state: { chatId: chat.id } });

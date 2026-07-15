@@ -45,7 +45,6 @@ export default function BloodBanksInCityPage() {
         target_user_id: bank.contact_user_id,
         request_id: selectedRequestId,
         subject: `Blood bank inquiry for ${bank.name}`,
-        initial_message: `Hello, I need blood availability guidance for my request in ${bank.city}.`,
       },
     });
     navigate("/receiver/chats", { state: { chatId: chat.id } });

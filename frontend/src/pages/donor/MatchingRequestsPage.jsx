@@ -54,7 +54,7 @@ export default function MatchingRequestsPage() {
 
   if (loading) return <LoadingState label="Loading matching requests" />;
   if (requests.length === 0) {
-    return <EmptyState title="No matching requests" description="When compatible requests fit your profile, they will appear here." />;
+    return <EmptyState title="No matching requests" description="Requests compatible with your donor profile (same blood group and city) will appear here after they are created." />;
   }
 
   return (
@@ -62,9 +62,9 @@ export default function MatchingRequestsPage() {
       {error ? <AlertMessage type="error">{error}</AlertMessage> : null}
       <section className="content-card">
         <SectionIntro
-          eyebrow="Search and filter"
+          eyebrow="Browse compatible requests"
           title="Matching requests"
-          description="Use quick filters to focus on nearby requests, urgent cases, or specific hospital demand."
+          description="Blood requests that match your donor profile by blood group, city, and availability. Explore and signal which ones you can help with."
         />
         <FilterToolbar
           searchValue={search}
