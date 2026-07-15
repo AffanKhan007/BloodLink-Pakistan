@@ -1,4 +1,4 @@
-import { ExternalLink, FileText, MessageSquare, SendHorizontal, X, Zap } from "lucide-react";
+import { Download, ExternalLink, FileText, MessageSquare, SendHorizontal, X, Zap } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 
@@ -21,6 +21,12 @@ export default function ChatWorkspace({ eyebrow, title, description }) {
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [requestData, setRequestData] = useState(null);
   const [loadingRequest, setLoadingRequest] = useState(false);
+  const [showDocModal, setShowDocModal] = useState(false);
+  const [docPreviewUrl, setDocPreviewUrl] = useState(null);
+  const [docContentType, setDocContentType] = useState("");
+  const [docFileName, setDocFileName] = useState("");
+  const [docLoading, setDocLoading] = useState(false);
+  const [docError, setDocError] = useState("");
   const socketRef = useRef(null);
 
   const loadChats = async () => {
@@ -158,6 +164,42 @@ export default function ChatWorkspace({ eyebrow, title, description }) {
     } finally {
       setLoadingRequest(false);
     }
+  };
+
+  const openDocument = async (doc) => {
+    setDocLoading(true);
+    setDocError("");
+    try {
+      const response = await fetch(`${API_BASE_URL}/uploads/request-documents/${doc.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.detail || `Failed to load document (${response.status})`);
+      }
+      const blob = await response.blob();
+      const contentType = response.headers.get("content-type") || "";
+      const url = URL.createObjectURL(blob);
+      setDocPreviewUrl(url);
+      setDocContentType(contentType);
+      setDocFileName(doc.file_url);
+      setShowDocModal(true);
+    } catch (err) {
+      setDocError(err.message);
+    } finally {
+      setDocLoading(false);
+    }
+  };
+
+  const closeDocModal = () => {
+    if (docPreviewUrl) {
+      URL.revokeObjectURL(docPreviewUrl);
+    }
+    setShowDocModal(false);
+    setDocPreviewUrl(null);
+    setDocContentType("");
+    setDocFileName("");
+    setDocError("");
   };
 
   const suggestedMessage = chatDetail && chatDetail.messages.length === 0
@@ -302,15 +344,52 @@ export default function ChatWorkspace({ eyebrow, title, description }) {
                   <ul className="document-list">
                     {requestData.documents.map((doc) => (
                       <li key={doc.id}>
-                        <a className="document-link" href={`${API_BASE_URL}/uploads/request-documents/${doc.id}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
+                        <button type="button" className="document-link" onClick={() => openDocument(doc)}>
                           <FileText size={14} />
                           {doc.document_type}
-                        </a>
+                        </button>
                       </li>
                     ))}
                   </ul>
                 </div>
               ) : null}
+            </div>
+          </div>
+        </div>
+      ) : null}
+      {showDocModal ? (
+        <div className="modal-overlay" onClick={closeDocModal}>
+          <div className="modal-content document-preview-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>{docFileName}</h3>
+              <div className="modal-header-actions">
+                {docPreviewUrl ? (
+                  <a className="button button-primary button-with-icon" href={docPreviewUrl} download={docFileName} onClick={(e) => e.stopPropagation()}>
+                    <Download size={14} /> Download
+                  </a>
+                ) : null}
+                <button type="button" className="modal-close" onClick={closeDocModal}>
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+            <div className="modal-body document-preview-body">
+              {docLoading ? (
+                <p className="muted-label">Loading document...</p>
+              ) : docError ? (
+                <p className="error-text">{docError}</p>
+              ) : docContentType.startsWith("image/") ? (
+                <img src={docPreviewUrl} alt={docFileName} className="document-preview-img" />
+              ) : docContentType === "application/pdf" ? (
+                <iframe src={docPreviewUrl} title={docFileName} className="document-preview-pdf" />
+              ) : (
+                <div className="document-preview-fallback">
+                  <p className="muted-label">Preview not available for this file type.</p>
+                  {docPreviewUrl ? (
+                    <a className="button button-primary" href={docPreviewUrl} download={docFileName}>Download file</a>
+                  ) : null}
+                </div>
+              )}
             </div>
           </div>
         </div>
