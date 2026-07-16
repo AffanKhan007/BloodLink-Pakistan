@@ -1234,6 +1234,15 @@ p {
   background: var(--color-warning);
 }
 
+.stat-card-warning-empty {
+  background: var(--color-paper);
+  opacity: 0.7;
+}
+
+.stat-card-warning-empty::after {
+  background: var(--border);
+}
+
 .stat-card-accent {
   background: var(--color-paper);
 }
@@ -2738,6 +2747,171 @@ p {
 
 .city-combo-empty:hover {
   background: transparent;
+}
+
+/* ── Mini stats grid (single-row inside content cards) ──── */
+.stats-mini {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+/* ── Dashboard tier labels ──────────────────────────────── */
+.tier-label {
+  margin-bottom: 0.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+  font-weight: var(--font-weight-extrabold, 800);
+  color: var(--muted);
+}
+
+/* ── Donut chart ───────────────────────────────────────── */
+.donut-chart,
+.donut-chart-empty {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  margin: 0.5rem auto 0;
+}
+
+.donut-chart svg,
+.donut-chart-empty svg {
+  display: block;
+}
+
+.donut-chart-center {
+  position: absolute;
+  font-size: 1.4rem;
+  font-weight: var(--font-weight-bold, 700);
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+  pointer-events: none;
+}
+
+.donut-chart-empty-label {
+  position: absolute;
+  font-size: 0.72rem;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+  pointer-events: none;
+}
+
+/* ── Chart card ────────────────────────────────────────── */
+.dashboard-chart-card {
+  align-items: center;
+  text-align: center;
+  justify-items: center;
+}
+
+.chart-card-title {
+  margin-bottom: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.74rem;
+  font-weight: var(--font-weight-extrabold, 800);
+  color: var(--text-primary);
+}
+
+/* ── Chart legend ──────────────────────────────────────── */
+.chart-legend {
+  display: grid;
+  gap: 0.4rem;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.chart-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+}
+
+.chart-legend-dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.chart-legend-label {
+  flex: 1;
+  text-align: left;
+  color: var(--text-primary);
+}
+
+.chart-legend-value {
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Quick stats row (inside chart card) ───────────────── */
+.chart-quick-stats {
+  display: grid;
+  gap: 0.8rem;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.chart-quick-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.75rem 0.5rem;
+  border-radius: var(--radius-card, 8px);
+  background: var(--color-surface-alt);
+}
+
+.chart-quick-stat-value {
+  font-size: 1.35rem;
+  font-weight: var(--font-weight-bold, 700);
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-quick-stat-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--muted);
+}
+
+/* ── Dashboard split layout (chart + stats side by side) ── */
+.dashboard-split {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+.dashboard-split > .content-card {
+  min-width: 0;
+}
+
+.stats-grid-2col {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* ── Responsive ────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .dashboard-split {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-chart-card {
+    order: -1;
+  }
+}
+
+@media (max-width: 560px) {
+  .stats-grid-2col {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

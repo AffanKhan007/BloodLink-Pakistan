@@ -1,13 +1,43 @@
 import { Bell, ClipboardList, Droplets, HeartHandshake, ShieldCheck, UserPlus } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { apiRequest } from "../../api/client";
 import { useAuth } from "../../auth/AuthContext";
+import DonutChart from "../../components/DonutChart";
 import { AlertMessage, EmptyState, LoadingState } from "../../components/PageState";
 import RequestCard from "../../components/RequestCard";
 import SectionIntro from "../../components/SectionIntro";
 import StatCard from "../../components/StatCard";
+
+const staggerContainer = {
+  initial: {},
+  animate: { transition: { staggerChildren: 0.06 } },
+};
+
+const staggerItem = {
+  initial: { opacity: 0, y: 10 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.19, 1, 0.22, 1] } },
+};
+
+const REQUEST_STATUS_COLORS = {
+  pending_review: "var(--color-warning)",
+  approved: "var(--color-info)",
+  matched: "var(--color-urgent)",
+  fulfilled: "var(--color-success)",
+  rejected: "var(--color-danger)",
+  cancelled: "var(--muted)",
+};
+
+const REQUEST_STATUS_LABELS = {
+  pending_review: "Pending review",
+  approved: "Approved",
+  matched: "Matched",
+  fulfilled: "Fulfilled",
+  rejected: "Rejected",
+  cancelled: "Cancelled",
+};
 
 export default function DashboardPage() {
   const { token } = useAuth();
@@ -19,6 +49,13 @@ export default function DashboardPage() {
     matches: [],
     notifications: [],
   });
+  const prefersReduced = useReducedMotion();
+  const motionProps = useMemo(() => prefersReduced ? {} : {
+    variants: staggerContainer,
+    initial: "initial",
+    animate: "animate",
+  }, [prefersReduced]);
+  const itemProps = useMemo(() => prefersReduced ? {} : { variants: staggerItem }, [prefersReduced]);
 
   useEffect(() => {
     let mounted = true;
@@ -45,56 +82,128 @@ export default function DashboardPage() {
 
   const hasDonorProfile = state.profile !== null;
   const requestCount = state.requests.length;
+  const unreadCount = state.notifications.filter((n) => !n.is_read).length;
+  const activeMatches = state.matches.filter((m) => m.status === "pending" || m.status === "accepted");
+
+  const requestStatusCounts = {};
+  state.requests.forEach((r) => {
+    requestStatusCounts[r.status] = (requestStatusCounts[r.status] || 0) + 1;
+  });
+  const requestDonutSegments = Object.entries(requestStatusCounts)
+    .filter(([, v]) => v > 0)
+    .map(([status, value]) => ({
+      label: REQUEST_STATUS_LABELS[status] || status,
+      value,
+      color: REQUEST_STATUS_COLORS[status] || "var(--muted)",
+    }));
 
   return (
-    <div className="page-stack">
+    <motion.div className="page-stack" {...motionProps}>
       {state.error ? <AlertMessage type="warning">{state.error}</AlertMessage> : null}
 
-      <section className="stats-grid">
-        {hasDonorProfile ? (
+      <motion.section className="content-card" {...itemProps}>
+        <SectionIntro
+          eyebrow="Dashboard"
+          title="Your overview"
+          description="Track your requests, matches, and donor activity."
+        />
+      </motion.section>
+
+      <motion.section {...itemProps}>
+        <div className="stats-grid">
+          {hasDonorProfile ? (
+            <StatCard
+              label="Donor status"
+              value={state.profile.verification_status || "pending"}
+              helper="Reviewed by admin"
+              icon={ShieldCheck}
+              tone={state.profile.verification_status === "approved" ? "success" : "warning"}
+            />
+          ) : (
+            <StatCard
+              label="Donor profile"
+              value="Not set up"
+              helper="Create one to start donating"
+              icon={UserPlus}
+              tone="default"
+            />
+          )}
           <StatCard
-            label="Donor status"
-            value={state.profile.verification_status || "pending"}
-            helper="Admin reviewed"
-            icon={ShieldCheck}
-            tone="success"
-          />
-        ) : (
-          <StatCard
-            label="Donor profile"
-            value="Not set up"
-            helper="Create one to start donating"
-            icon={UserPlus}
+            label="Blood requests"
+            value={requestCount}
+            helper={requestCount > 0 ? `${requestCount} created by you` : "Create your first request"}
+            icon={ClipboardList}
             tone="default"
           />
-        )}
-        <StatCard
-          label="Blood requests"
-          value={requestCount}
-          helper="Owned by you"
-          icon={ClipboardList}
-          tone="default"
-        />
-        {hasDonorProfile ? (
+          {hasDonorProfile ? (
+            <StatCard
+              label="My matches"
+              value={state.matches.length}
+              helper={activeMatches.length > 0 ? `${activeMatches.length} awaiting action` : "No active matches"}
+              icon={HeartHandshake}
+              tone={activeMatches.length > 0 ? "accent" : "default"}
+            />
+          ) : null}
           <StatCard
-            label="My matches"
-            value={state.matches.length}
-            helper="Auto-matched"
-            icon={HeartHandshake}
-            tone="accent"
+            label="Notifications"
+            value={unreadCount}
+            helper={unreadCount > 0 ? "Require your attention" : "All caught up"}
+            icon={Bell}
+            tone={unreadCount > 0 ? "warning" : "success"}
           />
-        ) : null}
-        <StatCard
-          label="Notifications"
-          value={state.notifications.filter((n) => !n.is_read).length}
-          helper="Unread"
-          icon={Bell}
-          tone="warning"
-        />
-      </section>
+        </div>
+      </motion.section>
+
+      {requestDonutSegments.length > 0 ? (
+        <motion.section {...itemProps}>
+          <div className="dashboard-split">
+            <div className="content-card dashboard-chart-card">
+              <p className="chart-card-title">Request status</p>
+              <DonutChart
+                segments={requestDonutSegments}
+                centerLabel={requestCount}
+                emptyLabel="No requests"
+              />
+              <div className="chart-legend">
+                {requestDonutSegments.map((seg) => (
+                  <div className="chart-legend-item" key={seg.label}>
+                    <span className="chart-legend-dot" style={{ background: seg.color }} />
+                    <span className="chart-legend-label">{seg.label}</span>
+                    <span className="chart-legend-value">{seg.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="content-card dashboard-chart-card">
+              <p className="chart-card-title">Match activity</p>
+              <DonutChart
+                segments={[
+                  { label: "Active", value: activeMatches.length, color: "var(--color-urgent)" },
+                  { label: "Completed", value: state.matches.filter((m) => m.status === "completed").length, color: "var(--color-success)" },
+                  { label: "Other", value: state.matches.filter((m) => !["pending", "accepted", "completed"].includes(m.status)).length, color: "var(--muted)" },
+                ]}
+                centerLabel={state.matches.length}
+                emptyLabel="No matches yet"
+              />
+              <div className="chart-legend">
+                <div className="chart-legend-item">
+                  <span className="chart-legend-dot" style={{ background: "var(--color-urgent)" }} />
+                  <span className="chart-legend-label">Active</span>
+                  <span className="chart-legend-value">{activeMatches.length}</span>
+                </div>
+                <div className="chart-legend-item">
+                  <span className="chart-legend-dot" style={{ background: "var(--color-success)" }} />
+                  <span className="chart-legend-label">Completed</span>
+                  <span className="chart-legend-value">{state.matches.filter((m) => m.status === "completed").length}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.section>
+      ) : null}
 
       {hasDonorProfile ? (
-        <section className="content-card">
+        <motion.section className="content-card" {...itemProps}>
           <SectionIntro
             eyebrow="Donor opportunities"
             title="My matches"
@@ -104,11 +213,11 @@ export default function DashboardPage() {
             }
           />
           <div className="stats-mini">
-            <StatCard label="Active matches" value={state.matches.filter((m) => m.status === "pending" || m.status === "accepted").length} helper="Pending or accepted" icon={HeartHandshake} tone="accent" />
+            <StatCard label="Active matches" value={activeMatches.length} helper="Awaiting your response" icon={HeartHandshake} tone="accent" />
           </div>
-        </section>
+        </motion.section>
       ) : (
-        <section className="content-card">
+        <motion.section className="content-card" {...itemProps}>
           <SectionIntro
             eyebrow="Become a donor"
             title="Set up your donor profile"
@@ -117,10 +226,10 @@ export default function DashboardPage() {
               <Link className="button button-primary" to="/donor/profile">Create donor profile</Link>
             }
           />
-        </section>
+        </motion.section>
       )}
 
-      <section className="content-card">
+      <motion.section className="content-card" {...itemProps}>
         <SectionIntro
           eyebrow="Requests"
           title="Your blood requests"
@@ -141,7 +250,7 @@ export default function DashboardPage() {
             ))}
           </div>
         )}
-      </section>
-    </div>
+      </motion.section>
+    </motion.div>
   );
 }
