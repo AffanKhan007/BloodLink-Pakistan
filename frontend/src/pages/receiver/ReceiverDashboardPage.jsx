@@ -45,9 +45,9 @@ export default function ReceiverDashboardPage() {
       <motion.section className="stats-grid" {...itemProps}>
         <StatCard label="Total requests" value={requests.length} helper="Owned by you" icon={ClipboardList} tone="default" />
         <StatCard
-          label="Approved or matched"
+          label="Active requests"
           value={requests.filter((item) => ["approved", "matched"].includes(item.status)).length}
-          helper="Ready for coordination"
+          helper="Open for coordination"
           icon={ShieldCheck}
           tone="success"
         />

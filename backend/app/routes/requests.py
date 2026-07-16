@@ -16,7 +16,6 @@ from app.models import (
     BloodUnitStatus,
     DonationMatch,
     DonorProfile,
-    DonorVerificationStatus,
     Institution,
     InstitutionStatus,
     MatchStatus,
@@ -66,7 +65,6 @@ def create_request(
 ) -> BloodRequestOut:
     request = BloodRequest(
         created_by_user_id=current_user.id,
-        status=RequestStatus.APPROVED,
         **payload.model_dump(),
     )
     db.add(request)
@@ -215,7 +213,6 @@ def request_matching_donors(
             .where(DonorProfile.blood_group.in_(compatible_groups))
             .where(DonorProfile.city == request.city)
             .where(DonorProfile.availability_status == "available")
-            .where(DonorProfile.verification_status == DonorVerificationStatus.APPROVED)
             .where(or_(DonorProfile.last_donation_date.is_(None), DonorProfile.last_donation_date <= cutoff_date))
             .where(
                 ~exists(

@@ -1,4 +1,4 @@
-import { Building2, ClipboardCheck, Droplets, FileClock, HeartHandshake, ShieldCheck, Users } from "lucide-react";
+import { Building2, ClipboardCheck, FileClock, HeartHandshake, Users } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
@@ -29,7 +29,7 @@ const STAFF_ROLES = new Set([
 const CHART_COLORS = {
   receivers: "var(--color-info)",
   institutions: "var(--color-success)",
-  staff: "var(--color-ink)",
+  staff: "var(--color-urgent)",
 };
 
 export default function AdminDashboardPage() {
@@ -75,7 +75,7 @@ export default function AdminDashboardPage() {
         <SectionIntro
           eyebrow="Admin"
           title="Operations overview"
-          description="Review requests, verify institutions, and monitor platform activity."
+          description="Monitor activity, review institutions, and manage reports."
           actions={
             <>
               <Link className="button button-secondary" to="/admin/requests">
@@ -103,13 +103,6 @@ export default function AdminDashboardPage() {
             tone={stats.pending_institutions > 0 ? "warning" : "warning-empty"}
           />
           <StatCard
-            label="Pending requests"
-            value={stats.pending_requests}
-            helper={stats.pending_requests > 0 ? "Queued for review" : "No pending requests"}
-            icon={Droplets}
-            tone={stats.pending_requests > 0 ? "warning" : "warning-empty"}
-          />
-          <StatCard
             label="Pending reports"
             value={stats.pending_reports}
             helper={stats.pending_reports > 0 ? "Flagged content to review" : "No flagged reports"}
@@ -129,31 +122,31 @@ export default function AdminDashboardPage() {
               helper={
                 userBreakdown
                   ? `${userBreakdown.receivers} receivers \u00b7 ${userBreakdown.institutions} institutions \u00b7 ${userBreakdown.staff} staff`
-                  : `${stats.total_donors} total donors`
+                  : "All registered accounts"
               }
               icon={Users}
               tone="default"
             />
             <StatCard
-              label="Approved donors"
-              value={stats.approved_donors}
-              helper={`of ${stats.total_donors} total donor profiles`}
-              icon={ShieldCheck}
+              label="Total donors"
+              value={stats.total_donors}
+              helper="Active donor profiles"
+              icon={HeartHandshake}
               tone="success"
+            />
+            <StatCard
+              label="Active requests"
+              value={stats.active_requests}
+              helper="Open for coordination"
+              icon={ClipboardCheck}
+              tone="accent"
             />
             <StatCard
               label="Active matches"
               value={stats.active_matches}
-              helper="Pending or accepted donations"
+              helper="Pending or accepted"
               icon={HeartHandshake}
               tone="accent"
-            />
-            <StatCard
-              label="Approved requests"
-              value={stats.approved_requests}
-              helper="Open for coordination"
-              icon={ClipboardCheck}
-              tone="success"
             />
           </div>
           <div className="content-card dashboard-chart-card">

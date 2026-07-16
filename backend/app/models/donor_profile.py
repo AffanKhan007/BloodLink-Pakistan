@@ -30,7 +30,7 @@ class DonorProfile(Base):
     is_publicly_available: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, index=True)
     verification_status: Mapped[DonorVerificationStatus] = mapped_column(
         Enum(DonorVerificationStatus, name="donor_verification_status"),
-        default=DonorVerificationStatus.PENDING,
+        default=DonorVerificationStatus.APPROVED,
         nullable=False,
         index=True,
     )

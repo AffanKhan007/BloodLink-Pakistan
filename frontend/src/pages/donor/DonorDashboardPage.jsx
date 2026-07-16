@@ -1,4 +1,4 @@
-import { Bell, HeartHandshake, ShieldCheck } from "lucide-react";
+import { Bell, HeartHandshake, MapPin } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
@@ -57,7 +57,17 @@ export default function DonorDashboardPage() {
     <motion.div className="page-stack" {...motionProps}>
       {state.error ? <AlertMessage type="warning">{state.error}</AlertMessage> : null}
       <motion.section className="stats-grid" {...itemProps}>
-        <StatCard label="Verification" value={state.profile?.verification_status || "pending"} helper="Admin reviewed" icon={ShieldCheck} tone="success" />
+        {state.profile ? (
+          <StatCard
+            label="Donor profile"
+            value={state.profile.blood_group}
+            helper={`${state.profile.city}${state.profile.area ? ", " + state.profile.area : ""}`}
+            icon={MapPin}
+            tone="success"
+          />
+        ) : (
+          <StatCard label="Donor profile" value="Not set up" helper="Create one to start donating" icon={MapPin} tone="default" />
+        )}
         <StatCard label="My matches" value={state.matches.length} helper="Auto-matched" icon={HeartHandshake} tone="default" />
         <StatCard label="Active matches" value={state.matches.filter((m) => m.status === "pending" || m.status === "accepted").length} helper="Pending or accepted" icon={HeartHandshake} tone="accent" />
         <StatCard

@@ -45,7 +45,7 @@ class BloodRequest(Base):
     additional_notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     status: Mapped[RequestStatus] = mapped_column(
         Enum(RequestStatus, name="request_status"),
-        default=RequestStatus.PENDING_REVIEW,
+        default=RequestStatus.APPROVED,
         nullable=False,
         index=True,
     )

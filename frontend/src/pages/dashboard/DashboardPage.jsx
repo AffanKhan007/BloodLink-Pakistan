@@ -1,4 +1,4 @@
-import { Bell, ClipboardList, Droplets, HeartHandshake, ShieldCheck, UserPlus } from "lucide-react";
+import { Bell, ClipboardList, Droplets, HeartHandshake, MapPin, UserPlus } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
@@ -113,11 +113,11 @@ export default function DashboardPage() {
         <div className="stats-grid">
           {hasDonorProfile ? (
             <StatCard
-              label="Donor status"
-              value={state.profile.verification_status || "pending"}
-              helper="Reviewed by admin"
-              icon={ShieldCheck}
-              tone={state.profile.verification_status === "approved" ? "success" : "warning"}
+              label="Donor profile"
+              value={state.profile.blood_group}
+              helper={`${state.profile.city}${state.profile.area ? ", " + state.profile.area : ""}`}
+              icon={MapPin}
+              tone="success"
             />
           ) : (
             <StatCard

@@ -49,19 +49,11 @@ def dashboard(
     return DashboardStats(
         total_users=db.scalar(select(func.count(User.id))) or 0,
         total_donors=db.scalar(select(func.count(DonorProfile.id))) or 0,
-        approved_donors=db.scalar(
-            select(func.count(DonorProfile.id)).where(DonorProfile.verification_status == DonorVerificationStatus.APPROVED)
-        )
-        or 0,
         pending_institutions=db.scalar(
             select(func.count(Institution.id)).where(Institution.status == InstitutionStatus.PENDING)
         )
         or 0,
-        pending_requests=db.scalar(
-            select(func.count(BloodRequest.id)).where(BloodRequest.status == RequestStatus.PENDING_REVIEW)
-        )
-        or 0,
-        approved_requests=db.scalar(
+        active_requests=db.scalar(
             select(func.count(BloodRequest.id)).where(BloodRequest.status.in_([RequestStatus.APPROVED, RequestStatus.MATCHED]))
         )
         or 0,

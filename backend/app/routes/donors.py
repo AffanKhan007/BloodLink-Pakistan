@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.core.database import get_db
 from app.core.deps import get_current_user, require_roles
-from app.models import BloodRequest, DonationMatch, DonorProfile, DonorVerificationStatus, MatchStatus, RequestStatus, User, UserRole
+from app.models import BloodRequest, DonationMatch, DonorProfile, MatchStatus, RequestStatus, User, UserRole
 from app.schemas.blood_request import BloodRequestListOut
 from app.schemas.donor import DonorAvailabilityUpdate, DonorProfileCreate, DonorProfileOut
 from app.schemas.match import MatchDetailOut
@@ -27,7 +27,6 @@ def upsert_profile(
 
     for field, value in payload.model_dump().items():
         setattr(profile, field, value)
-    profile.verification_status = DonorVerificationStatus.APPROVED
 
     db.commit()
     db.refresh(profile)

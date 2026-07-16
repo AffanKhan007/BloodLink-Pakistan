@@ -3,7 +3,7 @@ from datetime import date, timedelta
 from sqlalchemy import exists, or_, select
 from sqlalchemy.orm import Session
 
-from app.models import BloodRequest, DonationMatch, DonorProfile, DonorVerificationStatus, MatchStatus, RequestStatus
+from app.models import BloodRequest, DonationMatch, DonorProfile, MatchStatus, RequestStatus
 from app.services.notifications import create_notification
 
 
@@ -38,7 +38,6 @@ def get_matching_donors(db: Session, request: BloodRequest) -> list[DonorProfile
         .where(DonorProfile.blood_group.in_(compatible_groups))
         .where(DonorProfile.city == request.city)
         .where(DonorProfile.availability_status == "available")
-        .where(DonorProfile.verification_status == DonorVerificationStatus.APPROVED)
         .where(or_(DonorProfile.last_donation_date.is_(None), DonorProfile.last_donation_date <= cutoff_date))
         .where(
             ~exists(
