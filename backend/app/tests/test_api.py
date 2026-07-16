@@ -145,7 +145,7 @@ def test_donor_profile_create(client):
     assert response.json()["verification_status"] == "approved"
 
 
-def test_blood_request_creation_starts_pending_review(client):
+def test_blood_request_creation_auto_matches_compatible_donor(client):
     client.post(
         "/auth/register",
         json={
@@ -200,7 +200,15 @@ def test_blood_request_creation_starts_pending_review(client):
         },
     )
     assert response.status_code == 201
-    assert response.json()["status"] == "pending_review"
+    request_id = response.json()["id"]
+    assert response.json()["status"] == "matched"
+
+    matches_response = client.get(
+        "/matches/me",
+        headers={"Authorization": f"Bearer {donor_token}"},
+    )
+    assert matches_response.status_code == 200
+    assert any(match["request_id"] == request_id for match in matches_response.json())
 
 
 def test_matching_service_returns_eligible_donors(seeded_db):

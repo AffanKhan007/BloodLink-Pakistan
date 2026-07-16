@@ -1,4 +1,4 @@
-import { Bell, ClipboardList, Droplets, HeartHandshake, Search, ShieldCheck, UserPlus } from "lucide-react";
+import { Bell, ClipboardList, Droplets, HeartHandshake, ShieldCheck, UserPlus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -79,7 +79,7 @@ export default function DashboardPage() {
           <StatCard
             label="My matches"
             value={state.matches.length}
-            helper="Assigned by admin"
+            helper="Auto-matched"
             icon={HeartHandshake}
             tone="accent"
           />
@@ -97,10 +97,10 @@ export default function DashboardPage() {
         <section className="content-card">
           <SectionIntro
             eyebrow="Donor opportunities"
-            title="Matching requests"
-            description="Approved requests that fit your city and blood group."
+            title="My matches"
+            description="Requests automatically matched to your donor profile."
             actions={
-              <Link className="button button-primary" to="/donor/requests">View matching requests</Link>
+              <Link className="button button-primary" to="/donor/matches">View my matches</Link>
             }
           />
           <div className="stats-mini">
@@ -112,7 +112,7 @@ export default function DashboardPage() {
           <SectionIntro
             eyebrow="Become a donor"
             title="Set up your donor profile"
-            description="Register your blood group, city, and availability to start matching with people in need."
+            description="Add blood group, city, and availability."
             actions={
               <Link className="button button-primary" to="/donor/profile">Create donor profile</Link>
             }
@@ -122,9 +122,9 @@ export default function DashboardPage() {
 
       <section className="content-card">
         <SectionIntro
-          eyebrow="Request management"
+          eyebrow="Requests"
           title="Your blood requests"
-          description="Create, track, and manage requests for patients."
+          description="Create and track patient requests."
           actions={
             <>
               <Link className="button button-secondary" to="/receiver/create-request">New request</Link>
@@ -133,7 +133,7 @@ export default function DashboardPage() {
           }
         />
         {requestCount === 0 ? (
-          <EmptyState title="No requests yet" description="Create a blood request to start the matching flow." />
+          <EmptyState title="No requests yet" description="Create a request to start matching." />
         ) : (
           <div className="card-list">
             {state.requests.slice(0, 3).map((request) => (

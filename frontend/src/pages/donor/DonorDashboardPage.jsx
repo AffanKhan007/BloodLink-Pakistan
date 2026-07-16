@@ -1,4 +1,4 @@
-import { Bell, HeartHandshake, Search, ShieldCheck, XCircle } from "lucide-react";
+import { Bell, HeartHandshake, ShieldCheck } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
@@ -6,7 +6,6 @@ import { Link } from "react-router-dom";
 import { apiRequest } from "../../api/client";
 import { useAuth } from "../../auth/AuthContext";
 import { AlertMessage, EmptyState, LoadingState } from "../../components/PageState";
-import RequestCard from "../../components/RequestCard";
 import SectionIntro from "../../components/SectionIntro";
 import StatCard from "../../components/StatCard";
 
@@ -22,8 +21,7 @@ const staggerItem = {
 
 export default function DonorDashboardPage() {
   const { token } = useAuth();
-  const [state, setState] = useState({ loading: true, error: "", profile: null, requests: [], matches: [], notifications: [] });
-  const [declining, setDeclining] = useState({});
+  const [state, setState] = useState({ loading: true, error: "", profile: null, matches: [], notifications: [] });
   const prefersReduced = useReducedMotion();
   const motionProps = useMemo(() => prefersReduced ? {} : {
     variants: staggerContainer,
@@ -36,7 +34,6 @@ export default function DonorDashboardPage() {
     let mounted = true;
     Promise.allSettled([
       apiRequest("/donors/profile/me", { token }),
-      apiRequest("/donors/matching-requests", { token }),
       apiRequest("/matches/me", { token }),
       apiRequest("/notifications", { token }),
     ]).then((results) => {
@@ -45,9 +42,8 @@ export default function DonorDashboardPage() {
         loading: false,
         error: results.some((item) => item.status === "rejected") ? "Some dashboard data could not be loaded yet." : "",
         profile: results[0].status === "fulfilled" ? results[0].value : null,
-        requests: results[1].status === "fulfilled" ? results[1].value : [],
-        matches: results[2].status === "fulfilled" ? results[2].value : [],
-        notifications: results[3].status === "fulfilled" ? results[3].value : [],
+        matches: results[1].status === "fulfilled" ? results[1].value : [],
+        notifications: results[2].status === "fulfilled" ? results[2].value : [],
       });
     });
     return () => {
@@ -55,31 +51,15 @@ export default function DonorDashboardPage() {
     };
   }, [token]);
 
-  const [declineError, setDeclineError] = useState("");
-
-  const declineRequest = async (requestId) => {
-    setDeclining((prev) => ({ ...prev, [requestId]: true }));
-    setDeclineError("");
-    try {
-      await apiRequest(`/requests/${requestId}/decline`, { method: "POST", token });
-      setState((prev) => ({ ...prev, requests: prev.requests.filter((r) => r.id !== requestId) }));
-    } catch (err) {
-      setDeclineError(err.message);
-    } finally {
-      setDeclining((prev) => ({ ...prev, [requestId]: false }));
-    }
-  };
-
   if (state.loading) return <LoadingState label="Loading donor dashboard" />;
 
   return (
     <motion.div className="page-stack" {...motionProps}>
       {state.error ? <AlertMessage type="warning">{state.error}</AlertMessage> : null}
-      {declineError ? <AlertMessage type="error">{declineError}</AlertMessage> : null}
       <motion.section className="stats-grid" {...itemProps}>
         <StatCard label="Verification" value={state.profile?.verification_status || "pending"} helper="Admin reviewed" icon={ShieldCheck} tone="success" />
-        <StatCard label="Available requests" value={state.requests.length} helper="Based on simple MVP filters" icon={Search} tone="accent" />
-        <StatCard label="My matches" value={state.matches.length} helper="Assigned by admin" icon={HeartHandshake} tone="default" />
+        <StatCard label="My matches" value={state.matches.length} helper="Auto-matched" icon={HeartHandshake} tone="default" />
+        <StatCard label="Active matches" value={state.matches.filter((m) => m.status === "pending" || m.status === "accepted").length} helper="Pending or accepted" icon={HeartHandshake} tone="accent" />
         <StatCard
           label="Unread notifications"
           value={state.notifications.filter((item) => !item.is_read).length}
@@ -91,9 +71,9 @@ export default function DonorDashboardPage() {
 
       <motion.section className="content-card" {...itemProps}>
         <SectionIntro
-          eyebrow="Matching opportunities"
-          title="Requests near your profile"
-          description="Only approved requests that fit your city and blood group appear here, keeping the donor experience focused."
+          eyebrow="Requests"
+          title="My matches"
+          description="Requests automatically matched to your donor profile."
           actions={
             <>
               <Link className="button button-secondary" to="/donor/profile">
@@ -105,26 +85,17 @@ export default function DonorDashboardPage() {
             </>
           }
         />
-        {state.requests.length === 0 ? (
-          <EmptyState title="No matching requests yet" description="Approved requests that fit your city and blood group will appear here." />
+        {state.matches.length === 0 ? (
+          <EmptyState title="No assigned matches yet" description="Matched requests will appear here." />
         ) : (
           <div className="card-list">
-            {state.requests.slice(0, 3).map((request) => (
-              <RequestCard
-                key={request.id}
-                request={request}
-                footer={`${request.confirmed_donor_count} confirmed donors so far`}
-                actions={
-                  <button
-                    className="button button-secondary button-with-icon"
-                    onClick={() => declineRequest(request.id)}
-                    disabled={declining[request.id]}
-                  >
-                    <XCircle size={14} />
-                    {declining[request.id] ? "Declining..." : "Not available"}
-                  </button>
-                }
-              />
+            {state.matches.slice(0, 3).map((match) => (
+              <div className="info-card" key={match.id}>
+                <div className="list-row">
+                  <strong>Request #{match.request_id}</strong>
+                  <span className="pill pill-soft">{match.status}</span>
+                </div>
+              </div>
             ))}
           </div>
         )}

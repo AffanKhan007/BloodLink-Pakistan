@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
-from sqlalchemy import delete, func, select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session, joinedload
 
 from app.core.database import get_db
@@ -27,10 +27,10 @@ from app.schemas.blood_request import BloodRequestDetailOut, BloodRequestListOut
 from app.schemas.common import AuditLogOut
 from app.schemas.donor import DonorVerificationUpdate, DonorWithUserOut
 from app.schemas.institution import InstitutionStatusUpdate, InstitutionWithUserOut
-from app.schemas.report import ReportOut, ReportStatusUpdate
 from app.schemas.user import AdminUserSummary
 from app.services.audit import create_audit_log
 from app.services.matching import count_confirmed_matches, create_automatic_matches
+from app.services.notifications import create_notification
 
 
 class AdminRequestStatusUpdate(BaseModel):
@@ -281,7 +281,21 @@ def reject_request(
     if not request:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Request not found")
     request.status = RequestStatus.REJECTED
-    db.execute(delete(DonationMatch).where(DonationMatch.request_id == request.id))
+    create_notification(
+        db,
+        user_id=request.created_by_user_id,
+        title="Blood request removed",
+        message=f"Your request #{request.id} for {request.patient_name} was removed by admin review.",
+    )
+    for match in request.matches:
+        if match.status in {MatchStatus.PENDING, MatchStatus.ACCEPTED}:
+            match.status = MatchStatus.CANCELLED
+        create_notification(
+            db,
+            user_id=match.donor.user_id,
+            title="Matched request removed",
+            message=f"Request #{request.id} in {request.city} was removed by admin review. Coordination for this request is now closed.",
+        )
     create_audit_log(
         db,
         admin_user_id=current_user.id,
@@ -327,8 +341,25 @@ def update_request_status(
     else:
         request.status = new_status
 
-    if old_status in (RequestStatus.APPROVED, RequestStatus.MATCHED) and new_status != RequestStatus.APPROVED:
-        db.execute(delete(DonationMatch).where(DonationMatch.request_id == request.id))
+    if new_status == RequestStatus.REJECTED:
+        create_notification(
+            db,
+            user_id=request.created_by_user_id,
+            title="Blood request removed",
+            message=f"Your request #{request.id} for {request.patient_name} was removed by admin review.",
+        )
+
+    if old_status in (RequestStatus.APPROVED, RequestStatus.MATCHED) and new_status not in {RequestStatus.APPROVED, RequestStatus.MATCHED}:
+        for match in request.matches:
+            if match.status in {MatchStatus.PENDING, MatchStatus.ACCEPTED}:
+                match.status = MatchStatus.CANCELLED
+            if new_status == RequestStatus.REJECTED:
+                create_notification(
+                    db,
+                    user_id=match.donor.user_id,
+                    title="Matched request removed",
+                    message=f"Request #{request.id} in {request.city} was removed by admin review. Coordination for this request is now closed.",
+                )
 
     create_audit_log(
         db,
@@ -364,39 +395,6 @@ def admin_request_detail(
         confirmed_donor_count=count_confirmed_matches(request),
         documents=request.documents,
     )
-
-
-@router.get("/reports", response_model=list[ReportOut])
-def admin_reports(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(*ADMIN_ROLES)),
-) -> list[ReportOut]:
-    reports = list(db.scalars(select(Report).order_by(Report.created_at.desc())).all())
-    return [ReportOut.model_validate(report) for report in reports]
-
-
-@router.patch("/reports/{report_id}/status", response_model=ReportOut)
-def update_report_status(
-    report_id: int,
-    payload: ReportStatusUpdate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(*ADMIN_ROLES)),
-) -> ReportOut:
-    report = db.get(Report, report_id)
-    if not report:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found")
-    report.status = payload.status
-    create_audit_log(
-        db,
-        admin_user_id=current_user.id,
-        action="update_report_status",
-        entity_type="report",
-        entity_id=report.id,
-        details={"status": payload.status.value},
-    )
-    db.commit()
-    db.refresh(report)
-    return ReportOut.model_validate(report)
 
 
 @router.get("/audit-logs", response_model=list[AuditLogOut])

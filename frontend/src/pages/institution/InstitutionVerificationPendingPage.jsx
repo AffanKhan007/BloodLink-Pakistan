@@ -28,7 +28,7 @@ export default function InstitutionVerificationPendingPage() {
         <SectionIntro
           eyebrow="Institution verification"
           title="Verification in Progress"
-          description="Your institution account is under admin review. You will be able to access your institution dashboard after approval."
+          description="Admin review is in progress. Features unlock after approval."
           actions={
             <>
               <StatusBadge value="pending" />

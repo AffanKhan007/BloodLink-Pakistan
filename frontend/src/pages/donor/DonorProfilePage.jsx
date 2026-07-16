@@ -113,9 +113,9 @@ export default function DonorProfilePage() {
     <div className="page-stack">
       <section className="content-card">
         <SectionIntro
-          eyebrow="Donor setup"
+          eyebrow="Profile"
           title="My profile"
-          description="Keep your blood group, location, and availability up to date so the matching logic can surface the right requests."
+          description="Keep donation details current."
         />
         <div className="metrics-strip">
           <div className="metric-chip">
@@ -156,7 +156,7 @@ export default function DonorProfilePage() {
         <div className="form-section form-span">
           <div className="form-section-header">
             <h3>Donation profile</h3>
-            <p>Keep your core eligibility, blood group, and location details accurate so request matching stays trustworthy.</p>
+            <p>Core donation and location details.</p>
           </div>
         </div>
         <label className="field-required">
@@ -244,7 +244,7 @@ export default function DonorProfilePage() {
         <div className="form-section form-span">
           <div className="form-section-header">
             <h3>Availability and visibility</h3>
-            <p>Control whether you are only reachable through assigned matches or also discoverable to compatible receivers in your city.</p>
+            <p>Control match and public visibility.</p>
           </div>
         </div>
         <label>
@@ -270,7 +270,7 @@ export default function DonorProfilePage() {
         <div className="form-section form-span">
           <div className="form-section-header">
             <h3>Health context</h3>
-            <p>Add optional notes that help moderation or coordination staff understand your donation readiness.</p>
+            <p>Optional readiness notes.</p>
           </div>
         </div>
         <label className="form-span">

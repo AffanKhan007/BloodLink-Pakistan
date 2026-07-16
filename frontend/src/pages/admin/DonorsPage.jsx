@@ -66,15 +66,15 @@ export default function DonorsPage() {
   }, [cityFilter, deferredSearch, donors, statusFilter]);
 
   if (loading) return <LoadingState label="Loading donors" />;
-  if (donors.length === 0) return <EmptyState title="No donor profiles" description="Donor profiles will appear here after registration." />;
+  if (donors.length === 0) return <EmptyState title="No donor profiles" description="Registered donor profiles will appear here." />;
 
   return (
     <div className="page-stack">
       <section className="content-card">
         <SectionIntro
-          eyebrow="Donor moderation"
+          eyebrow="Donors"
           title="Review donor readiness"
-          description="Search and filter donor profiles by city and verification state before approving, rejecting, or blocking access."
+          description="Filter profiles and manage verification."
         />
         <FilterToolbar
           searchValue={search}
@@ -110,7 +110,7 @@ export default function DonorsPage() {
       </section>
 
       {filteredDonors.length === 0 ? (
-        <EmptyState title="No donors match those filters" description="Try broadening the city or verification state to see more donor profiles." />
+        <EmptyState title="No donors match those filters" description="Try broader filters." />
       ) : (
         <div className="stacked-cards">
           {filteredDonors.map((donor) => (

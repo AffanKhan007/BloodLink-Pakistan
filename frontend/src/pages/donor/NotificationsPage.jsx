@@ -34,7 +34,7 @@ export default function NotificationsPage() {
         <SectionIntro
           eyebrow="Updates"
           title="Notifications"
-          description="Stay on top of new matches, donor responses, and coordination updates without opening every page manually."
+          description="Recent match and request updates."
         />
       </section>
       {notifications.map((notification) => (

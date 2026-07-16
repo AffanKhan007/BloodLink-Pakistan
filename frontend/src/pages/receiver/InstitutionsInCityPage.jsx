@@ -56,9 +56,9 @@ export default function InstitutionsInCityPage() {
     <div className="page-stack">
       <section className="content-card">
         <SectionIntro
-          eyebrow="Institution outreach"
-          title="Institution donors in the request city"
-          description="Contact universities, companies, and organizations that may have coordinated donor groups in the same city."
+          eyebrow="Institutions"
+          title="Institution donors in this city"
+          description="Contact approved donor groups."
         />
         {error ? <AlertMessage type="error">{error}</AlertMessage> : null}
         <label>
@@ -74,7 +74,7 @@ export default function InstitutionsInCityPage() {
       </section>
 
       {institutions.length === 0 ? (
-        <EmptyState title="No institutions found" description="No registered institution donor groups are available in this request city yet." />
+        <EmptyState title="No institutions found" description="No approved groups are listed for this city yet." />
       ) : (
         <div className="stacked-cards">
           {institutions.map((institution) => (

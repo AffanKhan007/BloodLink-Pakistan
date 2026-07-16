@@ -24,15 +24,15 @@ export default function InstitutionDashboardPage() {
   }, [token]);
 
   if (loading) return <LoadingState label="Loading institution dashboard" />;
-  if (!profile) return <EmptyState title="No institution profile yet" description="Create the institution donor profile to start receiving requests and messages." />;
+  if (!profile) return <EmptyState title="No institution profile yet" description="Create a profile to receive outreach." />;
 
   return (
     <div className="page-stack">
       <section className="content-card">
         <SectionIntro
-          eyebrow="Institution donor workspace"
+          eyebrow="Institution"
           title={profile.institution_name}
-          description="Manage your approved institution profile and respond to receiver conversations from the verified institution portal."
+          description="Manage profile and receiver messages."
           actions={
             <>
               <Link className="button button-secondary" to="/institution/profile">

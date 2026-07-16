@@ -104,9 +104,9 @@ export default function AdminInstitutionsPage() {
     <div className="page-stack">
       <section className="content-card">
         <SectionIntro
-          eyebrow="Institution moderation"
+          eyebrow="Institutions"
           title="Review institution registrations"
-          description="Approve legitimate organizations for public discovery, pause suspicious accounts, or send rejected submissions back with a reason."
+          description="Manage approval and visibility."
         />
         {error ? <AlertMessage type="error">{error}</AlertMessage> : null}
         <div className="filter-row">
@@ -133,7 +133,7 @@ export default function AdminInstitutionsPage() {
       </section>
 
       {institutions.length === 0 ? (
-        <EmptyState title="No institutions found" description="Institution submissions matching this filter will appear here." />
+        <EmptyState title="No institutions found" description="Matching submissions will appear here." />
       ) : (
         <div className="stacked-cards">
           {institutions.map((institution) => (

@@ -63,9 +63,9 @@ export default function ReceiverDashboardPage() {
 
       <motion.section className="content-card" {...itemProps}>
         <SectionIntro
-          eyebrow="Recent activity"
+          eyebrow="Requests"
           title="My requests"
-          description="Track open demand, confirmed donors, support channels, and completed requests from one clean receiver dashboard."
+          description="Review your latest request activity."
           actions={
             <>
               <Link className="button button-secondary" to="/receiver/available-donors">
@@ -78,7 +78,7 @@ export default function ReceiverDashboardPage() {
           }
         />
         {requests.length === 0 ? (
-          <EmptyState title="No requests yet" description="Create a blood request to start the admin review and matching flow." />
+          <EmptyState title="No requests yet" description="Create a request to begin matching." />
         ) : (
           <div className="card-list">
             {requests.slice(0, 3).map((request) => (

@@ -41,8 +41,8 @@ export default function AdminDashboardPage() {
       <motion.section className="content-card" {...itemProps}>
         <SectionIntro
           eyebrow="Overview"
-          title="Platform operations snapshot"
-          description="Watch the request lifecycle, donor verification load, and moderation work from a calmer admin control center."
+          title="Operations snapshot"
+          description="Monitor requests, donors, and moderation."
           actions={
             <>
               <Link className="button button-secondary" to="/admin/requests">

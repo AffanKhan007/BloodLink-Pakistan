@@ -80,7 +80,7 @@ export default function InstitutionRejectedPage() {
       <section className="content-card">
         <SectionIntro
           eyebrow="Institution verification"
-          title="Institution review rejected"
+          title="Review rejected"
           description={profile.rejection_reason || "Your institution submission needs corrections before it can be approved."}
           actions={<StatusBadge value="rejected" />}
         />
@@ -89,9 +89,9 @@ export default function InstitutionRejectedPage() {
       </section>
       <section className="content-card">
         <SectionIntro
-          eyebrow="Correct details"
+          eyebrow="Resubmission"
           title="Resubmit for Review"
-          description="Update the submitted verification details below and resubmit the institution for admin review."
+          description="Update details and submit again."
         />
         <InstitutionVerificationForm
           form={form}

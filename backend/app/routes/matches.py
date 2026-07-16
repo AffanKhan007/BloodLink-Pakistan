@@ -16,6 +16,21 @@ from app.services.notifications import create_notification
 router = APIRouter(prefix="/matches", tags=["matches"])
 
 
+def _match_detail_out(match: DonationMatch) -> MatchDetailOut:
+    return MatchDetailOut(
+        id=match.id,
+        request_id=match.request_id,
+        donor_id=match.donor_id,
+        status=match.status,
+        accepted_at=match.accepted_at,
+        rejected_at=match.rejected_at,
+        completed_at=match.completed_at,
+        created_at=match.created_at,
+        donor=DonorWithUserOut.model_validate(match.donor),
+        donor_phone=match.donor.user.phone,
+    )
+
+
 def _get_owned_match(db: Session, match_id: int, user: User) -> DonationMatch:
     match = db.scalar(
         select(DonationMatch)
@@ -94,14 +109,7 @@ def list_request_matches(
             .order_by(DonationMatch.created_at.desc())
         ).all()
     )
-    return [
-        MatchDetailOut(
-            **match.__dict__,
-            donor=DonorWithUserOut.model_validate(match.donor),
-            donor_phone=match.donor.user.phone,
-        )
-        for match in matches
-    ]
+    return [_match_detail_out(match) for match in matches]
 
 
 @router.get("/me", response_model=list[MatchDetailOut])
@@ -120,14 +128,7 @@ def my_matches(
             .order_by(DonationMatch.created_at.desc())
         ).all()
     )
-    return [
-        MatchDetailOut(
-            **match.__dict__,
-            donor=DonorWithUserOut.model_validate(match.donor),
-            donor_phone=match.donor.user.phone,
-        )
-        for match in matches
-    ]
+    return [_match_detail_out(match) for match in matches]
 
 
 @router.patch("/{match_id}/accept", response_model=MatchOut)
@@ -137,6 +138,8 @@ def accept_match(
     current_user: User = Depends(require_roles(UserRole.USER)),
 ) -> MatchOut:
     match = _get_owned_match(db, match_id, current_user)
+    if match.status != MatchStatus.PENDING or match.request.status in {RequestStatus.REJECTED, RequestStatus.CANCELLED}:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="This match is no longer active")
     match.status = MatchStatus.ACCEPTED
     match.accepted_at = datetime.now(timezone.utc)
     create_notification(
@@ -157,6 +160,8 @@ def reject_match(
     current_user: User = Depends(require_roles(UserRole.USER)),
 ) -> MatchOut:
     match = _get_owned_match(db, match_id, current_user)
+    if match.status not in {MatchStatus.PENDING, MatchStatus.ACCEPTED}:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="This match is no longer active")
     match.status = MatchStatus.REJECTED
     match.rejected_at = datetime.now(timezone.utc)
     create_notification(
@@ -179,6 +184,8 @@ def complete_match(
     match = _get_owned_match(db, match_id, current_user)
     if current_user.role not in {UserRole.ADMIN, UserRole.USER}:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+    if match.request.status in {RequestStatus.REJECTED, RequestStatus.CANCELLED}:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="This match is no longer active")
     match.status = MatchStatus.COMPLETED
     match.completed_at = datetime.now(timezone.utc)
     db.commit()

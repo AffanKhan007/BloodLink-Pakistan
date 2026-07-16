@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from app.core.config import get_settings
 from app.core.database import get_db
 from app.core.deps import get_current_user
-from app.models import Chat, DonationMatch, DonorProfile, RequestDocument, User, UserRole
+from app.models import Chat, DonationMatch, DonorProfile, Report, RequestDocument, User, UserRole
 
 
 router = APIRouter(prefix="/uploads", tags=["uploads"])
@@ -59,4 +59,22 @@ def get_request_document(
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="Stored file missing")
     return FileResponse(path=file_path, filename=document.file_url)
+
+
+@router.get("/report-evidence/{report_id}")
+def get_report_evidence(
+    report_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    report = db.get(Report, report_id)
+    if not report or not report.evidence_file:
+        raise HTTPException(status_code=404, detail="Evidence not found")
+    if current_user.role not in {UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.OPERATIONS_AGENT}:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    file_path = os.path.join(settings.upload_dir, report.evidence_file)
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="Stored file missing")
+    return FileResponse(path=file_path, filename=report.evidence_file)
 

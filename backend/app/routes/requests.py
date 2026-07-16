@@ -66,11 +66,12 @@ def create_request(
 ) -> BloodRequestOut:
     request = BloodRequest(
         created_by_user_id=current_user.id,
-        status=RequestStatus.PENDING_REVIEW,
+        status=RequestStatus.APPROVED,
         **payload.model_dump(),
     )
     db.add(request)
     db.flush()
+    create_automatic_matches(db, request)
     db.commit()
     db.refresh(request)
     return BloodRequestOut.model_validate(request)

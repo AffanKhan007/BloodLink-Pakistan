@@ -5,32 +5,32 @@
 /* ── Light Palette + Shared Tokens ──────────────────────── */
 :root {
   /* Palette */
-  --bg-base:              #FAF8F5;
+  --bg-base:              #F7FAF9;
   --bg-surface:           #FFFFFF;
-  --bg-surface-alt:       #F0EEE9;
-  --text-primary:         #1E1E1E;
-  --text-muted:           #6D6D6D;
-  --border-color:         #E3E1DC;
-  --color-urgent:         #C4292E;
-  --color-urgent-soft:    #FBEAEA;
-  --crimson-rgb:           155, 29, 36;
+  --bg-surface-alt:       #EEF4F2;
+  --text-primary:         #17211F;
+  --text-muted:           #62716D;
+  --border-color:         #DCE7E3;
+  --color-urgent:         #A92A36;
+  --color-urgent-soft:    #F8E9EC;
+  --crimson-rgb:           142, 38, 50;
 
-  --color-success:        #2F6B4F;
-  --color-success-soft:   #E7F0EB;
-  --color-warning:        #D97706;
-  --color-warning-soft:   #FFFEB;
-  --color-danger:         #DC2626;
-  --color-danger-soft:    #FEF2F2;
-  --color-info:           #2563EB;
-  --color-info-soft:      #EFF6FF;
+  --color-success:        #2F6F55;
+  --color-success-soft:   #E7F3EE;
+  --color-warning:        #A86516;
+  --color-warning-soft:   #FFF4E5;
+  --color-danger:         #B4232F;
+  --color-danger-soft:    #FAE8EA;
+  --color-info:           #2F6F8F;
+  --color-info-soft:      #E7F1F6;
 
-  --color-nav-hover:      #EFEDE8;
-  --color-nav-active:     #E3E1DC;
-  --color-nav-active-text:#0A0A0A;
-  --color-logo-bg:        #0A0A0A;
-  --color-logo-icon:      #FAF8F5;
+  --color-nav-hover:      #E7EFEC;
+  --color-nav-active:     #DCE7E3;
+  --color-nav-active-text:#17211F;
+  --color-logo-bg:        #8E2632;
+  --color-logo-icon:      #FFFFFF;
 
-  --gradient-hero:        linear-gradient(160deg, #FAF8F5 0%, #EAE6E1 100%);
+  --gradient-hero:        linear-gradient(160deg, #F7FAF9 0%, #EEF4F2 100%);
 
   --color-shadow-sm:      rgba(0, 0, 0, 0.05);
   --color-shadow-md:      rgba(0, 0, 0, 0.08);
@@ -67,25 +67,25 @@
   --dur-hero:             900ms;
 
   /* Sidebar panel — warm neutral */
-  --sidebar-panel-bg:        #E8E3DC;    /* warm stone/taupe */
+  --sidebar-panel-bg:        #EAF2EF;
 
   /* Sidebar nav — inactive: plain text on warm neutral */
   --sidebar-nav-bg:           transparent;
-  --sidebar-nav-text:         #2E2D2B;   /* warm dark neutral */
-  --sidebar-nav-hover-bg:     rgba(0, 0, 0, 0.04);
+  --sidebar-nav-text:         #273330;
+  --sidebar-nav-hover-bg:     rgba(23, 33, 31, 0.05);
 
   /* Sidebar nav — active: solid crimson standout */
-  --sidebar-nav-active-bg:    #9B1D24;   /* brand crimson */
+  --sidebar-nav-active-bg:    #8E2632;
   --sidebar-nav-active-text:  #FFFFFF;
 
   /* Shadows */
   --sidebar-nav-shadow:       rgba(0, 0, 0, 0.2);
-  --sidebar-nav-shadow-hover: rgba(155, 29, 36, 0.35);
+  --sidebar-nav-shadow-hover: rgba(142, 38, 50, 0.24);
 
   /* Legacy aliases — map to current palette */
   --color-ink:            var(--text-primary);
-  --color-paper:          var(--bg-base);
-  --color-charcoal:       #1A1A1A;
+  --color-paper:          var(--bg-surface);
+  --color-charcoal:       #25302D;
   --color-muted:          var(--text-muted);
   --color-border:         var(--border-color);
   --color-surface-alt:    var(--bg-surface-alt);
@@ -126,8 +126,8 @@
   --color-accent:         var(--text-primary);
   --color-accent-hover:   var(--text-primary);
   --color-accent-subtle:  var(--bg-surface-alt);
-  --color-accent-rgb:     30, 30, 30;
-  --color-ink-rgb:        30, 30, 30;
+  --color-accent-rgb:     23, 33, 31;
+  --color-ink-rgb:        23, 33, 31;
 
   font-family: var(--font-body);
   color-scheme: light;

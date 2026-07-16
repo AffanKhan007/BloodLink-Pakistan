@@ -73,30 +73,30 @@ export default function CreateRequestPage() {
     <div className="page-stack">
       <section className="content-card">
         <SectionIntro
-          eyebrow="Receiver workflow"
+          eyebrow="Request"
           title="Create blood request"
-          description="Provide clear patient, hospital, and urgency details so the admin review and matching process can move quickly."
+          description="Add patient, hospital, and urgency details."
         />
         <div className="metrics-strip">
           <div className="metric-chip">
             <Building2 size={14} />
             <div>
               <span>Hospital context</span>
-              <strong>Add verified patient location details</strong>
+              <strong>Add patient location</strong>
             </div>
           </div>
           <div className="metric-chip">
             <CalendarClock size={14} />
             <div>
               <span>Required by</span>
-              <strong>Set a clear timeline for urgency</strong>
+              <strong>Set urgency timing</strong>
             </div>
           </div>
           <div className="metric-chip">
             <ShieldCheck size={14} />
             <div>
               <span>Automatic coordination</span>
-              <strong>Matching starts as soon as your request is saved</strong>
+              <strong>Matching starts after save</strong>
             </div>
           </div>
         </div>
@@ -109,7 +109,7 @@ export default function CreateRequestPage() {
           <div className="form-section form-span">
             <div className="form-section-header">
               <h3>Patient and request details</h3>
-              <p>Start with the core medical demand so donors and institutions see a clear, structured request.</p>
+              <p>Enter the core request details.</p>
             </div>
           </div>
           <label className="field-required">
@@ -133,7 +133,7 @@ export default function CreateRequestPage() {
           <div className="form-section form-span">
             <div className="form-section-header">
               <h3>Hospital context</h3>
-              <p>Add the city, ward, and required-by timeline so the platform can coordinate support with the right urgency.</p>
+              <p>Add location and timing.</p>
             </div>
           </div>
           <label className="field-required">
@@ -168,7 +168,7 @@ export default function CreateRequestPage() {
           <div className="form-section form-span">
             <div className="form-section-header">
               <h3>Attendant and verification</h3>
-              <p>These details help staff and matched donors coordinate the next contact step without exposing unnecessary data publicly.</p>
+              <p>Provide contact and document details.</p>
             </div>
           </div>
           <label className="field-required">
@@ -200,7 +200,7 @@ export default function CreateRequestPage() {
           </label>
           <div className="form-span form-note">
             <Upload size={14} />
-            <span>Your request is saved together with the hospital slip so matched donors and support channels can be coordinated immediately.</span>
+            <span>The hospital slip stays behind authorized access.</span>
           </div>
           <div className="form-span">
             <button className="button button-primary" disabled={submitting}>

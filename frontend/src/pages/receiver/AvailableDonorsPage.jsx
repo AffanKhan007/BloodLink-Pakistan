@@ -57,9 +57,9 @@ export default function AvailableDonorsPage() {
     <div className="page-stack">
       <section className="content-card">
         <SectionIntro
-          eyebrow="Public donor discovery"
+          eyebrow="Donors"
           title="Available donors in your city"
-          description="These donors have marked themselves publicly available and match the city and blood-group compatibility for your request."
+          description="Public donors matching this request."
         />
         {error ? <AlertMessage type="error">{error}</AlertMessage> : null}
         <label>
@@ -75,7 +75,7 @@ export default function AvailableDonorsPage() {
       </section>
 
       {donors.length === 0 ? (
-        <EmptyState title="No public donors found" description="No publicly available donors currently match the city and blood-group rules for this request." />
+        <EmptyState title="No public donors found" description="No public donors match this request yet." />
       ) : (
         <div className="stacked-cards">
           {donors.map((donor) => (

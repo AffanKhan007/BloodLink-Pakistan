@@ -9,8 +9,8 @@ export default function InstitutionSuspendedPage() {
       <section className="content-card">
         <SectionIntro
           eyebrow="Institution access"
-          title="Your institution account has been suspended."
-          description="Your institution account has been suspended. Please contact admin support."
+          title="Account suspended"
+          description="Please contact admin support."
           actions={
             <>
               <StatusBadge value="suspended" />

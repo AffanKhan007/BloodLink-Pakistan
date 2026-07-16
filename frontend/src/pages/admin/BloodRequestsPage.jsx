@@ -9,6 +9,8 @@ import RequestCard from "../../components/RequestCard";
 import SectionIntro from "../../components/SectionIntro";
 import StatusBadge from "../../components/StatusBadge";
 
+import { useSearchParams } from "react-router-dom";
+
 const STATUS_OPTIONS = [
   { value: "pending_review", label: "Pending Review" },
   { value: "approved", label: "Approved" },
@@ -17,6 +19,9 @@ const STATUS_OPTIONS = [
 
 export default function BloodRequestsPage() {
   const { token } = useAuth();
+  const [searchParams] = useSearchParams();
+  const openId = searchParams.get("open");
+
   const [loading, setLoading] = useState(true);
   const [requests, setRequests] = useState([]);
   const [selectedCardRequestId, setSelectedCardRequestId] = useState(null);
@@ -30,10 +35,6 @@ export default function BloodRequestsPage() {
     setRequests(data);
   };
 
-  useEffect(() => {
-    loadRequests().finally(() => setLoading(false));
-  }, [token]);
-
   const loadDetail = async (requestId) => {
     setDetailLoading(true);
     setDetailRequest(null);
@@ -44,6 +45,19 @@ export default function BloodRequestsPage() {
       setDetailLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadRequests().finally(() => {
+      setLoading(false);
+      if (openId) {
+        const id = Number(openId);
+        setSelectedCardRequestId(id);
+        loadDetail(id);
+      }
+    });
+  }, [token, openId]);
+
+
 
   const handleAction = async (requestId, action) => {
     await apiRequest(`/admin/requests/${requestId}/${action}`, { method: "PATCH", token });
@@ -92,15 +106,15 @@ export default function BloodRequestsPage() {
   }, [deferredSearch, requests, statusFilter]);
 
   if (loading) return <LoadingState label="Loading blood requests" />;
-  if (requests.length === 0) return <EmptyState title="No requests found" description="Submitted requests will appear here for review." />;
+  if (requests.length === 0) return <EmptyState title="No requests found" description="Submitted requests will appear here." />;
 
   return (
     <div className="page-stack">
       <section className="content-card">
         <SectionIntro
-          eyebrow="Request triage"
+          eyebrow="Requests"
           title="Review blood requests"
-          description="Approve verified requests to trigger automatic donor matching, or reject non-qualifying submissions."
+          description="Approve or reject submitted requests."
         />
         <FilterToolbar
           searchValue={search}
@@ -132,7 +146,7 @@ export default function BloodRequestsPage() {
       </section>
 
       {filteredRequests.length === 0 ? (
-        <EmptyState title="No requests match those filters" description="Try a broader status or search term to see more demand." />
+        <EmptyState title="No requests match those filters" description="Try broader filters." />
       ) : (
         <div className="card-list">
           {filteredRequests.map((request) => (
@@ -192,9 +206,9 @@ export default function BloodRequestsPage() {
       {selectedCardRequestId && detailRequest && (
         <section className="content-card">
           <SectionIntro
-            eyebrow="Full request details"
+            eyebrow="Details"
             title={`Request #${detailRequest.id} — ${detailRequest.patient_name}`}
-            description="All fields submitted at request creation time."
+            description="Submitted request information."
           />
           <div className="grid-form" style={{ marginTop: "0.5rem" }}>
             <div>
@@ -258,7 +272,7 @@ export default function BloodRequestsPage() {
               <SectionIntro
                 eyebrow="Verification files"
                 title={`${detailRequest.documents.length} uploaded document${detailRequest.documents.length === 1 ? "" : "s"}`}
-                description="Open protected uploads in a separate tab for review."
+                description="Protected uploads for review."
               />
               <div className="stacked-cards" style={{ marginTop: "0.5rem" }}>
                 {detailRequest.documents.map((doc) => (

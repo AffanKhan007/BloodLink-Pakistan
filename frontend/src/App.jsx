@@ -18,7 +18,6 @@ import DashboardPage from "./pages/dashboard/DashboardPage";
 import DonorDashboardPage from "./pages/donor/DonorDashboardPage";
 import DonorChatPage from "./pages/donor/DonorChatPage";
 import DonorProfilePage from "./pages/donor/DonorProfilePage";
-import MatchingRequestsPage from "./pages/donor/MatchingRequestsPage";
 import MyMatchesPage from "./pages/donor/MyMatchesPage";
 import NotificationsPage from "./pages/donor/NotificationsPage";
 import BloodBankInventoryPage from "./pages/bloodbank/BloodBankInventoryPage";
@@ -99,7 +98,7 @@ export default function App() {
             path="/donor/requests"
             element={
               <ProtectedRoute roles={["user"]}>
-                <MatchingRequestsPage />
+                <Navigate to="/donor/matches" replace />
               </ProtectedRoute>
             }
           />

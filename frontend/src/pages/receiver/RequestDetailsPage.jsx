@@ -6,6 +6,7 @@ import { apiRequest } from "../../api/client";
 import { useAuth } from "../../auth/AuthContext";
 import ConfirmModal from "../../components/ConfirmModal";
 import { AlertMessage, EmptyState, LoadingState } from "../../components/PageState";
+import SectionIntro from "../../components/SectionIntro";
 import StatusBadge from "../../components/StatusBadge";
 import { formatDate } from "../../utils/format";
 
@@ -208,12 +209,7 @@ export default function RequestDetailsPage() {
       </section>
 
       <section className="content-card">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Support channels</p>
-            <h2>Find more help in the same city</h2>
-          </div>
-        </div>
+        <SectionIntro eyebrow="Support channels" title="Same-city support" compact />
         <div className="card-actions">
           <Link className="button button-secondary" to="/receiver/available-donors">
             <Search size={14} />
@@ -235,14 +231,9 @@ export default function RequestDetailsPage() {
       </section>
 
       <section className="content-card">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Available matching donors</p>
-            <h2>Compatible donors in {request.city}</h2>
-          </div>
-        </div>
+        <SectionIntro eyebrow="Available donors" title={`Compatible donors in ${request.city}`} compact />
         {matchingDonors.length === 0 ? (
-          <EmptyState title="No matching donors found" description="No verified, available donors match your blood group and city right now. Check back later or explore other support channels." />
+          <EmptyState title="No matching donors found" description="No verified donors match this city and blood group yet." />
         ) : (
           <div className="stacked-cards">
             {matchingDonors.map((donor) => (
@@ -273,12 +264,7 @@ export default function RequestDetailsPage() {
       </section>
 
       <section className="content-card">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Hospital slip</p>
-            <h2>Documents</h2>
-          </div>
-        </div>
+        <SectionIntro eyebrow="Hospital slip" title="Documents" compact />
         <input type="file" accept=".jpg,.jpeg,.png,.pdf" onChange={uploadDocument} />
         <div className="stacked-cards">
           {request.documents?.length ? (
@@ -289,20 +275,15 @@ export default function RequestDetailsPage() {
               </div>
             ))
           ) : (
-            <EmptyState title="No documents yet" description="Upload a hospital slip to help the admin review faster." />
+            <EmptyState title="No documents yet" description="Upload the hospital slip for review." />
           )}
         </div>
       </section>
 
       <section className="content-card">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Matched donors</p>
-            <h2>Assigned coordination</h2>
-          </div>
-        </div>
+        <SectionIntro eyebrow="Matched donors" title="Assigned coordination" compact />
         {matches.length === 0 ? (
-          <EmptyState title="No donors assigned yet" description="If compatible donors exist, they will appear here automatically as matching runs." />
+          <EmptyState title="No donors assigned yet" description="Assigned donors will appear here." />
         ) : (
           <div className="stacked-cards">
             {matches.map((match) => (
@@ -333,14 +314,9 @@ export default function RequestDetailsPage() {
       </section>
 
       <section className="content-card">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Safety tools</p>
-            <h2>Report suspicious donor behavior</h2>
-          </div>
-        </div>
+        <SectionIntro eyebrow="Safety" title="Report suspicious behavior" compact />
         {matches.length === 0 ? (
-          <EmptyState title="No donors to report" description="You can report suspicious donors after an admin assigns them to your request." />
+          <EmptyState title="No donors to report" description="Reports are available after assignment." />
         ) : (
           <form className="grid-form" onSubmit={submitReport}>
             <label>

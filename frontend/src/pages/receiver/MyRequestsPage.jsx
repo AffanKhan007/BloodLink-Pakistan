@@ -39,7 +39,7 @@ export default function MyRequestsPage() {
     return (
       <EmptyState
         title="No requests created"
-        description="Your submitted requests will be listed here once you create the first blood request."
+        description="Created requests will appear here."
         action={
           <Link className="button button-primary" to="/receiver/create-request">
             Create request
@@ -53,9 +53,9 @@ export default function MyRequestsPage() {
     <div className="page-stack">
       <section className="content-card">
         <SectionIntro
-          eyebrow="Receiver requests"
-          title="My request list"
-          description="Open each request to manage slips, support channels, donor conversations, and fulfillment status."
+          eyebrow="Requests"
+          title="My requests"
+          description="Manage request status and details."
           actions={
             <Link className="button button-primary" to="/receiver/create-request">
               Create request

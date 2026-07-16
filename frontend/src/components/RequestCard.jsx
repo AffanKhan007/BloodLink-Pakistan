@@ -1,12 +1,21 @@
-import { ArrowRight, Clock3, Droplets, MapPin, Users } from "lucide-react";
+import { ArrowRight, Clock3, Droplets, MapPin, Users, Flag } from "lucide-react";
+import { useState } from "react";
 
 import StatusBadge from "./StatusBadge";
+import ReportModal from "./ReportModal";
+import { useAuth } from "../auth/AuthContext";
 
 export default function RequestCard({ request, actions, footer, onClick, selected }) {
+  const { user } = useAuth();
+  const [reportOpen, setReportOpen] = useState(false);
   const interactive = typeof onClick === "function";
   const isUrgent =
     String(request?.urgency_level || "").toLowerCase() === "critical" ||
     String(request?.urgency_level || "").toLowerCase() === "urgent";
+
+  const isCreator = user?.id === request.created_by_user_id;
+  const isAdmin = ["admin", "super_admin", "operations_agent"].includes(user?.role);
+  const showReport = user && !isCreator && !isAdmin;
 
   return (
     <article
@@ -35,7 +44,42 @@ export default function RequestCard({ request, actions, footer, onClick, selecte
           <h3>{request.hospital_name}</h3>
           <p className="request-card-subtitle">{request.patient_name}</p>
         </div>
-        <StatusBadge value={request.status} />
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }} onClick={(e) => e.stopPropagation()}>
+          <StatusBadge value={request.status} />
+          {showReport && (
+            <button
+              type="button"
+              className="report-card-btn"
+              title="Report this request"
+              onClick={(e) => {
+                e.stopPropagation();
+                setReportOpen(true);
+              }}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: "6px",
+                color: "var(--muted)",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: "4px",
+                transition: "color 0.2s, background-color 0.2s"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = "var(--color-warning, #a86516)";
+                e.currentTarget.style.backgroundColor = "rgba(142, 38, 50, 0.05)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "var(--muted)";
+                e.currentTarget.style.backgroundColor = "transparent";
+              }}
+            >
+              <Flag size={13} />
+            </button>
+          )}
+        </div>
       </div>
       <div className="request-grid">
         <div>
@@ -92,6 +136,15 @@ export default function RequestCard({ request, actions, footer, onClick, selecte
           </span>
         </div>
       ) : null}
+      {reportOpen && (
+        <ReportModal
+          open={reportOpen}
+          onClose={() => setReportOpen(false)}
+          reportedType="request"
+          reportedId={request.id}
+          title="Report blood request"
+        />
+      )}
     </article>
   );
 }

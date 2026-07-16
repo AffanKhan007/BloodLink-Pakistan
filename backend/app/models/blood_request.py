@@ -58,8 +58,6 @@ class BloodRequest(Base):
     hospital = relationship("Hospital", back_populates="blood_requests")
     documents = relationship("RequestDocument", back_populates="request", cascade="all, delete-orphan")
     matches = relationship("DonationMatch", back_populates="request", cascade="all, delete-orphan")
-    reports = relationship("Report", back_populates="request")
-
 
 class RequestDocument(Base):
     __tablename__ = "request_documents"

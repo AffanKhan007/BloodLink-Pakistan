@@ -61,8 +61,8 @@ export default function MatchedDonorsPage() {
       <div className="content-card">
         <SectionIntro
           eyebrow="Matched donors"
-          title="Confirmed and pending donor assignments"
-          description="Track matched donors for each request. Donor phone numbers are visible within confirmed match contexts."
+          title="Donor assignments"
+          description="Track donors matched to each request."
         />
         {error ? <AlertMessage type="error">{error}</AlertMessage> : null}
         <label>
@@ -77,7 +77,7 @@ export default function MatchedDonorsPage() {
         </label>
       </div>
       {matches.length === 0 ? (
-        <EmptyState title="No donor assignments yet" description="Compatible donors will appear here once automatic matching finds candidates for this request." />
+        <EmptyState title="No donor assignments yet" description="Matched donors will appear here." />
       ) : (
         <div className="stacked-cards">
           {matches.map((match) => (

@@ -77,7 +77,7 @@ export default function InstitutionProfilePage() {
         <SectionIntro
           eyebrow="Institution profile"
           title="Organization details"
-          description="Keep your verification details and public support information accurate."
+          description="Manage verification and public details."
           actions={<StatusBadge value={form.status || "approved"} />}
         />
         {message ? <AlertMessage type="success">{message}</AlertMessage> : null}

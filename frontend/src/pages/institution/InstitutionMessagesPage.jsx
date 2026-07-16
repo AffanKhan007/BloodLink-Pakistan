@@ -3,9 +3,9 @@ import ChatWorkspace from "../../components/ChatWorkspace";
 export default function InstitutionMessagesPage() {
   return (
     <ChatWorkspace
-      eyebrow="Institution messaging"
+      eyebrow="Messages"
       title="Receiver conversations"
-      description="Reply to blood request conversations from receivers who reached out through the institution donor directory."
+      description="Reply to receiver outreach."
     />
   );
 }

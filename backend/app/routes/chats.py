@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session, joinedload
 from app.core.database import get_db
 from app.core.deps import get_current_user
 from app.core.security import decode_token
-from app.models import BloodBank, BloodRequest, Chat, ChatMessage, DonationMatch, DonorProfile, Institution, InstitutionStatus, User, UserRole
+from app.models import BloodBank, BloodRequest, Chat, ChatMessage, DonationMatch, DonorProfile, Institution, InstitutionStatus, MatchStatus, RequestStatus, User, UserRole
 from app.schemas.chat import ChatCreate, ChatDetailOut, ChatMessageCreate, ChatMessageOut, ChatSummaryOut
 from app.schemas.blood_request import BloodRequestDetailOut
 from app.schemas.user import ChatUserSummary
@@ -103,6 +103,8 @@ def _validate_receiver_chat_target(db: Session, receiver: User, target_user: Use
     request = db.get(BloodRequest, request_id)
     if not request or request.created_by_user_id != receiver.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Request not found")
+    if request.status in {RequestStatus.REJECTED, RequestStatus.CANCELLED}:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="This request is no longer active")
 
     if target_user.donor_profile is not None:
         donor = target_user.donor_profile
@@ -112,7 +114,7 @@ def _validate_receiver_chat_target(db: Session, receiver: User, target_user: Use
             .where(DonationMatch.donor_id == donor.id)
         )
         compatible_groups = compatible_donor_groups(request.blood_group_needed)
-        if existing_match or (
+        if (existing_match and existing_match.status in {MatchStatus.PENDING, MatchStatus.ACCEPTED, MatchStatus.COMPLETED}) or (
             donor.is_publicly_available
             and donor.availability_status == "available"
             and donor.city == request.city
@@ -280,6 +282,10 @@ def send_message(
     chat = db.get(Chat, chat_id)
     if not chat or current_user.id not in {chat.participant_one_id, chat.participant_two_id}:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Chat not found")
+    if chat.request_id:
+        request = db.get(BloodRequest, chat.request_id)
+        if request and request.status in {RequestStatus.REJECTED, RequestStatus.CANCELLED}:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="This request is no longer active")
     other_user_id = chat.participant_two_id if chat.participant_one_id == current_user.id else chat.participant_one_id
     message = ChatMessage(chat_id=chat.id, sender_id=current_user.id, message=payload.message)
     db.add(message)
@@ -333,6 +339,11 @@ async def chat_websocket(
     if not chat or current_user.id not in {chat.participant_one_id, chat.participant_two_id}:
         await websocket.close(code=1008)
         return
+    if chat.request_id:
+        request = db.get(BloodRequest, chat.request_id)
+        if request and request.status in {RequestStatus.REJECTED, RequestStatus.CANCELLED}:
+            await websocket.close(code=1008)
+            return
 
     try:
         await chat_connection_manager.connect(chat_id, websocket)

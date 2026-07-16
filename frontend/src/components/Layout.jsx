@@ -33,7 +33,6 @@ const navByRole = {
     { label: "My Profile", to: "/donor/profile", icon: Users },
     { label: "Create Request", to: "/receiver/create-request", icon: Droplets },
     { label: "My Requests", to: "/receiver/requests", icon: ClipboardList },
-    { label: "Matching Requests", to: "/donor/requests", icon: Search },
     { label: "My Matches", to: "/donor/matches", icon: HeartHandshake },
     { label: "Available Donors", to: "/receiver/available-donors", icon: Search },
     { label: "Blood Banks", to: "/receiver/blood-banks", icon: Warehouse },
@@ -44,7 +43,6 @@ const navByRole = {
   donor: [
     { label: "Dashboard", to: "/donor", icon: LayoutDashboard },
     { label: "My Profile", to: "/donor/profile", icon: Users },
-    { label: "Matching Requests", to: "/donor/requests", icon: Search },
     { label: "My Matches", to: "/donor/matches", icon: HeartHandshake },
     { label: "Notifications", to: "/donor/notifications", icon: Bell },
     { label: "Chats", to: "/donor/chats", icon: MessageSquare },
@@ -121,24 +119,24 @@ const institutionNavByStatus = {
 
 const roleMeta = {
   user: {
-    eyebrow: "Your workspace",
-    title: "Everything you need, in one place",
-    description: "Track your requests, manage your donor profile, and message matches from here.",
+    eyebrow: "Workspace",
+    title: "Blood coordination",
+    description: "Manage requests, donor details, and messages.",
   },
   donor: {
-    eyebrow: "Donor workspace",
-    title: "Ready-to-donate coordination",
-    description: "Manage your donor profile, review verified requests, and respond to matches without exposing extra personal information.",
+    eyebrow: "Donor",
+    title: "Donation workspace",
+    description: "Review matches and keep your profile current.",
   },
   receiver: {
-    eyebrow: "Receiver workspace",
-    title: "Track urgent requests with clarity",
-    description: "Create patient requests, upload supporting slips, and follow each update from review to fulfillment.",
+    eyebrow: "Receiver",
+    title: "Request workspace",
+    description: "Create requests and track each status.",
   },
   admin: {
     eyebrow: "Admin",
     title: "Operations overview",
-    description: "Review requests, verify institutions, and monitor activity across the platform.",
+    description: "Review requests, institutions, and reports.",
   },
   super_admin: {
     eyebrow: "Super admin operations",
@@ -171,9 +169,9 @@ const roleMeta = {
     description: "Track blood unit stock, monitor city-wide requests, and update availability.",
   },
   institution_donor: {
-    eyebrow: "Institution workspace",
-    title: "Manage your organization's donor activity",
-    description: "Update your profile, respond to nearby requests, and message receivers directly.",
+    eyebrow: "Institution",
+    title: "Institution workspace",
+    description: "Manage profile details and receiver messages.",
   },
 };
 
@@ -195,28 +193,28 @@ export default function Layout() {
         return {
           eyebrow: "Institution approval",
           title: "Verification in progress",
-          description: "Your institution account is under admin review. Institution features unlock only after approval.",
+          description: "Institution features unlock after admin approval.",
         };
       }
       if (user?.role === "institution_donor" && institutionStatus === "rejected") {
         return {
           eyebrow: "Institution review",
           title: "Corrections required",
-          description: "Update the submitted verification details and resubmit the institution for review.",
+          description: "Update details and resubmit for review.",
         };
       }
       if (user?.role === "institution_donor" && institutionStatus === "suspended") {
         return {
           eyebrow: "Institution access",
           title: "Account suspended",
-          description: "This institution account is suspended and cannot access institution features until restored by admin.",
+          description: "Access is locked until admin restores it.",
         };
       }
       return (
         roleMeta[user?.role] || {
           eyebrow: "BloodLink workspace",
           title: "Secure blood coordination",
-          description: "Operational visibility for verified donor and blood request workflows.",
+          description: "Verified request and donor workflows.",
         }
       );
     },

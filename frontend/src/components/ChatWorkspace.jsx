@@ -1,4 +1,4 @@
-import { Download, ExternalLink, FileText, MessageSquare, SendHorizontal, X, Zap } from "lucide-react";
+import { Download, ExternalLink, FileText, Flag, MessageSquare, SendHorizontal, X, Zap } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 
@@ -6,6 +6,7 @@ import { API_BASE_URL, WS_BASE_URL, apiRequest } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
 import { AlertMessage, EmptyState, LoadingState } from "./PageState";
 import SectionIntro from "./SectionIntro";
+import ReportModal from "./ReportModal";
 
 
 export default function ChatWorkspace({ eyebrow, title, description }) {
@@ -27,6 +28,7 @@ export default function ChatWorkspace({ eyebrow, title, description }) {
   const [docFileName, setDocFileName] = useState("");
   const [docLoading, setDocLoading] = useState(false);
   const [docError, setDocError] = useState("");
+  const [reportOpen, setReportOpen] = useState(false);
   const socketRef = useRef(null);
   const messagesEndRef = useRef(null);
 
@@ -241,7 +243,7 @@ export default function ChatWorkspace({ eyebrow, title, description }) {
       </section>
 
       {chats.length === 0 ? (
-        <EmptyState title="No conversations yet" description="Start a conversation from a matched donor, public donor, blood bank, or institution listing." />
+        <EmptyState title="No conversations yet" description="Start from a donor, blood bank, or institution listing." />
       ) : (
         <div className="chat-layout">
           <section className="content-card chat-list-panel">
@@ -271,20 +273,49 @@ export default function ChatWorkspace({ eyebrow, title, description }) {
 
           <section className="content-card chat-thread-panel">
             {!chatDetail ? (
-              <EmptyState title="Select a conversation" description="Choose a conversation from the list to view the message thread." />
+              <EmptyState title="Select a conversation" description="Choose a thread to view messages." />
             ) : (
               <>
                 <div className="section-heading section-heading-compact">
                   <div className="section-copy">
                     <p className="eyebrow">Conversation</p>
-                    {user?.role === "institution_donor" ? (
-                      <button type="button" className="chat-name-btn" onClick={openRequestDetails}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
+                      {user?.role === "institution_donor" ? (
+                        <button type="button" className="chat-name-btn" onClick={openRequestDetails}>
+                          <h2>{chatDetail.counterpart.full_name}</h2>
+                          <ExternalLink size={13} />
+                        </button>
+                      ) : (
                         <h2>{chatDetail.counterpart.full_name}</h2>
-                        <ExternalLink size={13} />
+                      )}
+                      <button
+                        type="button"
+                        title="Report this conversation"
+                        onClick={() => setReportOpen(true)}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          padding: "4px",
+                          color: "var(--muted)",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          borderRadius: "4px",
+                          transition: "color 0.2s, background-color 0.2s"
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.color = "var(--color-warning, #a86516)";
+                          e.currentTarget.style.backgroundColor = "rgba(142, 38, 50, 0.05)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.color = "var(--muted)";
+                          e.currentTarget.style.backgroundColor = "transparent";
+                        }}
+                      >
+                        <Flag size={14} />
                       </button>
-                    ) : (
-                      <h2>{chatDetail.counterpart.full_name}</h2>
-                    )}
+                    </div>
                     <p className="section-description">{chatDetail.subject || `Messages between ${user?.full_name} and ${chatDetail.counterpart.full_name}`}</p>
                   </div>
                   <span className={`chat-presence chat-presence-${socketStatus}`}>
@@ -459,6 +490,13 @@ export default function ChatWorkspace({ eyebrow, title, description }) {
           </div>
         </div>
       ) : null}
+      <ReportModal
+        open={reportOpen}
+        onClose={() => setReportOpen(false)}
+        reportedType="conversation"
+        reportedId={chatDetail?.id}
+        title="Report conversation"
+      />
     </div>
   );
 }

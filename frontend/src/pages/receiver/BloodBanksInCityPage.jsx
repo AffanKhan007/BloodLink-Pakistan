@@ -57,9 +57,9 @@ export default function BloodBanksInCityPage() {
     <div className="page-stack">
       <section className="content-card">
         <SectionIntro
-          eyebrow="Blood bank discovery"
-          title="Blood banks in the request city"
-          description="See compatible stock summaries and reach out to a blood bank contact when inventory is available."
+          eyebrow="Blood banks"
+          title="Blood banks in this city"
+          description="View compatible stock and contacts."
         />
         {error ? <AlertMessage type="error">{error}</AlertMessage> : null}
         <label>
@@ -75,7 +75,7 @@ export default function BloodBanksInCityPage() {
       </section>
 
       {banks.length === 0 ? (
-        <EmptyState title="No blood banks found" description="No blood bank inventory has been published yet for this request city." />
+        <EmptyState title="No blood banks found" description="No inventory is listed for this city yet." />
       ) : (
         <div className="stacked-cards">
           {banks.map((bank) => (

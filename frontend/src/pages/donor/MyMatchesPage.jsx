@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Download, FileText, User, X } from "lucide-react";
+import { ChevronDown, ChevronUp, Download, FileText, Flag, User, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { API_BASE_URL, apiRequest } from "../../api/client";
@@ -6,6 +6,7 @@ import { useAuth } from "../../auth/AuthContext";
 import { AlertMessage, EmptyState, LoadingState } from "../../components/PageState";
 import SectionIntro from "../../components/SectionIntro";
 import StatusBadge from "../../components/StatusBadge";
+import ReportModal from "../../components/ReportModal";
 
 function RequestDetailPanel({ request, token }) {
   const [showDocModal, setShowDocModal] = useState(false);
@@ -14,6 +15,7 @@ function RequestDetailPanel({ request, token }) {
   const [docFileName, setDocFileName] = useState("");
   const [docLoading, setDocLoading] = useState(false);
   const [docError, setDocError] = useState("");
+  const [reportOpen, setReportOpen] = useState(false);
 
   const field = (label, value) => value ? (
     <div className="detail-field" key={label}>
@@ -60,7 +62,30 @@ function RequestDetailPanel({ request, token }) {
 
   return (
     <div className="request-detail-section">
-      <h4 className="detail-heading">Patient & Location</h4>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <h4 className="detail-heading">Patient & Location</h4>
+        <button
+          type="button"
+          title="Report this request"
+          onClick={() => setReportOpen(true)}
+          style={{
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            padding: "4px",
+            color: "var(--muted)",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "0.25rem",
+            fontSize: "0.85rem"
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.color = "var(--color-warning, #a86516)"}
+          onMouseLeave={(e) => e.currentTarget.style.color = "var(--muted)"}
+        >
+          <Flag size={14} />
+          <span>Report Request</span>
+        </button>
+      </div>
       {field("Patient name", request.patient_name)}
       {field("Blood group needed", request.blood_group_needed)}
       {field("Units required", request.units_required)}
@@ -135,6 +160,15 @@ function RequestDetailPanel({ request, token }) {
           </div>
         </div>
       ) : null}
+      {reportOpen && (
+        <ReportModal
+          open={reportOpen}
+          onClose={() => setReportOpen(false)}
+          reportedType="request"
+          reportedId={request.id}
+          title="Report blood request"
+        />
+      )}
     </div>
   );
 }
@@ -187,16 +221,16 @@ export default function MyMatchesPage() {
   };
 
   if (loading) return <LoadingState label="Loading my matches" />;
-  if (matches.length === 0) return <EmptyState title="No assigned matches" description="Once a request is formally assigned to you (pending match), it will appear here for you to accept or decline." />;
+  if (matches.length === 0) return <EmptyState title="No assigned matches" description="Automatically matched requests will appear here." />;
 
   return (
     <div className="page-stack">
       {error ? <AlertMessage type="error">{error}</AlertMessage> : null}
       <section className="content-card">
         <SectionIntro
-          eyebrow="Active assignments"
-          title="My Matches"
-          description="Requests formally matched to you. Accept to proceed or reject if you are unable to donate."
+          eyebrow="Assignments"
+          title="My matches"
+          description="Accept or reject requests automatically matched to your donor profile."
         />
       </section>
       {matches.map((match) => {
