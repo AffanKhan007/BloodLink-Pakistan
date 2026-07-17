@@ -39,7 +39,7 @@ Blood donation coordination in Pakistan is often handled through scattered socia
 
 BloodLink provides a realistic MVP with a single-account identity model:
 
-- **One account, both roles**: Every user registers with a single `USER` account and can optionally set up a donor profile, create blood requests, or do both — no separate donor/receiver registration.
+- **One account, optional capabilities**: Every user registers with a single `MEMBER` account and can optionally set up a donor profile, create blood requests, or do both — no separate donor/receiver registration.
 - **Donor profiles** are city-based with blood group, availability status, last donation date, and public/private visibility toggle.
 - **Blood requests** include patient details, hospital, ward/room, urgency level, required-by date, supporting document upload.
 - **Matching** runs automatically on city, blood-group compatibility, donor availability, and donation recency — excluding the request creator's own profile.
@@ -122,7 +122,7 @@ bloodlink-pakistan/
 │   │   ├── seed.py            # 18 users, 8 donor profiles, 7 requests, etc.
 │   │   ├── worker.py          # Redis task worker
 │   │   └── scheduler.py       # Scheduled job runner
-│   ├── alembic/               # Migration versions (5 migrations)
+│   ├── alembic/               # Migration versions (8 migrations)
 │   ├── requirements.txt
 │   ├── Dockerfile
 │   └── .env.example
@@ -139,7 +139,7 @@ bloodlink-pakistan/
 
 | Role | Description |
 |---|---|
-| `USER` | Single account identity — can create a donor profile, submit blood requests, or both from one dashboard. This is the default registration role. |
+| `MEMBER` | Single account identity — can create a donor profile, submit blood requests, or both from one dashboard. This is the default registration role. |
 | `ADMIN` | Full system-wide visibility: manages users, donors, requests, matches, reports, audit logs, and institution approvals. |
 | `SUPER_ADMIN` | Extended admin with platform-wide coordination. Same permissions as `ADMIN`. |
 | `OPERATIONS_AGENT` | Focused operational view: manages blood requests and reports. |
@@ -149,7 +149,7 @@ bloodlink-pakistan/
 
 ## Permissions
 
-- Every `USER` can create a donor profile, manage their own blood requests, view their matches, chat with matched parties, and discover public donors, blood banks, and approved institutions.
+- Every `MEMBER` can create a donor profile, manage their own blood requests, view their matches, chat with matched parties, and discover public donors, blood banks, and approved institutions.
 - Chat is available only between users connected through a valid request context (match, public donor, blood bank, or institution in the same city as the request).
 - Hospital staff operate only within their assigned hospital.
 - Blood bank staff operate only within their assigned blood bank.
@@ -159,7 +159,7 @@ bloodlink-pakistan/
 
 ## System workflow
 
-1. A user creates an account (`USER` role) or an institution submits a separate verification registration (`INSTITUTION_DONOR` role).
+1. A user creates an account (`MEMBER` role) or an institution submits a separate verification registration (`INSTITUTION_DONOR` role).
 2. The user can optionally set up a donor profile (blood group, city, availability, public/private toggle).
 3. The user or hospital staff creates a blood request with a supporting hospital slip upload.
 4. Requests start in `pending_review` status and require admin approval to activate matching.
@@ -291,8 +291,8 @@ Run `python -m app.seed` after `alembic upgrade head` to populate sample data.
 | `bloodbank.admin@bloodlink.pk` | `BloodBank12345` | BLOOD_BANK_ADMIN |
 | `institution@bloodlink.pk` | `Institution12345` | INSTITUTION_DONOR |
 | `edhi.institution@bloodlink.pk` | `Institution12345` | INSTITUTION_DONOR |
-| `ali.donor@bloodlink.pk` | `Donor12345` | USER (donor profile) |
-| `sara.receiver@bloodlink.pk` | `Receiver12345` | USER (request creator) |
+| `ali.donor@bloodlink.pk` | `Donor12345` | MEMBER (donor profile) |
+| `sara.receiver@bloodlink.pk` | `Receiver12345` | MEMBER (request creator) |
 
 All 8 donor users use password `Donor12345`. All 5 request creator users use password `Receiver12345`.
 
