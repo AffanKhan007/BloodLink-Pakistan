@@ -33,15 +33,7 @@ export default function AboutPage() {
           <p className="eyebrow">Why this exists</p>
           <h2>A single identity for giving and receiving</h2>
           <p>
-            BloodLink uses a single-account model where one user can be a donor, a request creator, or both. There is no
-            separate donor or receiver role. You set up a donor profile when you want to donate, and you create a blood
-            request when you need support. The platform matches by city, blood-group compatibility, availability, and
-            how recently someone donated.
-          </p>
-          <p>
-            Institution donors (organizations that coordinate regular donations) register through a separate
-            verification flow and only become publicly visible after admin approval. This keeps the platform trustworthy
-            without requiring individual donor-level ID verification.
+            One account serves as donor, request creator, or both. Organizations verify separately and only appear publicly after admin approval.
           </p>
         </section>
 

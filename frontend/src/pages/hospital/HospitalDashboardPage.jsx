@@ -34,7 +34,7 @@ export default function HospitalDashboardPage() {
         <SectionIntro
           eyebrow="Hospital demand"
           title="Recent requests"
-          description="Give clinical teams a cleaner view of current blood demand, active matching, and fulfilled cases."
+          description="Hospital-created requests and their current status."
         />
         {data.requests.length === 0 ? (
           <EmptyState title="No hospital requests yet" description="Create a verified request from the hospital portal." />

@@ -66,21 +66,9 @@ function RequestDetailPanel({ request, token }) {
         <h4 className="detail-heading">Patient & Location</h4>
         <button
           type="button"
+          className="report-hover"
           title="Report this request"
           onClick={() => setReportOpen(true)}
-          style={{
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            padding: "4px",
-            color: "var(--muted)",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "0.25rem",
-            fontSize: "0.85rem"
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.color = "var(--color-warning, #a86516)"}
-          onMouseLeave={(e) => e.currentTarget.style.color = "var(--muted)"}
         >
           <Flag size={14} />
           <span>Report Request</span>

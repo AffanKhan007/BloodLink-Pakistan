@@ -1,6 +1,6 @@
 import { CircleAlert, Inbox, LoaderCircle } from "lucide-react";
 
-export function LoadingState({ label = "Loading", description = "Preparing the latest data for this workspace." }) {
+export function LoadingState({ label = "Loading", description = "Loading your data..." }) {
   return (
     <div className="state-card no-theme-transition">
       <div className="state-illustration state-illustration-loading">
@@ -9,19 +9,19 @@ export function LoadingState({ label = "Loading", description = "Preparing the l
       <h3>{label}</h3>
       <p>{description}</p>
       <div className="state-skeleton no-theme-transition">
-        <span />
-        <span />
-        <span />
+        <div className="skeleton-line skeleton-line-title" />
+        <div className="skeleton-line skeleton-line-body" />
+        <div className="skeleton-line skeleton-line-body short" />
       </div>
     </div>
   );
 }
 
-export function EmptyState({ title, description, action = null }) {
+export function EmptyState({ title, description, action = null, icon: Icon = Inbox }) {
   return (
     <div className="state-card">
       <div className="state-illustration">
-        <Inbox size={22} />
+        <Icon size={22} />
       </div>
       <h3>{title}</h3>
       <p>{description}</p>

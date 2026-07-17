@@ -7,18 +7,9 @@ import { apiRequest } from "../../api/client";
 import { useAuth } from "../../auth/AuthContext";
 import DonutChart from "../../components/DonutChart";
 import { LoadingState } from "../../components/PageState";
+import { staggerContainer, staggerItem } from "../../components/PageTransition";
 import SectionIntro from "../../components/SectionIntro";
 import StatCard from "../../components/StatCard";
-
-const staggerContainer = {
-  initial: {},
-  animate: { transition: { staggerChildren: 0.06 } },
-};
-
-const staggerItem = {
-  initial: { opacity: 0, y: 10 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.19, 1, 0.22, 1] } },
-};
 
 const STAFF_ROLES = new Set([
   "admin", "super_admin", "operations_agent",
@@ -32,10 +23,87 @@ const CHART_COLORS = {
   staff: "var(--color-urgent)",
 };
 
+const BLOOD_GROUP_COLORS = {
+  "A+": "#DC2626",
+  "A-": "#EA580C",
+  "B+": "#2563EB",
+  "B-": "#7C3AED",
+  "AB+": "#0891B2",
+  "AB-": "#059669",
+  "O+": "#D97706",
+  "O-": "#6366F1",
+};
+
+const STATUS_COLORS = {
+  pending_review: "#F59E0B",
+  approved: "#3B82F6",
+  matched: "#8B5CF6",
+  fulfilled: "#10B981",
+  rejected: "#EF4444",
+  cancelled: "#6B7280",
+};
+
+const URGENCY_COLORS = {
+  low: "#6B7280",
+  medium: "#F59E0B",
+  high: "#F97316",
+  critical: "#DC2626",
+};
+
+const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+
+function countBy(arr, keyFn) {
+  const counts = {};
+  arr.forEach((item) => {
+    const key = typeof keyFn === "function" ? keyFn(item) : item[keyFn];
+    if (key) counts[key] = (counts[key] || 0) + 1;
+  });
+  return counts;
+}
+
+function segmentsFromCounts(counts, colorMap) {
+  return Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([label, value]) => ({
+      label,
+      value,
+      color: colorMap[label] || "#9CA3AF",
+    }));
+}
+
+function buildDonutSegments(arr, keyFn, colorMap) {
+  const counts = countBy(arr, keyFn);
+  return segmentsFromCounts(counts, colorMap);
+}
+
+function DonutChartCard({ title, segments, centerLabel, emptyLabel }) {
+  return (
+    <div className="content-card">
+      <p className="chart-card-title">{title}</p>
+      <DonutChart
+        segments={segments}
+        centerLabel={centerLabel}
+        emptyLabel={emptyLabel || "No data yet"}
+      />
+      <div className="chart-legend">
+        {segments.map((seg) => (
+          <div className="chart-legend-item" key={seg.label}>
+            <span className="chart-legend-dot" style={{ background: seg.color }} />
+            <span className="chart-legend-label">{seg.label}</span>
+            <span className="chart-legend-value">{seg.value}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function AdminDashboardPage() {
   const { token } = useAuth();
   const [stats, setStats] = useState(null);
   const [userBreakdown, setUserBreakdown] = useState(null);
+  const [donors, setDonors] = useState(null);
+  const [requests, setRequests] = useState(null);
   const prefersReduced = useReducedMotion();
   const motionProps = useMemo(() => prefersReduced ? {} : {
     variants: staggerContainer,
@@ -57,9 +125,13 @@ export default function AdminDashboardPage() {
         setUserBreakdown(counts);
       }
     });
+    apiRequest("/admin/donors", { token }).then((data) => {
+      if (Array.isArray(data)) setDonors(data);
+    });
+    apiRequest("/admin/requests", { token }).then((data) => {
+      if (Array.isArray(data)) setRequests(data);
+    });
   }, [token]);
-
-  if (!stats) return <LoadingState label="Loading admin dashboard" />;
 
   const donutSegments = userBreakdown
     ? [
@@ -68,6 +140,38 @@ export default function AdminDashboardPage() {
         { label: "Staff", value: userBreakdown.staff, color: CHART_COLORS.staff },
       ]
     : [];
+
+  const donorBloodSegments = useMemo(() => {
+    if (!donors) return [];
+    return buildDonutSegments(donors, "blood_group", BLOOD_GROUP_COLORS);
+  }, [donors]);
+
+  const requestBloodSegments = useMemo(() => {
+    if (!requests) return [];
+    return buildDonutSegments(requests, "blood_group_needed", BLOOD_GROUP_COLORS);
+  }, [requests]);
+
+  const statusSegments = useMemo(() => {
+    if (!requests) return [];
+    return buildDonutSegments(requests, "status", STATUS_COLORS);
+  }, [requests]);
+
+  const urgencySegments = useMemo(() => {
+    if (!requests) return [];
+    return buildDonutSegments(requests, "urgency_level", URGENCY_COLORS);
+  }, [requests]);
+
+  const topCities = useMemo(() => {
+    if (!donors) return [];
+    const counts = countBy(donors, "city");
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8);
+  }, [donors]);
+
+  const maxCityCount = topCities.length > 0 ? topCities[0][1] : 1;
+
+  if (!stats) return <LoadingState label="Loading admin dashboard" />;
 
   return (
     <motion.div className="page-stack" {...motionProps}>
@@ -114,60 +218,123 @@ export default function AdminDashboardPage() {
 
       <motion.section {...itemProps}>
         <p className="tier-label">Platform snapshot</p>
-        <div className="dashboard-split">
-          <div className="stats-grid stats-grid-2col">
-            <StatCard
-              label="Users"
-              value={stats.total_users}
-              helper={
-                userBreakdown
-                  ? `${userBreakdown.members} members \u00b7 ${userBreakdown.institutions} institutions \u00b7 ${userBreakdown.staff} staff`
-                  : "All registered accounts"
-              }
-              icon={Users}
-              tone="default"
-            />
-            <StatCard
-              label="Total donors"
-              value={stats.total_donors}
-              helper="Active donor profiles"
-              icon={HeartHandshake}
-              tone="success"
-            />
-            <StatCard
-              label="Active requests"
-              value={stats.active_requests}
-              helper="Open for coordination"
-              icon={ClipboardCheck}
-              tone="accent"
-            />
-            <StatCard
-              label="Active matches"
-              value={stats.active_matches}
-              helper="Pending or accepted"
-              icon={HeartHandshake}
-              tone="accent"
-            />
-          </div>
-          <div className="content-card dashboard-chart-card">
-            <p className="chart-card-title">User roles</p>
-            <DonutChart
-              segments={donutSegments}
-              centerLabel={stats.total_users}
-              emptyLabel="No users yet"
-            />
-            <div className="chart-legend">
-              {donutSegments.map((seg) => (
-                <div className="chart-legend-item" key={seg.label}>
-                  <span className="chart-legend-dot" style={{ background: seg.color }} />
-                  <span className="chart-legend-label">{seg.label}</span>
-                  <span className="chart-legend-value">{seg.value}</span>
-                </div>
-              ))}
-            </div>
+        <div className="stats-grid">
+          <StatCard
+            label="Users"
+            value={stats.total_users}
+            helper={
+              userBreakdown
+                ? `${userBreakdown.members} members \u00b7 ${userBreakdown.institutions} institutions \u00b7 ${userBreakdown.staff} staff`
+                : "All registered accounts"
+            }
+            icon={Users}
+            tone="default"
+          />
+          <StatCard
+            label="Total donors"
+            value={stats.total_donors}
+            helper="Active donor profiles"
+            icon={HeartHandshake}
+            tone="success"
+          />
+          <StatCard
+            label="Active requests"
+            value={stats.active_requests}
+            helper="Open for coordination"
+            icon={ClipboardCheck}
+            tone="accent"
+          />
+          <StatCard
+            label="Active matches"
+            value={stats.active_matches}
+            helper="Pending or accepted"
+            icon={HeartHandshake}
+            tone="accent"
+          />
+        </div>
+      </motion.section>
+
+      <motion.section {...itemProps}>
+        <div className="content-card">
+          <p className="chart-card-title">User roles</p>
+          <DonutChart
+            segments={donutSegments}
+            centerLabel={stats.total_users}
+            emptyLabel="No users yet"
+          />
+          <div className="chart-legend">
+            {donutSegments.map((seg) => (
+              <div className="chart-legend-item" key={seg.label}>
+                <span className="chart-legend-dot" style={{ background: seg.color }} />
+                <span className="chart-legend-label">{seg.label}</span>
+                <span className="chart-legend-value">{seg.value}</span>
+              </div>
+            ))}
           </div>
         </div>
       </motion.section>
+
+      {donors && (
+        <motion.section {...itemProps}>
+          <p className="tier-label">Blood group distribution</p>
+          <div className="dashboard-chart-row">
+            <DonutChartCard
+              title="Donors by blood group"
+              segments={donorBloodSegments}
+              centerLabel={donors.length}
+              emptyLabel="No donors yet"
+            />
+            {requests && (
+              <DonutChartCard
+                title="Requests by blood group"
+                segments={requestBloodSegments}
+                centerLabel={requests.length}
+                emptyLabel="No requests yet"
+              />
+            )}
+          </div>
+        </motion.section>
+      )}
+
+      {donors && topCities.length > 0 && (
+        <motion.section {...itemProps}>
+          <div className="content-card">
+            <p className="chart-card-title">Top cities</p>
+            {topCities.map(([city, count]) => (
+              <div className="city-bar-row" key={city}>
+                <span className="city-bar-label">{city}</span>
+                <div className="city-bar-track">
+                  <div
+                    className="city-bar-fill"
+                    style={{ width: `${(count / maxCityCount) * 100}%` }}
+                  />
+                </div>
+                <span className="city-bar-value">{count}</span>
+              </div>
+            ))}
+          </div>
+        </motion.section>
+      )}
+
+      {requests && (
+        <motion.section {...itemProps}>
+          <p className="tier-label">Request breakdown</p>
+          <div className="dashboard-chart-row">
+            <DonutChartCard
+              title="Request status"
+              segments={statusSegments}
+              centerLabel={requests.length}
+              emptyLabel="No requests yet"
+            />
+            <DonutChartCard
+              title="Urgency levels"
+              segments={urgencySegments}
+              centerLabel={requests.length}
+              emptyLabel="No requests yet"
+            />
+          </div>
+        </motion.section>
+      )}
     </motion.div>
   );
 }

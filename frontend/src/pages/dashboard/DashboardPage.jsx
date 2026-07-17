@@ -7,19 +7,10 @@ import { apiRequest } from "../../api/client";
 import { useAuth } from "../../auth/AuthContext";
 import DonutChart from "../../components/DonutChart";
 import { AlertMessage, EmptyState, LoadingState } from "../../components/PageState";
+import { staggerContainer, staggerItem } from "../../components/PageTransition";
 import RequestCard from "../../components/RequestCard";
 import SectionIntro from "../../components/SectionIntro";
 import StatCard from "../../components/StatCard";
-
-const staggerContainer = {
-  initial: {},
-  animate: { transition: { staggerChildren: 0.06 } },
-};
-
-const staggerItem = {
-  initial: { opacity: 0, y: 10 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.19, 1, 0.22, 1] } },
-};
 
 const REQUEST_STATUS_COLORS = {
   pending_review: "var(--color-warning)",
@@ -105,7 +96,6 @@ export default function DashboardPage() {
         <SectionIntro
           eyebrow="Dashboard"
           title="Your overview"
-          description="Track your requests, matches, and donor activity."
         />
       </motion.section>
 
@@ -207,7 +197,7 @@ export default function DashboardPage() {
           <SectionIntro
             eyebrow="Donor opportunities"
             title="My matches"
-            description="Requests automatically matched to your donor profile."
+            description="Matched to your donor profile."
             actions={
               <Link className="button button-primary" to="/donor/matches">View my matches</Link>
             }
@@ -233,7 +223,6 @@ export default function DashboardPage() {
         <SectionIntro
           eyebrow="Requests"
           title="Your blood requests"
-          description="Create and track patient requests."
           actions={
             <>
               <Link className="button button-secondary" to="/receiver/create-request">New request</Link>

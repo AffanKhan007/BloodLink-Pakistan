@@ -13,11 +13,11 @@ const steps = [
   },
   {
     title: "Donors get matched automatically",
-    description: "The system finds approved donors in the same city with the right blood group who have not donated recently. They receive a notification and can accept or decline.",
+    description: "Compatible donors in your city are notified automatically and can accept or decline.",
   },
   {
     title: "Everything stays in one place",
-    description: "Track who accepted, message donors directly, and update the request status. Everything stays in one place.",
+    description: "Track acceptances, message donors, and update status in one place.",
   },
 ];
 
@@ -39,9 +39,7 @@ export default function HowItWorksPage() {
         <section className="content-card public-hero-card">
           <p className="eyebrow">How it works</p>
           <h1>From request to donor response in three steps.</h1>
-          <p>
-            BloodLink connects patients, donors, and hospitals through one system instead of scattered social media posts.
-          </p>
+
         </section>
 
         <div className="timeline-grid">

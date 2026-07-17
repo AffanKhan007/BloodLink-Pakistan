@@ -44,37 +44,14 @@ export default function RequestCard({ request, actions, footer, onClick, selecte
           <h3>{request.hospital_name}</h3>
           <p className="request-card-subtitle">{request.patient_name}</p>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }} onClick={(e) => e.stopPropagation()}>
+        <div onClick={(e) => e.stopPropagation()}>
           <StatusBadge value={request.status} />
           {showReport && (
             <button
               type="button"
-              className="report-card-btn"
+              className="report-card-btn report-hover"
               title="Report this request"
-              onClick={(e) => {
-                e.stopPropagation();
-                setReportOpen(true);
-              }}
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                padding: "6px",
-                color: "var(--muted)",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                borderRadius: "4px",
-                transition: "color 0.2s, background-color 0.2s"
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = "var(--color-warning, #a86516)";
-                e.currentTarget.style.backgroundColor = "rgba(142, 38, 50, 0.05)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = "var(--muted)";
-                e.currentTarget.style.backgroundColor = "transparent";
-              }}
+              onClick={(e) => { e.stopPropagation(); setReportOpen(true); }}
             >
               <Flag size={13} />
             </button>

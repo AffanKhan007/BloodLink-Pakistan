@@ -26,7 +26,7 @@ export default function BloodBankDashboardPage() {
         <SectionIntro
           eyebrow="Blood bank dashboard"
           title="Inventory snapshot"
-          description="Use this summary to monitor total stock, available units, and near-expiry inventory for the assigned blood bank."
+          description="Stock levels and near-expiry inventory overview."
           actions={
             <>
               <Link className="button button-secondary" to="/blood-bank/city-requests">

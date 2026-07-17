@@ -58,7 +58,7 @@ export default function LandingPage() {
           <p className="eyebrow">Blood donation coordination</p>
           <h1>One platform instead of scattered posts.</h1>
           <p className="hero-copy">
-            BloodLink connects donors, hospitals, and blood banks through verified requests, automatic matching, and in-app coordination. It replaces the scattered Facebook and WhatsApp threads families currently rely on.
+            Connect donors, hospitals, and blood banks through verified requests and automatic matching.
           </p>
           <div className="hero-actions">
             <Link className="button button-primary button-with-icon" to="/register">
@@ -74,9 +74,7 @@ export default function LandingPage() {
         <div className="hero-panel hero-panel-large">
           <div className="hero-surface hero-surface-minimal">
             <div className="hero-surface-copy">
-              <p className="eyebrow">How it works</p>
-              <h3>Request &rarr; match &rarr; fulfill</h3>
-              <p>Create a request with hospital details, get matched with compatible donors, and track everything in one place.</p>
+              <h3>Request → match → fulfill</h3>
             </div>
             <div className="hero-preview-grid">
               <div className="mini-stat">
@@ -99,9 +97,7 @@ export default function LandingPage() {
           <div className="section-copy">
             <p className="eyebrow">How it works</p>
             <h2>Three steps from request to response</h2>
-            <p className="section-description">
-              BloodLink keeps the process clear and actionable for every request.
-            </p>
+
           </div>
         </div>
         <div className="timeline-grid">
@@ -120,9 +116,7 @@ export default function LandingPage() {
           <div className="section-copy">
             <p className="eyebrow">Why BloodLink</p>
             <h2>Built for clarity and trust</h2>
-            <p className="section-description">
-              The platform focuses on verified information, relevant matches, and clear roles.
-            </p>
+
           </div>
         </div>
         <div className="feature-grid">
@@ -141,7 +135,7 @@ export default function LandingPage() {
       <section className="marketing-section marketing-section-soft section-center">
         <h2>Ready to get started?</h2>
         <p className="section-description">
-          Create an account in under a minute. One account works for donors, request creators, or both.
+          One account works as donor, request creator, or both.
         </p>
         <div className="hero-actions" style={{ justifyContent: "center" }}>
           <Link className="button button-primary button-with-icon" to="/register">

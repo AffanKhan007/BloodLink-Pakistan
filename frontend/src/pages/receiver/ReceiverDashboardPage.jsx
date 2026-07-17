@@ -6,19 +6,10 @@ import { Link } from "react-router-dom";
 import { apiRequest } from "../../api/client";
 import { useAuth } from "../../auth/AuthContext";
 import { EmptyState, LoadingState } from "../../components/PageState";
+import { staggerContainer, staggerItem } from "../../components/PageTransition";
 import RequestCard from "../../components/RequestCard";
 import SectionIntro from "../../components/SectionIntro";
 import StatCard from "../../components/StatCard";
-
-const staggerContainer = {
-  initial: {},
-  animate: { transition: { staggerChildren: 0.06 } },
-};
-
-const staggerItem = {
-  initial: { opacity: 0, y: 10 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.19, 1, 0.22, 1] } },
-};
 
 export default function ReceiverDashboardPage() {
   const { token } = useAuth();
@@ -65,7 +56,6 @@ export default function ReceiverDashboardPage() {
         <SectionIntro
           eyebrow="Requests"
           title="My requests"
-          description="Review your latest request activity."
           actions={
             <>
               <Link className="button button-secondary" to="/receiver/available-donors">
