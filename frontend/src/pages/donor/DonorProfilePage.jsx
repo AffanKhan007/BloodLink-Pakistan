@@ -264,7 +264,7 @@ export default function DonorProfilePage() {
             onChange={(event) => setForm((current) => ({ ...current, is_publicly_available: event.target.value === "yes" }))}
           >
             <option value="no">Keep profile private to matched flows</option>
-            <option value="yes">Show me to compatible receivers in my city</option>
+            <option value="yes">Show me to compatible request creators in my city</option>
           </select>
         </label>
         <div className="form-section form-span">

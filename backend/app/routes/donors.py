@@ -18,7 +18,7 @@ router = APIRouter(prefix="/donors", tags=["donors"])
 def upsert_profile(
     payload: DonorProfileCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.USER)),
+    current_user: User = Depends(require_roles(UserRole.MEMBER)),
 ) -> DonorProfileOut:
     profile = db.scalar(select(DonorProfile).where(DonorProfile.user_id == current_user.id))
     if profile is None:
@@ -36,7 +36,7 @@ def upsert_profile(
 @router.get("/profile/me", response_model=DonorProfileOut)
 def get_my_profile(
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.USER)),
+    current_user: User = Depends(require_roles(UserRole.MEMBER)),
 ) -> DonorProfileOut:
     profile = db.scalar(select(DonorProfile).where(DonorProfile.user_id == current_user.id))
     if not profile:
@@ -48,7 +48,7 @@ def get_my_profile(
 def update_availability(
     payload: DonorAvailabilityUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.USER)),
+    current_user: User = Depends(require_roles(UserRole.MEMBER)),
 ) -> DonorProfileOut:
     profile = db.scalar(select(DonorProfile).where(DonorProfile.user_id == current_user.id))
     if not profile:
@@ -64,7 +64,7 @@ def update_availability(
 @router.get("/matching-requests", response_model=list[BloodRequestListOut])
 def matching_requests(
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.USER)),
+    current_user: User = Depends(require_roles(UserRole.MEMBER)),
 ) -> list[BloodRequestListOut]:
     profile = db.scalar(select(DonorProfile).where(DonorProfile.user_id == current_user.id))
     if not profile:
@@ -95,7 +95,7 @@ def matching_requests(
 @router.get("/history", response_model=list[MatchDetailOut])
 def donor_history(
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.USER)),
+    current_user: User = Depends(require_roles(UserRole.MEMBER)),
 ) -> list[MatchDetailOut]:
     profile = db.scalar(select(DonorProfile).where(DonorProfile.user_id == current_user.id))
     if not profile:

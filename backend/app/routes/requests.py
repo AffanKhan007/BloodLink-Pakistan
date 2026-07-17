@@ -61,7 +61,7 @@ def _get_request_for_user(db: Session, request_id: int, user: User) -> BloodRequ
 def create_request(
     payload: BloodRequestCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.USER)),
+    current_user: User = Depends(require_roles(UserRole.MEMBER)),
 ) -> BloodRequestOut:
     request = BloodRequest(
         created_by_user_id=current_user.id,
@@ -136,7 +136,7 @@ async def upload_document(
     document_type: str = Form(...),
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.USER)),
+    current_user: User = Depends(require_roles(UserRole.MEMBER)),
 ) -> dict:
     request = db.get(BloodRequest, request_id)
     if not request or request.created_by_user_id != current_user.id:
@@ -168,7 +168,7 @@ async def upload_document(
 def request_public_donors(
     request_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.USER)),
+    current_user: User = Depends(require_roles(UserRole.MEMBER)),
 ) -> list[DonorWithUserOut]:
     request = _get_request_for_user(db, request_id, current_user)
     compatible_groups = compatible_donor_groups(request.blood_group_needed)
@@ -200,7 +200,7 @@ def request_public_donors(
 def request_matching_donors(
     request_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.USER)),
+    current_user: User = Depends(require_roles(UserRole.MEMBER)),
 ) -> list[DonorWithUserOut]:
     request = _get_request_for_user(db, request_id, current_user)
     cutoff_date = date.today() - timedelta(days=90)
@@ -233,7 +233,7 @@ def request_matching_donors(
 def request_city_blood_banks(
     request_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.USER)),
+    current_user: User = Depends(require_roles(UserRole.MEMBER)),
 ) -> list[BloodBankDiscoveryOut]:
     request = _get_request_for_user(db, request_id, current_user)
     compatible_groups = compatible_donor_groups(request.blood_group_needed)
@@ -270,7 +270,7 @@ def request_city_blood_banks(
 def request_city_institutions(
     request_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.USER)),
+    current_user: User = Depends(require_roles(UserRole.MEMBER)),
 ) -> list[InstitutionWithUserOut]:
     request = _get_request_for_user(db, request_id, current_user)
     institutions = list(
@@ -289,7 +289,7 @@ def request_city_institutions(
 def mark_fulfilled(
     request_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.USER)),
+    current_user: User = Depends(require_roles(UserRole.MEMBER)),
 ) -> BloodRequestOut:
     request = db.get(BloodRequest, request_id)
     if not request or request.created_by_user_id != current_user.id:
@@ -307,7 +307,7 @@ def mark_fulfilled(
 def cancel_request(
     request_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.USER)),
+    current_user: User = Depends(require_roles(UserRole.MEMBER)),
 ) -> BloodRequestOut:
     request = db.get(BloodRequest, request_id)
     if not request or request.created_by_user_id != current_user.id:
@@ -325,7 +325,7 @@ def cancel_request(
 def decline_request(
     request_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.USER)),
+    current_user: User = Depends(require_roles(UserRole.MEMBER)),
 ) -> dict:
     donor = db.scalar(select(DonorProfile).where(DonorProfile.user_id == current_user.id))
     if not donor:

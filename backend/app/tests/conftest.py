@@ -71,19 +71,19 @@ def seeded_db():
         password_hash=get_password_hash("Admin12345"),
         role=UserRole.ADMIN,
     )
-    donor = User(
-        full_name="Donor User",
+    user_with_donor_profile = User(
+        full_name="Member With Donor Profile",
         email="donor@test.com",
         phone="+923001111112",
         password_hash=get_password_hash("Donor12345"),
-        role=UserRole.USER,
+        role=UserRole.MEMBER,
     )
-    receiver = User(
-        full_name="Receiver User",
+    request_creator = User(
+        full_name="Request Creator",
         email="receiver@test.com",
         phone="+923001111113",
         password_hash=get_password_hash("Receiver12345"),
-        role=UserRole.USER,
+        role=UserRole.MEMBER,
     )
     institution_user = User(
         full_name="Institution User",
@@ -115,7 +115,7 @@ def seeded_db():
         role=UserRole.HOSPITAL_ADMIN,
         hospital_id=hospital.id,
     )
-    db.add_all([admin, donor, receiver, institution_user, blood_bank_staff, hospital_staff])
+    db.add_all([admin, user_with_donor_profile, request_creator, institution_user, blood_bank_staff, hospital_staff])
     db.flush()
     blood_bank = BloodBank(
         name="Test Blood Bank",
@@ -146,7 +146,7 @@ def seeded_db():
         status=InstitutionStatus.APPROVED,
     )
     donor_profile = DonorProfile(
-        user_id=donor.id,
+        user_id=user_with_donor_profile.id,
         blood_group="B+",
         city="Lahore",
         area="Gulberg",
@@ -158,7 +158,7 @@ def seeded_db():
         last_donation_date=date.today() - timedelta(days=120),
     )
     request = BloodRequest(
-        created_by_user_id=receiver.id,
+        created_by_user_id=request_creator.id,
         patient_name="Patient One",
         blood_group_needed="AB+",
         units_required=2,
@@ -167,8 +167,8 @@ def seeded_db():
         area="Jail Road",
         ward_room="Ward 4",
         urgency_level=UrgencyLevel.HIGH,
-        attendant_name="Receiver User",
-        attendant_phone=receiver.phone,
+        attendant_name="Request Creator",
+        attendant_phone=request_creator.phone,
         required_by=datetime.now(timezone.utc) + timedelta(days=1),
         status="approved",
         hospital_id=hospital.id,
@@ -193,8 +193,8 @@ def seeded_db():
         yield {
             "db": db,
             "admin": admin,
-            "donor": donor,
-            "receiver": receiver,
+            "user_with_donor_profile": user_with_donor_profile,
+            "request_creator": request_creator,
             "institution_user": institution_user,
             "hospital_staff": hospital_staff,
             "blood_bank_staff": blood_bank_staff,

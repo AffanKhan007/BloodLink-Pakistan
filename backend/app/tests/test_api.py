@@ -155,7 +155,7 @@ def test_blood_request_creation_auto_matches_compatible_donor(client):
             "password": "Receiver12345",
         },
     )
-    donor_register = client.post(
+    compatible_register = client.post(
         "/auth/register",
         json={
             "full_name": "Compatible Donor",
@@ -164,10 +164,10 @@ def test_blood_request_creation_auto_matches_compatible_donor(client):
             "password": "Donor12345",
         },
     )
-    donor_token = donor_register.json()["access_token"]
+    compatible_donor_token = compatible_register.json()["access_token"]
     client.post(
         "/donors/profile",
-        headers={"Authorization": f"Bearer {donor_token}"},
+        headers={"Authorization": f"Bearer {compatible_donor_token}"},
         json={
             "blood_group": "O-",
             "city": "Lahore",
@@ -180,10 +180,10 @@ def test_blood_request_creation_auto_matches_compatible_donor(client):
             "health_notes": "Ready",
         },
     )
-    token = login(client, "receiver.create@test.com", "Receiver12345")
+    request_creator_token = login(client, "receiver.create@test.com", "Receiver12345")
     response = client.post(
         "/requests",
-        headers={"Authorization": f"Bearer {token}"},
+        headers={"Authorization": f"Bearer {request_creator_token}"},
         json={
             "patient_name": "Patient New",
             "blood_group_needed": "A+",
@@ -205,7 +205,7 @@ def test_blood_request_creation_auto_matches_compatible_donor(client):
 
     matches_response = client.get(
         "/matches/me",
-        headers={"Authorization": f"Bearer {donor_token}"},
+        headers={"Authorization": f"Bearer {compatible_donor_token}"},
     )
     assert matches_response.status_code == 200
     assert any(match["request_id"] == request_id for match in matches_response.json())
@@ -217,6 +217,129 @@ def test_matching_service_returns_eligible_donors(seeded_db):
     assert donors[0].blood_group == "B+"
 
 
+def test_single_member_can_have_donor_profile_and_create_request_with_self_exclusion(client):
+    """A single Member account can simultaneously have a donor profile AND
+    create a blood request. Their own donor profile must NOT be matched to
+    their own request (per-request exclusion), but they remain matchable to
+    others' requests."""
+    # 1. Register one member
+    register_resp = client.post(
+        "/auth/register",
+        json={
+            "full_name": "Unified Member",
+            "email": "unified@test.com",
+            "phone": "+923009999991",
+            "password": "Unified123",
+        },
+    )
+    assert register_resp.status_code == 201
+    member_token = register_resp.json()["access_token"]
+
+    # 2. Create a donor profile for that same member
+    profile_resp = client.post(
+        "/donors/profile",
+        headers={"Authorization": f"Bearer {member_token}"},
+        json={
+            "blood_group": "A+",
+            "city": "Lahore",
+            "area": "Gulberg",
+            "age": 28,
+            "gender": "male",
+            "last_donation_date": str(date.today() - timedelta(days=120)),
+            "availability_status": "available",
+            "is_publicly_available": True,
+            "health_notes": "Fit",
+        },
+    )
+    assert profile_resp.status_code == 200
+    assert profile_resp.json()["blood_group"] == "A+"
+
+    # 3. Create a blood request from that same member
+    request_resp = client.post(
+        "/requests",
+        headers={"Authorization": f"Bearer {member_token}"},
+        json={
+            "patient_name": "Unified Patient",
+            "blood_group_needed": "A+",
+            "units_required": 1,
+            "hospital_name": "General Hospital",
+            "city": "Lahore",
+            "area": "Gulberg",
+            "ward_room": "Ward 1",
+            "urgency_level": "medium",
+            "attendant_name": "Unified Member",
+            "attendant_phone": "+923009999991",
+            "required_by": (datetime.now(timezone.utc) + timedelta(days=3)).isoformat(),
+            "additional_notes": "Single-account test",
+        },
+    )
+    assert request_resp.status_code == 201
+    request_id = request_resp.json()["id"]
+
+    # 4. Verify donor profile still exists (no exclusivity)
+    get_profile_resp = client.get(
+        "/donors/profile/me",
+        headers={"Authorization": f"Bearer {member_token}"},
+    )
+    assert get_profile_resp.status_code == 200
+    assert get_profile_resp.json()["blood_group"] == "A+"
+
+    # 5. Verify the member's own request exists
+    requests_resp = client.get(
+        "/requests",
+        headers={"Authorization": f"Bearer {member_token}"},
+    )
+    assert requests_resp.status_code == 200
+    assert any(r["id"] == request_id for r in requests_resp.json())
+
+    # 6. Verify the member's own donor profile is NOT matched to their own request
+    #    (the matching-donors endpoint excludes request creator)
+    matching_donors_resp = client.get(
+        f"/requests/{request_id}/matching-donors",
+        headers={"Authorization": f"Bearer {member_token}"},
+    )
+    assert matching_donors_resp.status_code == 200
+    assert len(matching_donors_resp.json()) == 0, (
+        "Member's own donor profile should be excluded from matching to their own request"
+    )
+
+    # 7. Register a second member with a compatible profile and confirm
+    #    they ARE matchable to this request
+    client.post(
+        "/auth/register",
+        json={
+            "full_name": "Other Donor",
+            "email": "other@test.com",
+            "phone": "+923009999992",
+            "password": "Other12345",
+        },
+    )
+    other_token = login(client, "other@test.com", "Other12345")
+    client.post(
+        "/donors/profile",
+        headers={"Authorization": f"Bearer {other_token}"},
+        json={
+            "blood_group": "A+",
+            "city": "Lahore",
+            "area": "Model Town",
+            "age": 30,
+            "gender": "female",
+            "last_donation_date": str(date.today() - timedelta(days=120)),
+            "availability_status": "available",
+            "is_publicly_available": True,
+            "health_notes": "Healthy",
+        },
+    )
+    matching_donors_resp2 = client.get(
+        f"/requests/{request_id}/matching-donors",
+        headers={"Authorization": f"Bearer {member_token}"},
+    )
+    assert matching_donors_resp2.status_code == 200
+    assert len(matching_donors_resp2.json()) == 1, (
+        "Other compatible donor should appear in matchable donors"
+    )
+
+
 def test_public_donor_discovery_for_request(client, seeded_db):
     token = login(client, "receiver@test.com", "Receiver12345")
     response = client.get(
@@ -224,7 +347,7 @@ def test_public_donor_discovery_for_request(client, seeded_db):
         headers={"Authorization": f"Bearer {token}"},
     )
     assert response.status_code == 200
-    assert response.json()[0]["user"]["full_name"] == "Donor User"
+    assert response.json()[0]["user"]["full_name"] == "Member With Donor Profile"
 
 
 def test_chat_creation_with_public_donor(client, seeded_db):
@@ -233,14 +356,14 @@ def test_chat_creation_with_public_donor(client, seeded_db):
         "/chats",
         headers={"Authorization": f"Bearer {token}"},
         json={
-            "target_user_id": seeded_db["donor"].id,
+            "target_user_id": seeded_db["user_with_donor_profile"].id,
             "request_id": seeded_db["request"].id,
             "subject": "Need help",
             "initial_message": "Can you help with this case?",
         },
     )
     assert response.status_code == 201
-    assert response.json()["counterpart"]["id"] == seeded_db["donor"].id
+    assert response.json()["counterpart"]["id"] == seeded_db["user_with_donor_profile"].id
     assert response.json()["messages"][0]["message"] == "Can you help with this case?"
 
 
@@ -322,13 +445,13 @@ def test_rejected_institution_can_resubmit_for_review(client, seeded_db):
 
 
 def test_chat_websocket_receives_realtime_message(client, seeded_db):
-    receiver_token = login(client, "receiver@test.com", "Receiver12345")
-    donor_token = login(client, "donor@test.com", "Donor12345")
+    request_creator_token = login(client, "receiver@test.com", "Receiver12345")
+    user_with_profile_token = login(client, "donor@test.com", "Donor12345")
     chat_response = client.post(
         "/chats",
-        headers={"Authorization": f"Bearer {receiver_token}"},
+        headers={"Authorization": f"Bearer {request_creator_token}"},
         json={
-            "target_user_id": seeded_db["donor"].id,
+            "target_user_id": seeded_db["user_with_donor_profile"].id,
             "request_id": seeded_db["request"].id,
             "subject": "Live support",
             "initial_message": "Opening a live thread.",
@@ -337,13 +460,13 @@ def test_chat_websocket_receives_realtime_message(client, seeded_db):
     assert chat_response.status_code == 201
     chat_id = chat_response.json()["id"]
 
-    with client.websocket_connect(f"/chats/ws/{chat_id}?token={donor_token}") as websocket:
+    with client.websocket_connect(f"/chats/ws/{chat_id}?token={user_with_profile_token}") as websocket:
         connected = websocket.receive_json()
         assert connected["type"] == "chat.connected"
 
         send_response = client.post(
             f"/chats/{chat_id}/messages",
-            headers={"Authorization": f"Bearer {receiver_token}"},
+            headers={"Authorization": f"Bearer {request_creator_token}"},
             json={"message": "This should arrive in real time."},
         )
         assert send_response.status_code == 201

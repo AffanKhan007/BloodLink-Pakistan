@@ -78,7 +78,7 @@ def main() -> None:
             email="ali.donor@bloodlink.pk",
             phone="+923001234561",
             password_hash=get_password_hash("Donor12345"),
-            role=UserRole.USER,
+            role=UserRole.MEMBER,
             is_active=True,
         )
         user_2 = User(
@@ -86,7 +86,7 @@ def main() -> None:
             email="fatima.donor@bloodlink.pk",
             phone="+923001234562",
             password_hash=get_password_hash("Donor12345"),
-            role=UserRole.USER,
+            role=UserRole.MEMBER,
             is_active=True,
         )
         institution_user_1 = User(

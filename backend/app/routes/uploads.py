@@ -39,7 +39,7 @@ def get_request_document(
         )
         if not chat:
             raise HTTPException(status_code=403, detail="Access denied")
-    elif current_user.role == UserRole.USER:
+    elif current_user.role == UserRole.MEMBER:
         donor = db.scalar(select(DonorProfile).where(DonorProfile.user_id == current_user.id))
         if donor:
             owned_match = db.scalar(

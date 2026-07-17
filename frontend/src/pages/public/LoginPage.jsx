@@ -8,7 +8,7 @@ import PageTransition from "../../components/PageTransition";
 import { AlertMessage } from "../../components/PageState";
 
 function destinationForRole(role) {
-  if (role === "user") return "/dashboard";
+  if (role === "member") return "/dashboard";
   if (role === "admin") return "/admin";
   if (role === "super_admin" || role === "operations_agent") return "/admin";
   if (role === "hospital_admin" || role === "hospital_staff") return "/hospital";

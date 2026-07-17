@@ -48,7 +48,7 @@ def _coerce_utc(dt: datetime) -> datetime:
 def list_blood_banks(
     db: Session = Depends(get_db),
     current_user: User = Depends(
-        require_roles(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.BLOOD_BANK_ADMIN, UserRole.BLOOD_BANK_STAFF, UserRole.USER)
+        require_roles(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.BLOOD_BANK_ADMIN, UserRole.BLOOD_BANK_STAFF, UserRole.MEMBER)
     ),
 ) -> list[BloodBankOut]:
     banks = list(db.scalars(select(BloodBank).order_by(BloodBank.name.asc())).all())

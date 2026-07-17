@@ -60,7 +60,7 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)) -> AuthRes
         email=payload.email.lower(),
         phone=payload.phone,
         password_hash=get_password_hash(payload.password),
-        role=UserRole.USER,
+        role=UserRole.MEMBER,
         is_active=True,
     )
     db.add(user)

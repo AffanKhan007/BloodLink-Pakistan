@@ -27,7 +27,7 @@ const STAFF_ROLES = new Set([
 ]);
 
 const CHART_COLORS = {
-  receivers: "var(--color-info)",
+  members: "var(--color-info)",
   institutions: "var(--color-success)",
   staff: "var(--color-urgent)",
 };
@@ -48,9 +48,9 @@ export default function AdminDashboardPage() {
     apiRequest("/admin/dashboard", { token }).then(setStats);
     apiRequest("/admin/users", { token }).then((users) => {
       if (Array.isArray(users)) {
-        const counts = { receivers: 0, institutions: 0, staff: 0 };
+        const counts = { members: 0, institutions: 0, staff: 0 };
         users.forEach((u) => {
-          if (u.role === "user") counts.receivers++;
+          if (u.role === "member") counts.members++;
           else if (u.role === "institution_donor") counts.institutions++;
           else if (STAFF_ROLES.has(u.role)) counts.staff++;
         });
@@ -63,7 +63,7 @@ export default function AdminDashboardPage() {
 
   const donutSegments = userBreakdown
     ? [
-        { label: "Receivers", value: userBreakdown.receivers, color: CHART_COLORS.receivers },
+        { label: "Members", value: userBreakdown.members, color: CHART_COLORS.members },
         { label: "Institutions", value: userBreakdown.institutions, color: CHART_COLORS.institutions },
         { label: "Staff", value: userBreakdown.staff, color: CHART_COLORS.staff },
       ]
@@ -121,7 +121,7 @@ export default function AdminDashboardPage() {
               value={stats.total_users}
               helper={
                 userBreakdown
-                  ? `${userBreakdown.receivers} receivers \u00b7 ${userBreakdown.institutions} institutions \u00b7 ${userBreakdown.staff} staff`
+                  ? `${userBreakdown.members} members \u00b7 ${userBreakdown.institutions} institutions \u00b7 ${userBreakdown.staff} staff`
                   : "All registered accounts"
               }
               icon={Users}

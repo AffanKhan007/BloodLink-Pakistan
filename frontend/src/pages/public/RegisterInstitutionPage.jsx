@@ -154,7 +154,7 @@ export default function RegisterInstitutionPage() {
         </button>
       </form>
       <p className="form-footer">
-        Registering as an individual? <Link to="/register">Go to donor / receiver signup</Link>
+        Registering as an individual? <Link to="/register">Go to member signup</Link>
       </p>
       <p className="form-footer">
         Already have an account? <Link to="/login">Login</Link>

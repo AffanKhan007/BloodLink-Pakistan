@@ -9,7 +9,7 @@ from app.core.database import Base
 
 
 class UserRole(StrEnum):
-    USER = "user"
+    MEMBER = "member"
     INSTITUTION_DONOR = "institution_donor"
     ADMIN = "admin"
     SUPER_ADMIN = "super_admin"
@@ -30,7 +30,7 @@ class User(Base):
     phone: Mapped[str] = mapped_column(String(20), unique=True, nullable=False, index=True)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     role: Mapped[UserRole] = mapped_column(
-        Enum(UserRole, name="user_role"), default=UserRole.USER, nullable=False, index=True
+        Enum(UserRole, name="user_role"), default=UserRole.MEMBER, nullable=False, index=True
     )
     hospital_id: Mapped[Optional[int]] = mapped_column(ForeignKey("hospitals.id", ondelete="SET NULL"), nullable=True)
     blood_bank_id: Mapped[Optional[int]] = mapped_column(ForeignKey("blood_banks.id", ondelete="SET NULL"), nullable=True)

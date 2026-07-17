@@ -106,7 +106,7 @@ export default function InstitutionVerificationForm({
             </div>
           </fieldset>
           <label className="form-span">
-            Additional info for donors/receivers <span className="optional-label">Optional</span>
+            Additional info for donors and request creators <span className="optional-label">Optional</span>
             <textarea
               rows="4"
               value={form.notes || ""}

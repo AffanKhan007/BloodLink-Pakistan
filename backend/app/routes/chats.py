@@ -97,11 +97,11 @@ def _schedule_broadcast(chat: Chat, message: ChatMessage) -> None:
         asyncio.run(awaitable)
 
 
-def _validate_receiver_chat_target(db: Session, receiver: User, target_user: User, request_id: int | None) -> str | None:
+def _validate_chat_target(db: Session, request_creator: User, target_user: User, request_id: int | None) -> str | None:
     if request_id is None:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Request context is required")
     request = db.get(BloodRequest, request_id)
-    if not request or request.created_by_user_id != receiver.id:
+    if not request or request.created_by_user_id != request_creator.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Request not found")
     if request.status in {RequestStatus.REJECTED, RequestStatus.CANCELLED}:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="This request is no longer active")
@@ -175,7 +175,7 @@ def create_chat(
     if not target_user or not target_user.is_active:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Target user not found")
 
-    subject = payload.subject or _validate_receiver_chat_target(db, current_user, target_user, payload.request_id)
+    subject = payload.subject or _validate_chat_target(db, current_user, target_user, payload.request_id)
     chat = db.scalar(
         select(Chat)
         .options(joinedload(Chat.participant_one), joinedload(Chat.participant_two), joinedload(Chat.messages))

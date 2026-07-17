@@ -73,7 +73,7 @@ export default function App() {
           <Route
             path="/dashboard"
             element={
-              <ProtectedRoute roles={["user"]}>
+              <ProtectedRoute roles={["member"]}>
                 <DashboardPage />
               </ProtectedRoute>
             }
@@ -81,7 +81,7 @@ export default function App() {
           <Route
             path="/donor"
             element={
-              <ProtectedRoute roles={["user"]}>
+              <ProtectedRoute roles={["member"]}>
                 <DonorDashboardPage />
               </ProtectedRoute>
             }
@@ -89,7 +89,7 @@ export default function App() {
           <Route
             path="/donor/profile"
             element={
-              <ProtectedRoute roles={["user"]}>
+              <ProtectedRoute roles={["member"]}>
                 <DonorProfilePage />
               </ProtectedRoute>
             }
@@ -97,7 +97,7 @@ export default function App() {
           <Route
             path="/donor/requests"
             element={
-              <ProtectedRoute roles={["user"]}>
+              <ProtectedRoute roles={["member"]}>
                 <Navigate to="/donor/matches" replace />
               </ProtectedRoute>
             }
@@ -105,7 +105,7 @@ export default function App() {
           <Route
             path="/donor/matches"
             element={
-              <ProtectedRoute roles={["user"]}>
+              <ProtectedRoute roles={["member"]}>
                 <MyMatchesPage />
               </ProtectedRoute>
             }
@@ -113,7 +113,7 @@ export default function App() {
           <Route
             path="/donor/notifications"
             element={
-              <ProtectedRoute roles={["user"]}>
+              <ProtectedRoute roles={["member"]}>
                 <NotificationsPage />
               </ProtectedRoute>
             }
@@ -121,7 +121,7 @@ export default function App() {
           <Route
             path="/donor/chats"
             element={
-              <ProtectedRoute roles={["user"]}>
+              <ProtectedRoute roles={["member"]}>
                 <DonorChatPage />
               </ProtectedRoute>
             }
@@ -130,7 +130,7 @@ export default function App() {
           <Route
             path="/receiver"
             element={
-              <ProtectedRoute roles={["user"]}>
+              <ProtectedRoute roles={["member"]}>
                 <ReceiverDashboardPage />
               </ProtectedRoute>
             }
@@ -138,7 +138,7 @@ export default function App() {
           <Route
             path="/receiver/create-request"
             element={
-              <ProtectedRoute roles={["user"]}>
+              <ProtectedRoute roles={["member"]}>
                 <CreateRequestPage />
               </ProtectedRoute>
             }
@@ -146,7 +146,7 @@ export default function App() {
           <Route
             path="/receiver/requests"
             element={
-              <ProtectedRoute roles={["user"]}>
+              <ProtectedRoute roles={["member"]}>
                 <MyRequestsPage />
               </ProtectedRoute>
             }
@@ -154,7 +154,7 @@ export default function App() {
           <Route
             path="/receiver/requests/:requestId"
             element={
-              <ProtectedRoute roles={["user"]}>
+              <ProtectedRoute roles={["member"]}>
                 <RequestDetailsPage />
               </ProtectedRoute>
             }
@@ -162,7 +162,7 @@ export default function App() {
           <Route
             path="/receiver/matched-donors"
             element={
-              <ProtectedRoute roles={["user"]}>
+              <ProtectedRoute roles={["member"]}>
                 <MatchedDonorsPage />
               </ProtectedRoute>
             }
@@ -170,7 +170,7 @@ export default function App() {
           <Route
             path="/receiver/available-donors"
             element={
-              <ProtectedRoute roles={["user"]}>
+              <ProtectedRoute roles={["member"]}>
                 <AvailableDonorsPage />
               </ProtectedRoute>
             }
@@ -178,7 +178,7 @@ export default function App() {
           <Route
             path="/receiver/blood-banks"
             element={
-              <ProtectedRoute roles={["user"]}>
+              <ProtectedRoute roles={["member"]}>
                 <BloodBanksInCityPage />
               </ProtectedRoute>
             }
@@ -186,7 +186,7 @@ export default function App() {
           <Route
             path="/receiver/institutions"
             element={
-              <ProtectedRoute roles={["user"]}>
+              <ProtectedRoute roles={["member"]}>
                 <InstitutionsInCityPage />
               </ProtectedRoute>
             }
@@ -194,7 +194,7 @@ export default function App() {
           <Route
             path="/receiver/chats"
             element={
-              <ProtectedRoute roles={["user"]}>
+              <ProtectedRoute roles={["member"]}>
                 <ReceiverChatPage />
               </ProtectedRoute>
             }

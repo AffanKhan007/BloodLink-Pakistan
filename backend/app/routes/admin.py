@@ -75,8 +75,8 @@ def list_users(
     return [AdminUserSummary.model_validate(user) for user in users]
 
 
-@router.get("/receivers", response_model=list[AdminUserSummary])
-def list_receivers(
+@router.get("/request-creators", response_model=list[AdminUserSummary])
+def list_request_creators(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles(*ADMIN_ROLES)),
 ) -> list[AdminUserSummary]:

@@ -28,7 +28,7 @@ import { useAuth } from "../auth/AuthContext";
 import PageTransition from "./PageTransition";
 
 const navByRole = {
-  user: [
+  member: [
     { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
     { label: "My Profile", to: "/donor/profile", icon: Users },
     { label: "Create Request", to: "/receiver/create-request", icon: Droplets },
@@ -39,23 +39,6 @@ const navByRole = {
     { label: "Institutions", to: "/receiver/institutions", icon: University },
     { label: "Notifications", to: "/donor/notifications", icon: Bell },
     { label: "Chats", to: "/donor/chats", icon: MessageSquare },
-  ],
-  donor: [
-    { label: "Dashboard", to: "/donor", icon: LayoutDashboard },
-    { label: "My Profile", to: "/donor/profile", icon: Users },
-    { label: "My Matches", to: "/donor/matches", icon: HeartHandshake },
-    { label: "Notifications", to: "/donor/notifications", icon: Bell },
-    { label: "Chats", to: "/donor/chats", icon: MessageSquare },
-  ],
-  receiver: [
-    { label: "Dashboard", to: "/receiver", icon: LayoutDashboard },
-    { label: "Create Request", to: "/receiver/create-request", icon: Droplets },
-    { label: "My Requests", to: "/receiver/requests", icon: ClipboardList },
-    { label: "Matched Donors", to: "/receiver/matched-donors", icon: HeartHandshake },
-    { label: "Available Donors", to: "/receiver/available-donors", icon: Search },
-    { label: "Blood Banks", to: "/receiver/blood-banks", icon: Warehouse },
-    { label: "Institutions", to: "/receiver/institutions", icon: University },
-    { label: "Chats", to: "/receiver/chats", icon: MessageSquare },
   ],
   admin: [
     { label: "Dashboard", to: "/admin", icon: LayoutDashboard },
@@ -118,20 +101,10 @@ const institutionNavByStatus = {
 };
 
 const roleMeta = {
-  user: {
+  member: {
     eyebrow: "Workspace",
     title: "Blood coordination",
     description: "Manage requests, donor details, and messages.",
-  },
-  donor: {
-    eyebrow: "Donor",
-    title: "Donation workspace",
-    description: "Review matches and keep your profile current.",
-  },
-  receiver: {
-    eyebrow: "Receiver",
-    title: "Request workspace",
-    description: "Create requests and track each status.",
   },
   admin: {
     eyebrow: "Admin",
