@@ -1,5 +1,15 @@
 from app.models.audit_log import AuditLog
 from app.models.blood_bank import BloodBank
+from app.models.blood_bank_drive import (
+    BloodBankAppointmentBooking,
+    BloodBankAppointmentSlot,
+    BloodBankDonationDrive,
+    BloodBankDonationDriveRegistration,
+    BookingStatus,
+    DriveRegistrationStatus,
+    DriveStatus,
+    SlotStatus,
+)
 from app.models.blood_request import BloodRequest, RequestDocument, RequestStatus, UrgencyLevel
 from app.models.chat import Chat, ChatMessage
 from app.models.city import City
@@ -15,12 +25,19 @@ from app.models.user import User, UserRole
 __all__ = [
     "AuditLog",
     "BloodBank",
+    "BloodBankAppointmentBooking",
+    "BloodBankAppointmentSlot",
+    "BloodBankDonationDrive",
+    "BloodBankDonationDriveRegistration",
     "BloodRequest",
     "BloodUnit",
     "BloodUnitStatus",
+    "BookingStatus",
     "Chat",
     "ChatMessage",
     "City",
+    "DriveRegistrationStatus",
+    "DriveStatus",
     "RequestDocument",
     "RequestStatus",
     "UrgencyLevel",
@@ -37,6 +54,7 @@ __all__ = [
     "ReportReason",
     "ReportStatus",
     "ReportedType",
+    "SlotStatus",
     "TestingStatus",
     "User",
     "UserRole",

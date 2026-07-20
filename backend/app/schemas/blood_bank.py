@@ -1,10 +1,10 @@
-from datetime import datetime
+from datetime import date, datetime, time
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 from app.models import BloodUnitStatus, TestingStatus
 from app.schemas.common import BaseSchema
-from app.utils.validators import validate_blood_group
+from app.utils.validators import validate_blood_group, validate_phone_number
 
 
 class BloodBankCreate(BaseModel):
@@ -32,6 +32,15 @@ class BloodBankOut(BaseSchema):
     verification_status: str
     created_at: datetime
     updated_at: datetime
+    contact_person_name: str | None = None
+    contact_person_cnic: str | None = None
+    operating_hours: str | None = None
+    description: str | None = None
+    logo_url: str | None = None
+    public_stock_visible: bool = True
+    accepts_walkins: bool = True
+    verified_at: datetime | None = None
+    last_verified_by_admin_id: int | None = None
 
 
 class BloodUnitCreate(BaseModel):
@@ -121,3 +130,199 @@ class InventoryMovementOut(BaseSchema):
     movement_time: datetime
     performed_by: int | None
     notes: str | None
+
+
+class BloodBankRegistration(BaseModel):
+    name: str = Field(min_length=2, max_length=255)
+    license_number: str = Field(min_length=2, max_length=120)
+    contact_person_name: str = Field(min_length=2, max_length=255)
+    contact_person_cnic: str = Field(min_length=13, max_length=15)
+    contact_number: str = Field(min_length=11, max_length=20)
+    email: EmailStr
+    city: str = Field(min_length=2, max_length=120)
+    area: str | None = Field(default=None, max_length=120)
+    address: str | None = Field(default=None, max_length=500)
+    latitude: float | None = None
+    longitude: float | None = None
+    hospital_id: int | None = None
+    password: str = Field(min_length=8, max_length=128)
+    confirm_password: str = Field(min_length=8, max_length=128)
+    operating_hours: str | None = Field(default=None, max_length=255)
+    description: str | None = Field(default=None, max_length=1000)
+
+    @field_validator("contact_number")
+    @classmethod
+    def validate_contact(cls, value: str) -> str:
+        return validate_phone_number(value)
+
+    @field_validator("confirm_password")
+    @classmethod
+    def validate_passwords_match(cls, value: str, info) -> str:
+        password = info.data.get("password")
+        if password and value != password:
+            raise ValueError("Passwords do not match")
+        return value
+
+
+class BloodBankRegistrationOut(BaseSchema):
+    id: int
+    name: str
+    verification_status: str
+    created_at: datetime
+
+
+class BloodBankProfileUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=2, max_length=255)
+    operating_hours: str | None = Field(default=None, max_length=255)
+    description: str | None = Field(default=None, max_length=1000)
+    logo_url: str | None = Field(default=None, max_length=500)
+    public_stock_visible: bool | None = None
+    accepts_walkins: bool | None = None
+    contact_number: str | None = Field(default=None, max_length=20)
+    email: EmailStr | None = None
+    address: str | None = Field(default=None, max_length=500)
+    city: str | None = Field(default=None, min_length=2, max_length=120)
+    area: str | None = Field(default=None, max_length=120)
+    latitude: float | None = None
+    longitude: float | None = None
+
+
+class BloodBankAdminOut(BloodBankOut):
+    verified_at: datetime | None = None
+    last_verified_by_admin_id: int | None = None
+    contact_person_name: str | None = None
+    contact_person_cnic: str | None = None
+    operating_hours: str | None = None
+    description: str | None = None
+    logo_url: str | None = None
+    public_stock_visible: bool = True
+    accepts_walkins: bool = True
+
+
+class BloodBankAdminStatusUpdate(BaseModel):
+    status: str = Field(pattern=r"^(approved|rejected|suspended)$")
+    rejection_reason: str | None = Field(default=None, max_length=1000)
+
+
+class BloodBankFulfillRequest(BaseModel):
+    hospital_id: int | None = None
+    notes: str | None = Field(default=None, max_length=500)
+
+
+class BulkStockUpdateItem(BaseModel):
+    blood_group: str
+    units_available: int = Field(ge=0)
+
+    @field_validator("blood_group")
+    @classmethod
+    def validate_group(cls, value: str) -> str:
+        return validate_blood_group(value)
+
+
+class BulkStockUpdate(BaseModel):
+    units: list[BulkStockUpdateItem]
+
+
+class DriveCreate(BaseModel):
+    title: str = Field(min_length=2, max_length=255)
+    description: str | None = Field(default=None, max_length=1000)
+    event_date: date
+    start_time: time
+    end_time: time
+    location_address: str | None = Field(default=None, max_length=500)
+    city: str = Field(min_length=2, max_length=120)
+    target_blood_groups: str | None = Field(default=None, max_length=255)
+    expected_capacity: int | None = Field(default=None, gt=0)
+
+    @field_validator("end_time")
+    @classmethod
+    def validate_end_after_start(cls, value: time, info) -> time:
+        start_time = info.data.get("start_time")
+        if start_time and value <= start_time:
+            raise ValueError("End time must be after start time")
+        return value
+
+
+class DriveOut(BaseSchema):
+    id: int
+    blood_bank_id: int
+    title: str
+    description: str | None
+    event_date: date
+    start_time: time
+    end_time: time
+    location_address: str | None
+    city: str
+    target_blood_groups: str | None
+    expected_capacity: int | None
+    status: str
+    created_at: datetime
+    updated_at: datetime
+
+
+class DriveStatusUpdate(BaseModel):
+    status: str = Field(pattern=r"^(upcoming|active|completed|cancelled)$")
+
+
+class DriveRegistrationOut(BaseSchema):
+    id: int
+    drive_id: int
+    donor_id: int
+    status: str
+    registered_at: datetime
+    donor_name: str | None = None
+
+
+class SlotCreate(BaseModel):
+    slot_date: date
+    start_time: time
+    end_time: time
+    max_donors: int = Field(default=5, gt=0)
+
+    @field_validator("end_time")
+    @classmethod
+    def validate_end_after_start(cls, value: time, info) -> time:
+        start_time = info.data.get("start_time")
+        if start_time and value <= start_time:
+            raise ValueError("End time must be after start time")
+        return value
+
+
+class SlotOut(BaseSchema):
+    id: int
+    blood_bank_id: int
+    slot_date: date
+    start_time: time
+    end_time: time
+    max_donors: int
+    booked_count: int
+    status: str
+    created_at: datetime
+
+
+class BookingCreate(BaseModel):
+    slot_id: int
+
+
+class BookingOut(BaseSchema):
+    id: int
+    slot_id: int
+    donor_id: int
+    status: str
+    booked_at: datetime
+
+
+class BookingStatusUpdate(BaseModel):
+    status: str = Field(pattern=r"^(booked|checked_in|completed|cancelled|no_show)$")
+
+
+class BloodBankAnalyticsOut(BaseModel):
+    total_donations: int
+    donations_by_group: dict
+    donations_by_month: list
+    fulfillment_rate: float
+    total_fulfilled: int
+    total_requests: int
+    expiry_rate: float
+    total_expired: int
+    total_units: int

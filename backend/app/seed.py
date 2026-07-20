@@ -7,6 +7,7 @@ from app.core.security import get_password_hash
 from app.models import (
     AuditLog,
     BloodBank,
+    BloodBankDonationDrive,
     BloodRequest,
     BloodUnit,
     Chat,
@@ -14,6 +15,7 @@ from app.models import (
     City,
     DonationMatch,
     DonorProfile,
+    DriveStatus,
     Hospital,
     Institution,
     InstitutionStatus,
@@ -36,6 +38,7 @@ TABLES_IN_DELETE_ORDER = [
     BloodRequest,
     DonorProfile,
     Institution,
+    BloodBankDonationDrive,
     BloodBank,
     Hospital,
     City,
@@ -54,10 +57,41 @@ PAKISTAN_CITIES = [
 ]
 
 
+LAHORE_DONORS = [
+    {"name": "Ahmed Khan", "email": "ahmed.donor@bloodlink.pk", "phone": "+923001234501", "blood_group": "A+", "area": "Gulberg III", "lat": 31.5144, "lng": 74.3482, "age": 27, "gender": "male", "days_ago": 100},
+    {"name": "Sara Malik", "email": "sara.donor@bloodlink.pk", "phone": "+923001234502", "blood_group": "B+", "area": "DHA Phase 5", "lat": 31.4713, "lng": 74.3683, "age": 24, "gender": "female", "days_ago": 110},
+    {"name": "Usman Ali", "email": "usman.donor@bloodlink.pk", "phone": "+923001234503", "blood_group": "O+", "area": "Johar Town", "lat": 31.4637, "lng": 74.2910, "age": 31, "gender": "male", "days_ago": 120},
+    {"name": "Hira Riaz", "email": "hira.donor@bloodlink.pk", "phone": "+923001234504", "blood_group": "AB+", "area": "Model Town", "lat": 31.4845, "lng": 74.3210, "age": 29, "gender": "female", "days_ago": 95},
+    {"name": "Bilal Shah", "email": "bilal.donor@bloodlink.pk", "phone": "+923001234505", "blood_group": "A-", "area": "Cantonment", "lat": 31.5020, "lng": 74.3587, "age": 35, "gender": "male", "days_ago": 130},
+    {"name": "Ayesha Noor", "email": "ayesha.donor@bloodlink.pk", "phone": "+923001234506", "blood_group": "B-", "area": "Lahore Canal Road", "lat": 31.5200, "lng": 74.3100, "age": 22, "gender": "female", "days_ago": 105},
+    {"name": "Faisal Mehmood", "email": "faisal.donor@bloodlink.pk", "phone": "+923001234507", "blood_group": "O-", "area": "Anarkali", "lat": 31.5160, "lng": 74.3250, "age": 40, "gender": "male", "days_ago": 150},
+    {"name": "Zainab Fatima", "email": "zainab.donor@bloodlink.pk", "phone": "+923001234508", "blood_group": "A+", "area": "Mall Road", "lat": 31.5190, "lng": 74.3430, "age": 26, "gender": "female", "days_ago": 88},
+    {"name": "Hassan Javed", "email": "hassan.donor@bloodlink.pk", "phone": "+923001234509", "blood_group": "B+", "area": "Fortress Stadium", "lat": 31.5060, "lng": 74.3590, "age": 33, "gender": "male", "days_ago": 140},
+    {"name": "Nadia Akram", "email": "nadia.donor@bloodlink.pk", "phone": "+923001234510", "blood_group": "O+", "area": "Gulshan-e-Ravi", "lat": 31.5250, "lng": 74.3150, "age": 28, "gender": "female", "days_ago": 115},
+    {"name": "Kamran Sheikh", "email": "kamran.donor@bloodlink.pk", "phone": "+923001234511", "blood_group": "AB-", "area": "Iqbal Town", "lat": 31.4900, "lng": 74.2800, "age": 30, "gender": "male", "days_ago": 160},
+    {"name": "Maryam Bibi", "email": "maryam.donor@bloodlink.pk", "phone": "+923001234512", "blood_group": "A+", "area": "Wapda Town", "lat": 31.4750, "lng": 74.2700, "age": 37, "gender": "female", "days_ago": 100},
+    {"name": "Omar Farooq", "email": "omar.donor@bloodlink.pk", "phone": "+923001234513", "blood_group": "B-", "area": "Township", "lat": 31.4550, "lng": 74.2950, "age": 25, "gender": "male", "days_ago": 125},
+    {"name": "Rabia Saleem", "email": "rabia.donor@bloodlink.pk", "phone": "+923001234514", "blood_group": "O+", "area": "Samanabad", "lat": 31.4980, "lng": 74.3050, "age": 32, "gender": "female", "days_ago": 135},
+    {"name": "Imran Tariq", "email": "imran.donor@bloodlink.pk", "phone": "+923001234515", "blood_group": "A-", "area": "Mughalpura", "lat": 31.5300, "lng": 74.3400, "age": 29, "gender": "male", "days_ago": 92},
+    {"name": "Sana Aslam", "email": "sana.donor@bloodlink.pk", "phone": "+923001234516", "blood_group": "B+", "area": "Green Town", "lat": 31.4680, "lng": 74.2600, "age": 23, "gender": "female", "days_ago": 145},
+    {"name": "Tariq Mehmood", "email": "tariq.donor@bloodlink.pk", "phone": "+923001234517", "blood_group": "O-", "area": "Canal View", "lat": 31.5120, "lng": 74.3000, "age": 38, "gender": "male", "days_ago": 155},
+    {"name": "Amina Malik", "email": "amina.donor@bloodlink.pk", "phone": "+923001234518", "blood_group": "AB+", "area": "Liberty Market Area", "lat": 31.5130, "lng": 74.3400, "age": 27, "gender": "female", "days_ago": 108},
+    {"name": "Shahid Hussain", "email": "shahid.donor@bloodlink.pk", "phone": "+923001234519", "blood_group": "A+", "area": "Bhatta Chowk", "lat": 31.5350, "lng": 74.3600, "age": 42, "gender": "male", "days_ago": 170},
+    {"name": "Farah Naz", "email": "farah.donor@bloodlink.pk", "phone": "+923001234520", "blood_group": "B+", "area": "DHA Phase 1", "lat": 31.4780, "lng": 74.3750, "age": 26, "gender": "female", "days_ago": 99},
+]
+
+
+LAHORE_BLOOD_BANKS = [
+    {"name": "Lahore Central Blood Bank", "area": "Jail Road", "lat": 31.5130, "lng": 74.3450, "address": "Near Services Hospital, Jail Road, Lahore", "phone": "+9242111555777", "email": "contact@lahorecentral.pk", "license": "LIC-LHR-001", "hours": "24/7"},
+    {"name": "Mayo Hospital Blood Bank", "area": "Katchery Road", "lat": 31.5510, "lng": 74.3280, "address": "Mayo Hospital, Katchery Road, Lahore", "phone": "+9242111555888", "email": "blood@mayohospital.pk", "license": "LIC-LHR-002", "hours": "8:00 AM - 10:00 PM"},
+    {"name": "Shaikh Zaid Blood Bank", "area": "Abdul Haque Road", "lat": 31.4680, "lng": 74.3620, "address": "Shaikh Zaid Hospital, Abdul Haque Road, Lahore", "phone": "+9242111555999", "email": "info@shaikhzaid.pk", "license": "LIC-LHR-003", "hours": "9:00 AM - 6:00 PM"},
+    {"name": "Fatima Jinnah Medical Blood Bank", "area": "Queen Mary Road", "lat": 31.5090, "lng": 74.3330, "address": "Fatima Jinnah Medical University, Queen Mary Road, Lahore", "phone": "+9242111555666", "email": "bloodbank@fjmu.edu.pk", "license": "LIC-LHR-004", "hours": "8:00 AM - 4:00 PM"},
+]
+
+
 def main() -> None:
     db = SessionLocal()
     try:
-        # ── Delete everything except admin users ──────────────────
         admin_ids = [
             row[0]
             for row in db.execute(select(User.id).where(User.role == UserRole.ADMIN)).all()
@@ -67,28 +101,25 @@ def main() -> None:
         db.execute(delete(User).where(User.id.notin_(admin_ids)))
         db.flush()
 
-        # ── Cities ──────────────────────────────────────────────
         for index, (name, province) in enumerate(PAKISTAN_CITIES, start=1):
             db.add(City(name=name, province=province, sort_order=index))
         db.flush()
 
-        # ── Users (4) ───────────────────────────────────────────
-        user_1 = User(
-            full_name="Ali Raza",
-            email="ali.donor@bloodlink.pk",
-            phone="+923001234561",
-            password_hash=get_password_hash("Donor12345"),
-            role=UserRole.MEMBER,
-            is_active=True,
-        )
-        user_2 = User(
-            full_name="Fatima Noor",
-            email="fatima.donor@bloodlink.pk",
-            phone="+923001234562",
-            password_hash=get_password_hash("Donor12345"),
-            role=UserRole.MEMBER,
-            is_active=True,
-        )
+        # ── Donor Users ──────────────────────────────────────────────
+        donor_users = []
+        for d in LAHORE_DONORS:
+            u = User(
+                full_name=d["name"],
+                email=d["email"],
+                phone=d["phone"],
+                password_hash=get_password_hash("Donor12345"),
+                role=UserRole.MEMBER,
+                is_active=True,
+            )
+            db.add(u)
+            db.flush()
+            donor_users.append(u)
+
         institution_user_1 = User(
             full_name="Punjab University Donor Desk",
             email="institution@bloodlink.pk",
@@ -105,95 +136,108 @@ def main() -> None:
             role=UserRole.INSTITUTION_DONOR,
             is_active=True,
         )
-        db.add_all([user_1, user_2, institution_user_1, institution_user_2])
+        db.add_all([institution_user_1, institution_user_2])
         db.flush()
 
-        # ── Hospitals (2) ───────────────────────────────────────
-        hospitals_data = [
-            {
-                "name": "Services Hospital Lahore",
-                "city": "Lahore",
-                "area": "Jail Road",
-                "address": "Jail Road, Lahore",
-                "phone": "+9242111222333",
-            },
-            {
-                "name": "Jinnah Postgraduate Medical Centre",
-                "city": "Karachi",
-                "area": "Saddar",
-                "address": "Rafiqui Hameedullah Shaheed Road, Karachi",
-                "phone": "+9221111222333",
-            },
-        ]
-
-        hospitals = []
-        for h_data in hospitals_data:
-            hospital = Hospital(**h_data, verification_status="verified")
-            db.add(hospital)
-            db.flush()
-            hospitals.append(hospital)
-
-        # ── Blood Banks (1) ─────────────────────────────────────
-        blood_bank = BloodBank(
-            name="Lahore Central Blood Bank",
-            hospital_id=hospitals[0].id,
+        # ── Hospitals ────────────────────────────────────────────────
+        h = Hospital(
+            name="Services Hospital Lahore",
             city="Lahore",
             area="Jail Road",
-            contact_number="+9242111555777",
-            email="contact@lahorecentralbloodbank.pk",
-            address="Near Services Hospital Lahore",
-            license_number="LIC-LHR-001",
+            address="Jail Road, Lahore",
+            phone="+9242111222333",
             verification_status="verified",
         )
-        db.add(blood_bank)
+        db.add(h)
         db.flush()
 
-        # ── Donor Profiles (2) ──────────────────────────────────
-        donor_profile_data = [
-            {
-                "user": user_1,
-                "blood_group": "B+",
-                "city": "Lahore",
-                "area": "Model Town",
-                "age": 28,
-                "gender": "male",
-                "public": True,
-                "last_donation_days_ago": 60,
-                "availability": "available",
-            },
-            {
-                "user": user_2,
-                "blood_group": "O+",
-                "city": "Karachi",
-                "area": "Gulshan",
-                "age": 31,
-                "gender": "female",
-                "public": False,
-                "last_donation_days_ago": 30,
-                "availability": "available",
-            },
-        ]
-
-        donor_profiles = []
-        for entry in donor_profile_data:
-            donor = DonorProfile(
-                user_id=entry["user"].id,
-                blood_group=entry["blood_group"],
-                city=entry["city"],
-                area=entry["area"],
-                age=entry["age"],
-                gender=entry["gender"],
-                last_donation_date=date.today() - timedelta(days=entry["last_donation_days_ago"]),
-                availability_status=entry["availability"],
-                is_publicly_available=entry["public"],
-                verification_status="approved",
-                health_notes=f"Seeded test donor — {entry['blood_group']}, {entry['city']}",
+        # ── Blood Banks (Lahore) ─────────────────────────────────────
+        blood_banks = []
+        for bb in LAHORE_BLOOD_BANKS:
+            bank = BloodBank(
+                name=bb["name"],
+                hospital_id=h.id,
+                city="Lahore",
+                area=bb["area"],
+                contact_number=bb["phone"],
+                email=bb["email"],
+                address=bb["address"],
+                latitude=bb["lat"],
+                longitude=bb["lng"],
+                license_number=bb["license"],
+                operating_hours=bb["hours"],
+                verification_status="verified",
+                public_stock_visible=True,
+                accepts_walkins=True,
             )
-            db.add(donor)
+            db.add(bank)
             db.flush()
-            donor_profiles.append(donor)
+            blood_banks.append(bank)
 
-        # ── Institutions (2) ────────────────────────────────────
+        # ── Blood Units across banks ─────────────────────────────────
+        blood_groups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
+        import random
+        random.seed(42)
+        for bank in blood_banks:
+            for bg in blood_groups:
+                count = random.randint(2, 15)
+                for _ in range(count):
+                    db.add(BloodUnit(
+                        blood_bank_id=bank.id,
+                        blood_group=bg,
+                        units_available=1,
+                        units_reserved=0,
+                        expiry_date=date.today() + timedelta(days=random.randint(10, 40)),
+                        status="available",
+                    ))
+            db.flush()
+
+        # ── Donor Profiles ───────────────────────────────────────────
+        for i, (user_obj, d) in enumerate(zip(donor_users, LAHORE_DONORS)):
+            dp = DonorProfile(
+                user_id=user_obj.id,
+                blood_group=d["blood_group"],
+                city="Lahore",
+                area=d["area"],
+                age=d["age"],
+                gender=d["gender"],
+                last_donation_date=date.today() - timedelta(days=d["days_ago"]),
+                availability_status="available",
+                is_publicly_available=True,
+                verification_status="approved",
+                latitude=d["lat"],
+                longitude=d["lng"],
+                location_opt_in=True,
+                health_notes=f"Seeded Lahore donor — {d['blood_group']}, {d['area']}",
+            )
+            db.add(dp)
+        db.flush()
+
+        # ── Donation Drives ──────────────────────────────────────────
+        today = date.today()
+        drives_data = [
+            {"bank_idx": 0, "title": "Lahore Blood Drive - Gulberg", "date": today + timedelta(days=3), "groups": "A+, B+, O+, AB+", "capacity": 50},
+            {"bank_idx": 1, "title": "Mayo Hospital Drive", "date": today + timedelta(days=7), "groups": "O+, O-, A+, A-", "capacity": 30},
+            {"bank_idx": 2, "title": "DHA Community Blood Drive", "date": today + timedelta(days=14), "groups": "*", "capacity": 80},
+        ]
+        for dd in drives_data:
+            drive = BloodBankDonationDrive(
+                blood_bank_id=blood_banks[dd["bank_idx"]].id,
+                title=dd["title"],
+                description=f"Community blood donation drive organized by {blood_banks[dd['bank_idx']].name}",
+                event_date=dd["date"],
+                start_time=datetime.strptime("09:00", "%H:%M").time(),
+                end_time=datetime.strptime("17:00", "%H:%M").time(),
+                location_address=blood_banks[dd["bank_idx"]].address,
+                city="Lahore",
+                target_blood_groups=dd["groups"],
+                expected_capacity=dd["capacity"],
+                status=DriveStatus.UPCOMING,
+            )
+            db.add(drive)
+        db.flush()
+
+        # ── Institutions ─────────────────────────────────────────────
         institution_data = [
             {
                 "user_id": institution_user_1.id,
@@ -232,7 +276,7 @@ def main() -> None:
             db.add(Institution(**inst_data))
 
         db.commit()
-        print("Seed data inserted.")
+        print(f"Seed data inserted: {len(donor_users)} donors, {len(blood_banks)} blood banks, 3 drives.")
     finally:
         db.close()
 

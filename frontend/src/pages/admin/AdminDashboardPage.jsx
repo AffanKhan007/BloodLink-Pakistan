@@ -13,7 +13,6 @@ import StatCard from "../../components/StatCard";
 
 const STAFF_ROLES = new Set([
   "admin", "super_admin", "operations_agent",
-  "hospital_admin", "hospital_staff",
   "blood_bank_admin", "blood_bank_staff", "auditor",
 ]);
 

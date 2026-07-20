@@ -77,6 +77,14 @@ export default function RequestCard({ request, actions, footer, onClick, selecte
             {request.city}, {request.area}
           </strong>
         </div>
+        {request.requester_total_requests > 0 ? (
+          <div>
+            <span className="meta-label">Requester history</span>
+            <strong>
+              {request.requester_fulfilled_count}/{request.requester_total_requests} fulfilled
+            </strong>
+          </div>
+        ) : null}
       </div>
       <div className="request-meta-row">
         <span>

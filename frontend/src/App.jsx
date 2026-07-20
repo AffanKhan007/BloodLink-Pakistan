@@ -12,32 +12,39 @@ import DonorsPage from "./pages/admin/DonorsPage";
 import MatchesPage from "./pages/admin/MatchesPage";
 import ReportsPage from "./pages/admin/ReportsPage";
 import UsersPage from "./pages/admin/UsersPage";
+import AdminBloodBanksPage from "./pages/admin/AdminBloodBanksPage";
+import AdminInstitutionsPage from "./pages/admin/AdminInstitutionsPage";
+import BloodBankAppointmentsPage from "./pages/bloodbank/BloodBankAppointmentsPage";
 import BloodBankCityRequestsPage from "./pages/bloodbank/BloodBankCityRequestsPage";
 import BloodBankDashboardPage from "./pages/bloodbank/BloodBankDashboardPage";
+import BloodBankDrivesPage from "./pages/bloodbank/BloodBankDrivesPage";
+import BloodBankInventoryPage from "./pages/bloodbank/BloodBankInventoryPage";
+import BloodBankAnalyticsPage from "./pages/bloodbank/BloodBankAnalyticsPage";
+import BloodBankProfilePage from "./pages/bloodbank/BloodBankProfilePage";
+import BloodUnitDetailPage from "./pages/bloodbank/BloodUnitDetailPage";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import DonorDashboardPage from "./pages/donor/DonorDashboardPage";
 import DonorChatPage from "./pages/donor/DonorChatPage";
 import DonorProfilePage from "./pages/donor/DonorProfilePage";
 import MyMatchesPage from "./pages/donor/MyMatchesPage";
 import NotificationsPage from "./pages/donor/NotificationsPage";
-import BloodBankInventoryPage from "./pages/bloodbank/BloodBankInventoryPage";
-import BloodUnitDetailPage from "./pages/bloodbank/BloodUnitDetailPage";
-import HospitalDashboardPage from "./pages/hospital/HospitalDashboardPage";
-import HospitalRequestsPage from "./pages/hospital/HospitalRequestsPage";
 import InstitutionDashboardPage from "./pages/institution/InstitutionDashboardPage";
 import InstitutionMessagesPage from "./pages/institution/InstitutionMessagesPage";
 import InstitutionProfilePage from "./pages/institution/InstitutionProfilePage";
 import InstitutionRejectedPage from "./pages/institution/InstitutionRejectedPage";
 import InstitutionSuspendedPage from "./pages/institution/InstitutionSuspendedPage";
 import InstitutionVerificationPendingPage from "./pages/institution/InstitutionVerificationPendingPage";
-import AdminInstitutionsPage from "./pages/admin/AdminInstitutionsPage";
-import LandingPage from "./pages/public/LandingPage";
-import LoginPage from "./pages/public/LoginPage";
-import RegisterPage from "./pages/public/RegisterPage";
-import RegisterInstitutionPage from "./pages/public/RegisterInstitutionPage";
 import AboutPage from "./pages/public/AboutPage";
+import BloodBankBrowsePage from "./pages/public/BloodBankBrowsePage";
+import BloodBankPublicProfilePage from "./pages/public/BloodBankProfilePage";
+import BloodRadarPage from "./pages/public/BloodRadarPage";
 import ForgotPasswordPage from "./pages/public/ForgotPasswordPage";
 import HowItWorksPage from "./pages/public/HowItWorksPage";
+import LandingPage from "./pages/public/LandingPage";
+import LoginPage from "./pages/public/LoginPage";
+import RegisterBloodBankPage from "./pages/public/RegisterBloodBankPage";
+import RegisterPage from "./pages/public/RegisterPage";
+import RegisterInstitutionPage from "./pages/public/RegisterInstitutionPage";
 import AvailableDonorsPage from "./pages/receiver/AvailableDonorsPage";
 import BloodBanksInCityPage from "./pages/receiver/BloodBanksInCityPage";
 import CreateRequestPage from "./pages/receiver/CreateRequestPage";
@@ -61,6 +68,10 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/register/institution" element={<RegisterInstitutionPage />} />
+        <Route path="/register/blood-bank" element={<RegisterBloodBankPage />} />
+        <Route path="/blood-banks" element={<BloodBankBrowsePage />} />
+        <Route path="/blood-banks/:id" element={<BloodBankPublicProfilePage />} />
+        <Route path="/blood-radar" element={<BloodRadarPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
         <Route
@@ -241,6 +252,14 @@ export default function App() {
             }
           />
           <Route
+            path="/admin/blood-banks"
+            element={
+              <ProtectedRoute roles={adminRoles}>
+                <AdminBloodBanksPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/admin/matches"
             element={
               <ProtectedRoute roles={adminRoles}>
@@ -261,31 +280,6 @@ export default function App() {
             element={
               <ProtectedRoute roles={adminRoles}>
                 <AuditLogsPage />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/hospital"
-            element={
-              <ProtectedRoute roles={["hospital_admin", "hospital_staff"]}>
-                <HospitalDashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/hospital/requests"
-            element={
-              <ProtectedRoute roles={["hospital_admin", "hospital_staff"]}>
-                <HospitalRequestsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/hospital/create-request"
-            element={
-              <ProtectedRoute roles={["hospital_admin", "hospital_staff"]}>
-                <HospitalRequestsPage />
               </ProtectedRoute>
             }
           />
@@ -319,6 +313,38 @@ export default function App() {
             element={
               <ProtectedRoute roles={["blood_bank_admin", "blood_bank_staff"]}>
                 <BloodBankCityRequestsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/blood-bank/drives"
+            element={
+              <ProtectedRoute roles={["blood_bank_admin"]}>
+                <BloodBankDrivesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/blood-bank/appointments"
+            element={
+              <ProtectedRoute roles={["blood_bank_admin"]}>
+                <BloodBankAppointmentsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/blood-bank/analytics"
+            element={
+              <ProtectedRoute roles={["blood_bank_admin"]}>
+                <BloodBankAnalyticsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/blood-bank/profile"
+            element={
+              <ProtectedRoute roles={["blood_bank_admin"]}>
+                <BloodBankProfilePage />
               </ProtectedRoute>
             }
           />

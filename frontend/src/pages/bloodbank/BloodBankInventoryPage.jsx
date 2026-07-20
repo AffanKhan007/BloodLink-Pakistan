@@ -1,4 +1,4 @@
-import { CalendarClock, Search, ShieldCheck, TestTubeDiagonal, Warehouse } from "lucide-react";
+import { CalendarClock, Clock3, Search, ShieldCheck, TestTubeDiagonal, Warehouse } from "lucide-react";
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -9,6 +9,20 @@ import { AlertMessage, EmptyState, LoadingState } from "../../components/PageSta
 import SectionIntro from "../../components/SectionIntro";
 import StatCard from "../../components/StatCard";
 import StatusBadge from "../../components/StatusBadge";
+
+function getTimeAgo(dateStr) {
+  if (!dateStr) return "Never";
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
+const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
 const initialForm = {
   donor_profile_id: "",
@@ -31,16 +45,43 @@ export default function BloodBankInventoryPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [groupFilter, setGroupFilter] = useState("all");
+  const [quickStock, setQuickStock] = useState({});
 
   const loadSummary = async () => {
     if (!user?.blood_bank_id) return;
     const data = await apiRequest(`/api/v1/blood-banks/${user.blood_bank_id}/inventory-summary`, { token });
     setSummary(data);
+    const initialQuick = {};
+    BLOOD_GROUPS.forEach((bg) => {
+      const found = (data.by_group || []).find((g) => g.blood_group === bg);
+      initialQuick[bg] = found?.units_available ?? 0;
+    });
+    setQuickStock(initialQuick);
   };
 
   useEffect(() => {
     loadSummary();
   }, [token, user]);
+
+  const handleQuickStock = async () => {
+    setMessage("");
+    setError("");
+    try {
+      const units = BLOOD_GROUPS.map((bg) => ({
+        blood_group: bg,
+        units_available: Number(quickStock[bg]) || 0,
+      }));
+      await apiRequest(`/api/v1/blood-banks/${user.blood_bank_id}/quick-stock`, {
+        method: "POST",
+        token,
+        body: { units },
+      });
+      setMessage("Stock updated successfully.");
+      await loadSummary();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -97,14 +138,56 @@ export default function BloodBankInventoryPage() {
         <StatCard label="Expiring soon" value={summary.expiring_soon_units} helper="Within 7 days" icon={CalendarClock} tone="warning" />
       </section>
 
+      {summary?.bank?.stock_update_frequency ? (
+        <div className="metric-chip">
+          <Clock3 size={14} />
+          <div>
+            <span>Stock last updated</span>
+            <strong>{getTimeAgo(summary.bank.stock_update_frequency)}</strong>
+          </div>
+        </div>
+      ) : null}
+
+      <section className="content-card">
+        <SectionIntro
+          eyebrow="Quick update"
+          title="Quick stock update"
+          description="Set available counts for each blood group at once."
+          compact
+        />
+        {message ? <AlertMessage type="success">{message}</AlertMessage> : null}
+        {error ? <AlertMessage type="error">{error}</AlertMessage> : null}
+        <div
+          className="grid-form"
+          style={{ gridTemplateColumns: "repeat(4, 1fr)", alignItems: "end" }}
+        >
+          {BLOOD_GROUPS.map((bg) => (
+            <label key={bg}>
+              {bg}
+              <input
+                type="number"
+                min="0"
+                value={quickStock[bg] ?? 0}
+                onChange={(e) =>
+                  setQuickStock((prev) => ({ ...prev, [bg]: e.target.value }))
+                }
+              />
+            </label>
+          ))}
+          <div className="form-span">
+            <button className="button button-primary" onClick={handleQuickStock}>
+              Update stock
+            </button>
+          </div>
+        </div>
+      </section>
+
       <section className="content-card">
         <SectionIntro
           eyebrow="Inventory intake"
           title="Create blood unit"
           description="Capture unit metadata in a way that feels clean for staff and traceable for future workflows."
         />
-        {message ? <AlertMessage type="success">{message}</AlertMessage> : null}
-        {error ? <AlertMessage type="error">{error}</AlertMessage> : null}
         <form className="grid-form" onSubmit={handleSubmit}>
           <div className="form-section form-span">
             <div className="form-section-header">
@@ -119,7 +202,7 @@ export default function BloodBankInventoryPage() {
           <label className="field-required">
             Blood group
             <select value={form.blood_group} onChange={(event) => setForm((current) => ({ ...current, blood_group: event.target.value }))}>
-              {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((group) => (
+              {BLOOD_GROUPS.map((group) => (
                 <option key={group} value={group}>
                   {group}
                 </option>
@@ -217,7 +300,7 @@ export default function BloodBankInventoryPage() {
               onChange: setGroupFilter,
               options: [
                 { value: "all", label: "All groups" },
-                ...["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((group) => ({ value: group, label: group })),
+                ...BLOOD_GROUPS.map((group) => ({ value: group, label: group })),
               ],
             },
           ]}

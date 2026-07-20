@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
@@ -142,6 +142,11 @@ def accept_match(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="This match is no longer active")
     match.status = MatchStatus.ACCEPTED
     match.accepted_at = datetime.now(timezone.utc)
+
+    donor = db.get(DonorProfile, match.donor_id)
+    if donor:
+        donor.matches_accepted += 1
+
     create_notification(
         db,
         user_id=match.request.created_by_user_id,
@@ -162,8 +167,15 @@ def reject_match(
     match = _get_owned_match(db, match_id, current_user)
     if match.status not in {MatchStatus.PENDING, MatchStatus.ACCEPTED}:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="This match is no longer active")
+
+    was_accepted = match.status == MatchStatus.ACCEPTED
     match.status = MatchStatus.REJECTED
     match.rejected_at = datetime.now(timezone.utc)
+
+    donor = db.get(DonorProfile, match.donor_id)
+    if donor and was_accepted:
+        donor.matches_no_show += 1
+
     create_notification(
         db,
         user_id=match.request.created_by_user_id,
@@ -186,8 +198,15 @@ def complete_match(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
     if match.request.status in {RequestStatus.REJECTED, RequestStatus.CANCELLED}:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="This match is no longer active")
+
     match.status = MatchStatus.COMPLETED
     match.completed_at = datetime.now(timezone.utc)
+
+    donor = db.get(DonorProfile, match.donor_id)
+    if donor:
+        donor.last_donation_date = date.today()
+        donor.matches_completed += 1
+
     db.commit()
     db.refresh(match)
     return MatchOut.model_validate(match)

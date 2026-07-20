@@ -1,4 +1,4 @@
-import { Bell, ClipboardList, Droplets, HeartHandshake, MapPin, UserPlus } from "lucide-react";
+import { Bell, CalendarClock, ClipboardList, Droplets, HeartHandshake, MapPin, Radar, UserPlus } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
@@ -134,6 +134,15 @@ export default function DashboardPage() {
               tone={activeMatches.length > 0 ? "accent" : "default"}
             />
           ) : null}
+          {hasDonorProfile && state.profile.next_eligible_date ? (
+            <StatCard
+              label="Next eligible to donate"
+              value={new Date(state.profile.next_eligible_date).toLocaleDateString()}
+              helper={new Date(state.profile.next_eligible_date) <= new Date() ? "Eligible now" : "Cooldown active"}
+              icon={CalendarClock}
+              tone={new Date(state.profile.next_eligible_date) <= new Date() ? "success" : "warning"}
+            />
+          ) : null}
           <StatCard
             label="Notifications"
             value={unreadCount}
@@ -218,6 +227,25 @@ export default function DashboardPage() {
           />
         </motion.section>
       )}
+
+      <motion.section className="content-card" {...itemProps}>
+        <SectionIntro
+          eyebrow="Blood Radar"
+          title="Find blood near you"
+          description="Search real-time blood bank stock, available donors, and upcoming drives."
+          actions={
+            <Link className="button button-primary" to="/blood-radar">
+              <Radar size={14} />
+              Open Blood Radar
+            </Link>
+          }
+        />
+        {hasDonorProfile ? (
+          <div className="stats-mini">
+            <StatCard label="Your city" value={state.profile.city} helper="Scanning for blood near you" icon={Radar} tone="accent" />
+          </div>
+        ) : null}
+      </motion.section>
 
       <motion.section className="content-card" {...itemProps}>
         <SectionIntro

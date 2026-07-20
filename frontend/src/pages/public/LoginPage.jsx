@@ -12,7 +12,6 @@ function destinationForRole(role) {
   if (role === "member") return "/dashboard";
   if (role === "admin") return "/admin";
   if (role === "super_admin" || role === "operations_agent") return "/admin";
-  if (role === "hospital_admin" || role === "hospital_staff") return "/hospital";
   if (role === "blood_bank_admin" || role === "blood_bank_staff") return "/blood-bank";
   if (role === "institution_donor") return "/institution";
   return "/dashboard";

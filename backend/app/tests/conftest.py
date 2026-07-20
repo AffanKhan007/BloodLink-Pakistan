@@ -112,8 +112,7 @@ def seeded_db():
         email="hospital@test.com",
         phone="+923001111115",
         password_hash=get_password_hash("Hospital12345"),
-        role=UserRole.HOSPITAL_ADMIN,
-        hospital_id=hospital.id,
+        role=UserRole.INSTITUTION_DONOR,
     )
     db.add_all([admin, user_with_donor_profile, request_creator, institution_user, blood_bank_staff, hospital_staff])
     db.flush()

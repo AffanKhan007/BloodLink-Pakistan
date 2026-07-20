@@ -1,3 +1,4 @@
+from pydantic import BaseModel
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
@@ -109,3 +110,23 @@ def donor_history(
         ).all()
     )
     return [MatchDetailOut.model_validate(match) for match in matches]
+
+
+class BloodGroupVerifiedUpdate(BaseModel):
+    blood_group_verified: bool
+
+
+@router.patch("/{donor_id}/blood-group-verified", response_model=DonorProfileOut)
+def toggle_blood_group_verified(
+    donor_id: int,
+    payload: BloodGroupVerifiedUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(UserRole.BLOOD_BANK_ADMIN, UserRole.BLOOD_BANK_STAFF)),
+) -> DonorProfileOut:
+    profile = db.get(DonorProfile, donor_id)
+    if not profile:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Donor profile not found")
+    profile.blood_group_verified = payload.blood_group_verified
+    db.commit()
+    db.refresh(profile)
+    return DonorProfileOut.model_validate(profile)

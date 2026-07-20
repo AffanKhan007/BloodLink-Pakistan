@@ -2,7 +2,7 @@ from datetime import date, datetime
 from enum import StrEnum
 from typing import Optional
 
-from sqlalchemy import Boolean, Date, DateTime, Enum, ForeignKey, Integer, String, Text, func
+from sqlalchemy import Boolean, Date, DateTime, Enum, ForeignKey, Integer, Numeric, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -35,6 +35,13 @@ class DonorProfile(Base):
         index=True,
     )
     health_notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    latitude: Mapped[Optional[float]] = mapped_column(Numeric(9, 6), nullable=True)
+    longitude: Mapped[Optional[float]] = mapped_column(Numeric(9, 6), nullable=True)
+    location_opt_in: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    blood_group_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    matches_accepted: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    matches_completed: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    matches_no_show: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
