@@ -1,4 +1,4 @@
-import { ArrowLeft, Clock, Eye, MapPin, ShieldCheck, Utensils } from "lucide-react";
+import { ArrowLeft, Clock, Eye, MapPin, Phone, ShieldCheck, Utensils } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 

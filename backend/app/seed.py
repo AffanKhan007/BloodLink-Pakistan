@@ -178,17 +178,26 @@ def main() -> None:
         # ── Blood Units across banks ─────────────────────────────────
         blood_groups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
         import random
+        import uuid as _uuid
+
         random.seed(42)
+        unit_counter = 0
         for bank in blood_banks:
             for bg in blood_groups:
                 count = random.randint(2, 15)
                 for _ in range(count):
+                    unit_counter += 1
+                    unit_code = f"BU-{bank.id}-{unit_counter:04d}"
                     db.add(BloodUnit(
+                        unit_code=unit_code,
+                        qr_code_value=str(_uuid.uuid4()),
                         blood_bank_id=bank.id,
                         blood_group=bg,
                         units_available=1,
-                        units_reserved=0,
-                        expiry_date=date.today() + timedelta(days=random.randint(10, 40)),
+                        component_type="whole_blood",
+                        collected_at=datetime.now(timezone.utc) - timedelta(days=random.randint(1, 10)),
+                        expires_at=datetime.now(timezone.utc) + timedelta(days=random.randint(10, 40)),
+                        testing_status="cleared",
                         status="available",
                     ))
             db.flush()

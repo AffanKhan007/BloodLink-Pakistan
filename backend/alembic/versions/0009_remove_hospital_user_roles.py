@@ -24,20 +24,24 @@ def upgrade() -> None:
     if bind.dialect.name != "postgresql":
         return
 
-    # Reassign any existing hospital_admin / hospital_staff users to institution_donor
-    # so no users are silently dropped during the enum change.
+    # Reassign any existing HOSPITAL_ADMIN / HOSPITAL_STAFF users to MEMBER
+    # (the only valid target that exists in the current enum).
+    # Note: PG enum values are UPPERCASE at this point in the migration chain.
     op.execute(
-        f"UPDATE users SET role = 'institution_donor' "
-        f"WHERE role IN ('hospital_admin', 'hospital_staff')"
+        "UPDATE users SET role = 'MEMBER' "
+        "WHERE role IN ('HOSPITAL_ADMIN', 'HOSPITAL_STAFF')"
     )
 
     # PostgreSQL does not support ALTER TYPE ... DROP VALUE directly.
-    # Recreate the enum type without the removed values.
+    # Recreate the enum type without HOSPITAL_ADMIN/HOSPITAL_STAFF (and
+    # the unused DONOR/RECEIVER from the original schema).
+    # Values are UPPERCASE to match what SQLAlchemy's Enum(UserRole) sends
+    # by default (enum member names).
     op.execute(f"ALTER TYPE {PG_ENUM} RENAME TO {PG_ENUM}_old")
     op.execute(
         f"CREATE TYPE {PG_ENUM} AS ENUM ("
-        f"'member', 'institution_donor', 'admin', 'super_admin', "
-        f"'operations_agent', 'blood_bank_admin', 'blood_bank_staff', 'auditor')"
+        f"'MEMBER', 'INSTITUTION_DONOR', 'ADMIN', 'SUPER_ADMIN', "
+        f"'OPERATIONS_AGENT', 'BLOOD_BANK_ADMIN', 'BLOOD_BANK_STAFF', 'AUDITOR')"
     )
     op.execute(
         f"ALTER TABLE users ALTER COLUMN role TYPE {PG_ENUM} "
@@ -54,9 +58,9 @@ def downgrade() -> None:
     op.execute(f"ALTER TYPE {PG_ENUM} RENAME TO {PG_ENUM}_old")
     op.execute(
         f"CREATE TYPE {PG_ENUM} AS ENUM ("
-        f"'member', 'institution_donor', 'admin', 'super_admin', "
-        f"'operations_agent', 'hospital_admin', 'hospital_staff', "
-        f"'blood_bank_admin', 'blood_bank_staff', 'auditor')"
+        f"'MEMBER', 'INSTITUTION_DONOR', 'ADMIN', 'SUPER_ADMIN', "
+        f"'OPERATIONS_AGENT', 'HOSPITAL_ADMIN', 'HOSPITAL_STAFF', "
+        f"'BLOOD_BANK_ADMIN', 'BLOOD_BANK_STAFF', 'AUDITOR')"
     )
     op.execute(
         f"ALTER TABLE users ALTER COLUMN role TYPE {PG_ENUM} "
