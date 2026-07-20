@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import { apiRequest } from "../../api/client";
+import GovtVerifiedBadge from "../../components/GovtVerifiedBadge";
 import PageTransition from "../../components/PageTransition";
 import { EmptyState, LoadingState } from "../../components/PageState";
 import SectionIntro from "../../components/SectionIntro";
@@ -76,6 +77,7 @@ export default function BloodBankProfilePage() {
             <span style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem" }}>
               {bank.name}
               {bank.verified_at ? <ShieldCheck size={18} style={{ color: "var(--accent)" }} /> : null}
+              <GovtVerifiedBadge govtVerified={bank.govt_verified} />
             </span>
           }
           description={[bank.area, bank.city].filter(Boolean).join(", ") || undefined}

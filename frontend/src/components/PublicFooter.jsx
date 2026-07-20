@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import SocialRow from "./SocialRow";
 
 export default function PublicFooter() {
@@ -8,6 +9,9 @@ export default function PublicFooter() {
           <strong>BloodLink Pakistan</strong>
           <span>Verified donation coordination</span>
         </div>
+        <nav className="public-footer-links">
+          <Link to="/transparency">Transparency & Impact</Link>
+        </nav>
         <SocialRow />
       </div>
       <p className="public-footer-slim-legal">&copy; {new Date().getFullYear()} BloodLink Pakistan. All rights reserved.</p>

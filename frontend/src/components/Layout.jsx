@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import { apiRequest } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
@@ -137,6 +138,7 @@ const roleMeta = {
 
 export default function Layout() {
   const { token, user, logout } = useAuth();
+  const { i18n } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const pageAreaRef = useRef(null);
@@ -270,7 +272,20 @@ export default function Layout() {
           <div className="top-bar-left">
             <span className="top-bar-title">BloodLink</span>
           </div>
-          <div className="top-bar-right" />
+          <div className="top-bar-right">
+            <button
+              className="nav-lang-toggle"
+              onClick={() => {
+                const next = i18n.language === 'ur' ? 'en' : 'ur';
+                i18n.changeLanguage(next);
+                document.documentElement.dir = next === 'ur' ? 'rtl' : 'ltr';
+                document.documentElement.lang = next;
+              }}
+              title={i18n.language === 'ur' ? 'Switch to English' : 'اردو میں تبدیل کریں'}
+            >
+              {i18n.language === 'ur' ? 'EN' : 'اردو'}
+            </button>
+          </div>
         </div>
         <main className="page-area">
           <header className="page-header">

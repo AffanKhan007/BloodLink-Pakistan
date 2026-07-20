@@ -39,6 +39,7 @@ class BloodBankOut(BaseSchema):
     logo_url: str | None = None
     public_stock_visible: bool = True
     accepts_walkins: bool = True
+    govt_verified: bool = False
     verified_at: datetime | None = None
     last_verified_by_admin_id: int | None = None
 
@@ -197,6 +198,7 @@ class BloodBankAdminOut(BloodBankOut):
     logo_url: str | None = None
     public_stock_visible: bool = True
     accepts_walkins: bool = True
+    govt_verified: bool = False
 
 
 class BloodBankAdminStatusUpdate(BaseModel):
@@ -314,6 +316,20 @@ class BookingOut(BaseSchema):
 
 class BookingStatusUpdate(BaseModel):
     status: str = Field(pattern=r"^(booked|checked_in|completed|cancelled|no_show)$")
+
+
+class TransparencyStatsOut(BaseModel):
+    total_donors: int
+    total_requests_fulfilled: int
+    total_blood_banks: int
+    govt_verified_blood_banks: int
+    total_institutions: int
+    approved_institutions: int
+    total_blood_units_available: int
+    total_matches_made: int
+    cities_covered: int
+    requester_fulfillment_rate: float
+    avg_reliability_score: float
 
 
 class BloodBankAnalyticsOut(BaseModel):

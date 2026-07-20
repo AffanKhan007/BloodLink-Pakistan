@@ -169,6 +169,7 @@ def main() -> None:
                 verification_status="verified",
                 public_stock_visible=True,
                 accepts_walkins=True,
+                govt_verified=bb["name"] in ("Lahore Central Blood Bank", "Mayo Hospital Blood Bank"),
             )
             db.add(bank)
             db.flush()

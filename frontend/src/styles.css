@@ -3048,3 +3048,110 @@ textarea.field-error {
   border: 1px solid var(--border-subtle, #e5e7eb);
   color: var(--text-secondary, #6b7280);
 }
+
+/* ===== RTL support for Urdu ===== */
+[dir="rtl"] body,
+[dir="rtl"] .app-shell,
+[dir="rtl"] .content-panel {
+  direction: rtl;
+  text-align: right;
+}
+
+[dir="rtl"] .sidebar {
+  border-right: none;
+  border-left: 1px solid var(--border);
+}
+
+[dir="rtl"] .sidebar-nav-list {
+  padding-left: 0;
+  padding-right: 8px;
+}
+
+[dir="rtl"] .sidebar-nav-link {
+  text-align: right;
+}
+
+[dir="rtl"] .page-header-row {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .filter-toolbar {
+  direction: rtl;
+}
+
+[dir="rtl"] .request-card-meta-grid {
+  direction: rtl;
+}
+
+[dir="rtl"] .blood-group-badge {
+  direction: ltr;
+  display: inline-flex;
+}
+
+.nav-lang-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-input);
+  background: var(--color-paper);
+  color: var(--text);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--dur-micro) var(--ease-glide);
+}
+
+.nav-lang-toggle:hover {
+  background: var(--crimson);
+  color: #fff;
+  border-color: var(--crimson);
+}
+
+/* ===== Low-Data Mode (mocked) ===== */
+.low-data-mode .hero-section,
+.low-data-mode .landing-hero-image,
+.low-data-mode .public-footer-social {
+  display: none !important;
+}
+
+.low-data-mode * {
+  animation-duration: 0s !important;
+  transition-duration: 0s !important;
+}
+
+.whatsapp-share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #25D366;
+  color: #fff;
+  border-radius: var(--radius-input);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all var(--dur-micro) var(--ease-glide);
+}
+
+.whatsapp-share-btn:hover {
+  background: #1ebe5b;
+  box-shadow: 0 2px 8px rgba(37, 211, 102, 0.3);
+}
+
+.govt-verified-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: #0d6efd;
+  color: #fff;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}

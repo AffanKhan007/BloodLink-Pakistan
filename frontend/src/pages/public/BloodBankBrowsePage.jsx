@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 
 import { apiRequest } from "../../api/client";
 import FilterToolbar from "../../components/FilterToolbar";
+import GovtVerifiedBadge from "../../components/GovtVerifiedBadge";
 import PageTransition from "../../components/PageTransition";
 import { EmptyState, LoadingState } from "../../components/PageState";
 import SectionIntro from "../../components/SectionIntro";
@@ -87,13 +88,14 @@ export default function BloodBankBrowsePage() {
           <div className="request-grid">
             {filtered.map((bank) => (
               <div className="info-card" key={bank.id}>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.25rem" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.25rem", flexWrap: "wrap" }}>
                   <h3 style={{ margin: 0 }}>{bank.name}</h3>
                   {bank.verified_at ? (
                     <span className="pill pill-soft" title="Verified">
                       <ShieldCheck size={13} />
                     </span>
                   ) : null}
+                  <GovtVerifiedBadge govtVerified={bank.govt_verified} />
                 </div>
                 <div className="list-row">
                   <span className="meta-label">

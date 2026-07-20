@@ -19,6 +19,7 @@ import "leaflet/dist/leaflet.css";
 import { apiRequest } from "../../api/client";
 import { useAuth } from "../../auth/AuthContext";
 import CityCombobox from "../../components/CityCombobox";
+import GovtVerifiedBadge from "../../components/GovtVerifiedBadge";
 import PageTransition from "../../components/PageTransition";
 import SectionIntro from "../../components/SectionIntro";
 import { EmptyState, LoadingState } from "../../components/PageState";
@@ -333,11 +334,12 @@ export default function BloodRadarPage() {
                 <div className="stacked-cards">
                   {banks.map((b) => (
                     <div className="info-card" key={b.id}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.25rem" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.25rem", flexWrap: "wrap" }}>
                         <h3 style={{ margin: 0 }}>{b.name}</h3>
                         {b.verified ? (
                           <span className="pill pill-soft" title="Verified"><ShieldCheck size={13} /></span>
                         ) : null}
+                        <GovtVerifiedBadge govtVerified={b.govt_verified} />
                       </div>
                       <div className="list-row">
                         <span className="meta-label">

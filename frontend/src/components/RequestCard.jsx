@@ -3,6 +3,7 @@ import { useState } from "react";
 
 import StatusBadge from "./StatusBadge";
 import ReportModal from "./ReportModal";
+import WhatsAppShareButton from "./WhatsAppShareButton";
 import { useAuth } from "../auth/AuthContext";
 
 export default function RequestCard({ request, actions, footer, onClick, selected }) {
@@ -103,6 +104,11 @@ export default function RequestCard({ request, actions, footer, onClick, selecte
         ) : null}
       </div>
       {footer ? <p className="card-footer-copy">{footer}</p> : null}
+      {(request.status === "approved" || request.status === "matched") && (
+        <div style={{ marginTop: "0.25rem" }}>
+          <WhatsAppShareButton bloodGroup={request.blood_group_needed} city={request.city} />
+        </div>
+      )}
       {actions ? (
         <div className="card-actions">
           {actions}

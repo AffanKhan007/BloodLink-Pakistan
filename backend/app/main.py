@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1 import api_router
 from app.core.config import get_settings
-from app.routes import admin, auth, blood_banks, blood_radar, chats, cities, donors, hospitals, institutions, matches, notifications, reports, requests, uploads
+from app.routes import admin, auth, blood_banks, blood_radar, chats, cities, donors, hospitals, institutions, matches, notification_stubs, notifications, reports, requests, uploads
 
 
 settings = get_settings()
@@ -47,4 +47,5 @@ app.include_router(blood_radar.router)
 app.include_router(institutions.router)
 app.include_router(chats.router)
 app.include_router(cities.router)
+app.include_router(notification_stubs.router)
 app.include_router(api_router)

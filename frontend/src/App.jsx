@@ -45,6 +45,8 @@ import LoginPage from "./pages/public/LoginPage";
 import RegisterBloodBankPage from "./pages/public/RegisterBloodBankPage";
 import RegisterPage from "./pages/public/RegisterPage";
 import RegisterInstitutionPage from "./pages/public/RegisterInstitutionPage";
+import TransparencyPage from "./pages/public/TransparencyPage";
+import NotificationSettingsPage from "./pages/dashboard/NotificationSettingsPage";
 import AvailableDonorsPage from "./pages/receiver/AvailableDonorsPage";
 import BloodBanksInCityPage from "./pages/receiver/BloodBanksInCityPage";
 import CreateRequestPage from "./pages/receiver/CreateRequestPage";
@@ -73,6 +75,7 @@ export default function App() {
         <Route path="/blood-banks/:id" element={<BloodBankPublicProfilePage />} />
         <Route path="/blood-radar" element={<BloodRadarPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/transparency" element={<TransparencyPage />} />
 
         <Route
           element={
@@ -126,6 +129,14 @@ export default function App() {
             element={
               <ProtectedRoute roles={["member"]}>
                 <NotificationsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/notifications/settings"
+            element={
+              <ProtectedRoute roles={["member"]}>
+                <NotificationSettingsPage />
               </ProtectedRoute>
             }
           />

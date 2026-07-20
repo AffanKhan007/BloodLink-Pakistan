@@ -28,6 +28,7 @@ class BloodBank(Base):
     logo_url: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     public_stock_visible: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     accepts_walkins: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    govt_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     verification_status: Mapped[str] = mapped_column(String(40), default="pending", nullable=False, index=True)
     verified_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     last_verified_by_admin_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)

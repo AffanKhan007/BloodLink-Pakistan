@@ -5,7 +5,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.deps import require_roles
+from app.core.deps import get_current_user, require_roles
 from app.core.security import get_password_hash
 from app.models import (
     BloodBank,
@@ -54,6 +54,7 @@ from app.schemas.blood_bank import (
     InventorySummaryOut,
     SlotCreate,
     SlotOut,
+    TransparencyStatsOut,
 )
 from app.schemas.blood_request import BloodRequestListOut
 from app.services.audit import create_audit_log
@@ -85,6 +86,7 @@ class BloodBankAdminListItem(BaseModel):
     logo_url: str | None = None
     public_stock_visible: bool = True
     accepts_walkins: bool = True
+    govt_verified: bool = False
     verified_at: datetime | None = None
     last_verified_by_admin_id: int | None = None
     needs_reverification: bool = False
@@ -587,6 +589,7 @@ def list_all_blood_banks_admin(
                 logo_url=bank.logo_url,
                 public_stock_visible=bank.public_stock_visible,
                 accepts_walkins=bank.accepts_walkins,
+                govt_verified=bank.govt_verified,
                 verified_at=bank.verified_at,
                 last_verified_by_admin_id=bank.last_verified_by_admin_id,
                 needs_reverification=needs_reverification,
@@ -1093,3 +1096,77 @@ def get_blood_bank_analytics(
         total_expired=total_expired,
         total_units=total_units,
     )
+
+
+# ---------------------------------------------------------------------------
+# 30. GET /transparency-stats – public transparency and impact statistics
+# ---------------------------------------------------------------------------
+@router.get("/transparency-stats", response_model=TransparencyStatsOut)
+def get_transparency_stats(db: Session = Depends(get_db)):
+    """Public transparency and impact statistics — real data from the database."""
+    from app.models.user import User, UserRole
+    from app.models.donor_profile import DonorProfile
+    from app.models.blood_request import BloodRequest
+    from app.models.blood_bank import BloodBank
+    from app.models.inventory import BloodUnit
+    from app.models.institution import Institution
+    from app.models.donation_match import DonationMatch
+    from app.models.city import City
+    from sqlalchemy import func
+
+    total_donors = db.query(func.count(DonorProfile.id)).scalar() or 0
+    total_requests_fulfilled = db.query(func.count(BloodRequest.id)).filter(BloodRequest.status == "fulfilled").scalar() or 0
+    total_blood_banks = db.query(func.count(BloodBank.id)).filter(BloodBank.verification_status == "approved").scalar() or 0
+    govt_verified_banks = db.query(func.count(BloodBank.id)).filter(
+        BloodBank.verification_status == "approved", BloodBank.govt_verified == True
+    ).scalar() or 0
+    total_institutions = db.query(func.count(Institution.id)).filter(Institution.status == "approved").scalar() or 0
+    approved_institutions = total_institutions
+    total_blood_units = db.query(func.count(BloodUnit.id)).filter(BloodUnit.status == "available").scalar() or 0
+    total_matches = db.query(func.count(DonationMatch.id)).scalar() or 0
+    cities_covered = db.query(func.count(City.id)).scalar() or 0
+
+    total_requests = db.query(func.count(BloodRequest.id)).scalar() or 0
+    fulfillment_rate = round(total_requests_fulfilled / total_requests * 100, 1) if total_requests > 0 else 0.0
+
+    completed_donors = db.query(func.count(DonorProfile.id)).filter(DonorProfile.matches_completed > 0).scalar() or 0
+    total_completed = db.query(func.sum(DonorProfile.matches_completed)).scalar() or 0
+    total_accepted = db.query(func.sum(DonorProfile.matches_accepted)).scalar() or 0
+    avg_reliability = round(total_completed / total_accepted * 100, 1) if total_accepted > 0 else 0.0
+
+    return TransparencyStatsOut(
+        total_donors=total_donors,
+        total_requests_fulfilled=total_requests_fulfilled,
+        total_blood_banks=total_blood_banks,
+        govt_verified_blood_banks=govt_verified_banks,
+        total_institutions=total_institutions,
+        approved_institutions=approved_institutions,
+        total_blood_units_available=total_blood_units,
+        total_matches_made=total_matches,
+        cities_covered=cities_covered,
+        requester_fulfillment_rate=fulfillment_rate,
+        avg_reliability_score=avg_reliability,
+    )
+
+
+# ---------------------------------------------------------------------------
+# 31. PATCH /blood-banks/{blood_bank_id}/admin/govt-verified – admin toggle
+# ---------------------------------------------------------------------------
+@router.patch("/blood-banks/{blood_bank_id}/admin/govt-verified")
+def toggle_govt_verified(
+    blood_bank_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Admin-only toggle for Government Health Authority Verified badge."""
+    if current_user.role.value not in ("admin", "super_admin"):
+        raise HTTPException(status_code=403, detail="Admin access required")
+    bank = db.query(BloodBank).filter(BloodBank.id == blood_bank_id).first()
+    if not bank:
+        raise HTTPException(status_code=404, detail="Blood bank not found")
+    bank.govt_verified = not bank.govt_verified
+    db.commit()
+    db.refresh(bank)
+    create_audit_log(db, current_user.id, "toggle_govt_verified", "blood_bank", blood_bank_id,
+                     f"govt_verified={bank.govt_verified}")
+    return {"govt_verified": bank.govt_verified}
