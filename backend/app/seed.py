@@ -92,17 +92,41 @@ LAHORE_BLOOD_BANKS = [
 def main() -> None:
     db = SessionLocal()
     try:
-        admin_ids = [
+        protected_ids = [
             row[0]
-            for row in db.execute(select(User.id).where(User.role == UserRole.ADMIN)).all()
+            for row in db.execute(
+                select(User.id).where(
+                    User.role.in_([UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.BLOOD_BANK_ADMIN])
+                )
+            ).all()
         ]
         for table in TABLES_IN_DELETE_ORDER:
             db.execute(delete(table))
-        db.execute(delete(User).where(User.id.notin_(admin_ids)))
+        db.execute(delete(User).where(User.id.notin_(protected_ids)))
         db.flush()
 
         for index, (name, province) in enumerate(PAKISTAN_CITIES, start=1):
             db.add(City(name=name, province=province, sort_order=index))
+        db.flush()
+
+        # ── Admin / Super Admin / Blood Bank Admin ────────────────────
+        admin_user = User(
+            full_name="Platform Admin",
+            email="admin@bloodlink.pk",
+            phone="+923001000001",
+            password_hash=get_password_hash("Admin12345"),
+            role=UserRole.ADMIN,
+            is_active=True,
+        )
+        super_admin_user = User(
+            full_name="Super Admin",
+            email="superadmin@bloodlink.pk",
+            phone="+923001000002",
+            password_hash=get_password_hash("SuperAdmin12345"),
+            role=UserRole.SUPER_ADMIN,
+            is_active=True,
+        )
+        db.add_all([admin_user, super_admin_user])
         db.flush()
 
         # ── Donor Users ──────────────────────────────────────────────
@@ -286,7 +310,7 @@ def main() -> None:
             db.add(Institution(**inst_data))
 
         db.commit()
-        print(f"Seed data inserted: {len(donor_users)} donors, {len(blood_banks)} blood banks, 3 drives.")
+        print(f"Seed data inserted: 2 admins, {len(donor_users)} donors, 2 institutions, {len(blood_banks)} blood banks, 3 drives.")
     finally:
         db.close()
 
