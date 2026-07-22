@@ -57,6 +57,7 @@ from app.schemas.blood_bank import (
     TransparencyStatsOut,
 )
 from app.schemas.blood_request import BloodRequestListOut
+from app.schemas.common import ConfirmDonorArrivalOut, GovtVerifiedOut
 from app.services.audit import create_audit_log
 from app.services.matching import compatible_donor_groups, count_confirmed_matches
 from app.services.notifications import create_notification
@@ -751,13 +752,13 @@ def fulfill_blood_request(
 # ---------------------------------------------------------------------------
 # 20. POST /blood-requests/{request_id}/confirm-donor-arrival
 # ---------------------------------------------------------------------------
-@router.post("/blood-requests/{request_id}/confirm-donor-arrival", response_model=dict)
+@router.post("/blood-requests/{request_id}/confirm-donor-arrival", response_model=ConfirmDonorArrivalOut)
 def confirm_donor_arrival(
     request_id: int,
     match_id: int = Body(..., embed=True),
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles(UserRole.BLOOD_BANK_ADMIN, UserRole.BLOOD_BANK_STAFF)),
-) -> dict:
+) -> ConfirmDonorArrivalOut:
     if not current_user.blood_bank_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No blood bank associated")
 
@@ -788,7 +789,7 @@ def confirm_donor_arrival(
         )
 
     db.commit()
-    return {"detail": "Donor arrival confirmed", "match_id": match.id}
+    return ConfirmDonorArrivalOut(message="Donor arrival confirmed", match_id=match.id)
 
 
 # ---------------------------------------------------------------------------
@@ -1152,15 +1153,13 @@ def get_transparency_stats(db: Session = Depends(get_db)):
 # ---------------------------------------------------------------------------
 # 31. PATCH /blood-banks/{blood_bank_id}/admin/govt-verified – admin toggle
 # ---------------------------------------------------------------------------
-@router.patch("/blood-banks/{blood_bank_id}/admin/govt-verified")
+@router.patch("/blood-banks/{blood_bank_id}/admin/govt-verified", response_model=GovtVerifiedOut)
 def toggle_govt_verified(
     blood_bank_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
+    current_user: User = Depends(require_roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)),
+) -> GovtVerifiedOut:
     """Admin-only toggle for Government Health Authority Verified badge."""
-    if current_user.role.value not in ("admin", "super_admin"):
-        raise HTTPException(status_code=403, detail="Admin access required")
     bank = db.query(BloodBank).filter(BloodBank.id == blood_bank_id).first()
     if not bank:
         raise HTTPException(status_code=404, detail="Blood bank not found")
@@ -1169,4 +1168,4 @@ def toggle_govt_verified(
     db.refresh(bank)
     create_audit_log(db, current_user.id, "toggle_govt_verified", "blood_bank", blood_bank_id,
                      f"govt_verified={bank.govt_verified}")
-    return {"govt_verified": bank.govt_verified}
+    return GovtVerifiedOut(govt_verified=bank.govt_verified)

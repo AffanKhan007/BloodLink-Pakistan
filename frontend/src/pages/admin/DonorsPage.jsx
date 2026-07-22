@@ -21,7 +21,7 @@ export default function DonorsPage() {
 
   const loadDonors = async () => {
     const data = await apiRequest("/admin/donors", { token });
-    setDonors(data);
+    setDonors(data.items || data);
   };
 
   useEffect(() => {

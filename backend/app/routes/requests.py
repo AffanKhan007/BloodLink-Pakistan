@@ -1,9 +1,11 @@
+import logging
 import os
 import uuid
 from datetime import date, timedelta
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from sqlalchemy import exists, or_, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 
 from app.core.config import get_settings
@@ -35,6 +37,7 @@ from app.utils.validators import ALLOWED_UPLOAD_EXTENSIONS
 
 router = APIRouter(prefix="/requests", tags=["blood_requests"])
 settings = get_settings()
+logger = logging.getLogger(__name__)
 
 MAX_ACTIVE_REQUESTS = 3
 
@@ -83,9 +86,14 @@ def create_request(
         **payload.model_dump(),
     )
     db.add(request)
-    db.flush()
-    create_automatic_matches(db, request)
-    db.commit()
+    try:
+        db.flush()
+        create_automatic_matches(db, request)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        logger.exception("Integrity error creating blood request")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Request could not be created due to a data conflict")
     db.refresh(request)
     return BloodRequestOut.model_validate(request)
 

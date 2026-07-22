@@ -113,7 +113,8 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     apiRequest("/admin/dashboard", { token }).then(setStats);
-    apiRequest("/admin/users", { token }).then((users) => {
+    apiRequest("/admin/users", { token }).then((data) => {
+      const users = data.items || data;
       if (Array.isArray(users)) {
         const counts = { members: 0, institutions: 0, staff: 0 };
         users.forEach((u) => {
@@ -125,10 +126,12 @@ export default function AdminDashboardPage() {
       }
     });
     apiRequest("/admin/donors", { token }).then((data) => {
-      if (Array.isArray(data)) setDonors(data);
+      const donors = data.items || data;
+      if (Array.isArray(donors)) setDonors(donors);
     });
     apiRequest("/admin/requests", { token }).then((data) => {
-      if (Array.isArray(data)) setRequests(data);
+      const requests = data.items || data;
+      if (Array.isArray(requests)) setRequests(requests);
     });
   }, [token]);
 

@@ -1,8 +1,10 @@
+import logging
 import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.api.v1 import api_router
 from app.core.config import get_settings
@@ -10,6 +12,7 @@ from app.routes import admin, auth, blood_banks, blood_radar, chats, cities, don
 
 
 settings = get_settings()
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
@@ -19,6 +22,16 @@ async def lifespan(_app: FastAPI):
 
 
 app = FastAPI(title="BloodLink Pakistan API", version="1.0.0", lifespan=lifespan)
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(_request: Request, exc: Exception):
+    logger.exception("Unhandled exception: %s", exc)
+    return JSONResponse(
+        status_code=500,
+        content={"error": {"code": "INTERNAL_ERROR", "message": "An unexpected error occurred."}},
+    )
+
 
 app.add_middleware(
     CORSMiddleware,

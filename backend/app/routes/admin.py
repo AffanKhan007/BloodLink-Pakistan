@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
+from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, joinedload
@@ -24,7 +25,7 @@ from app.models import (
 )
 from app.schemas.admin import DashboardStats
 from app.schemas.blood_request import BloodRequestDetailOut, BloodRequestListOut
-from app.schemas.common import AuditLogOut
+from app.schemas.common import AuditLogOut, PaginatedResponse
 from app.schemas.donor import DonorVerificationUpdate, DonorWithUserOut
 from app.schemas.institution import InstitutionStatusUpdate, InstitutionWithUserOut
 from app.schemas.user import AdminUserSummary
@@ -66,13 +67,25 @@ def dashboard(
     )
 
 
-@router.get("/users", response_model=list[AdminUserSummary])
+@router.get("/users", response_model=PaginatedResponse[AdminUserSummary])
 def list_users(
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 20,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles(*ADMIN_ROLES)),
-) -> list[AdminUserSummary]:
-    users = list(db.scalars(select(User).order_by(User.created_at.desc())).all())
-    return [AdminUserSummary.model_validate(user) for user in users]
+) -> PaginatedResponse[AdminUserSummary]:
+    total = db.scalar(select(func.count(User.id)))
+    users = list(
+        db.scalars(
+            select(User).order_by(User.created_at.desc()).offset((page - 1) * page_size).limit(page_size)
+        ).all()
+    )
+    return PaginatedResponse(
+        items=[AdminUserSummary.model_validate(u) for u in users],
+        total=total or 0,
+        page=page,
+        page_size=page_size,
+    )
 
 
 @router.get("/request-creators", response_model=list[AdminUserSummary])
@@ -113,15 +126,29 @@ def block_user(
     return AdminUserSummary.model_validate(user)
 
 
-@router.get("/donors", response_model=list[DonorWithUserOut])
+@router.get("/donors", response_model=PaginatedResponse[DonorWithUserOut])
 def list_donors(
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 20,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles(*ADMIN_ROLES)),
-) -> list[DonorWithUserOut]:
+) -> PaginatedResponse[DonorWithUserOut]:
+    total = db.scalar(select(func.count(DonorProfile.id)))
     donors = list(
-        db.scalars(select(DonorProfile).options(joinedload(DonorProfile.user)).order_by(DonorProfile.created_at.desc())).all()
+        db.scalars(
+            select(DonorProfile)
+            .options(joinedload(DonorProfile.user))
+            .order_by(DonorProfile.created_at.desc())
+            .offset((page - 1) * page_size)
+            .limit(page_size)
+        ).all()
     )
-    return [DonorWithUserOut.model_validate(donor) for donor in donors]
+    return PaginatedResponse(
+        items=[DonorWithUserOut.model_validate(d) for d in donors],
+        total=total or 0,
+        page=page,
+        page_size=page_size,
+    )
 
 
 @router.get("/institutions", response_model=list[InstitutionWithUserOut])
@@ -213,23 +240,35 @@ def verify_donor(
     return DonorWithUserOut.model_validate(donor)
 
 
-@router.get("/requests", response_model=list[BloodRequestListOut])
+@router.get("/requests", response_model=PaginatedResponse[BloodRequestListOut])
 def admin_requests(
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 20,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles(*ADMIN_ROLES)),
-) -> list[BloodRequestListOut]:
+) -> PaginatedResponse[BloodRequestListOut]:
+    total = db.scalar(select(func.count(BloodRequest.id)))
     requests = list(
         db.scalars(
-            select(BloodRequest).options(joinedload(BloodRequest.matches)).order_by(BloodRequest.created_at.desc())
+            select(BloodRequest)
+            .options(joinedload(BloodRequest.matches))
+            .order_by(BloodRequest.created_at.desc())
+            .offset((page - 1) * page_size)
+            .limit(page_size)
         ).unique().all()
     )
-    return [
-        BloodRequestListOut(
-            **request.__dict__,
-            confirmed_donor_count=count_confirmed_matches(request),
-        )
-        for request in requests
-    ]
+    return PaginatedResponse(
+        items=[
+            BloodRequestListOut(
+                **r.__dict__,
+                confirmed_donor_count=count_confirmed_matches(r),
+            )
+            for r in requests
+        ],
+        total=total or 0,
+        page=page,
+        page_size=page_size,
+    )
 
 
 @router.patch("/requests/{request_id}/approve", response_model=BloodRequestListOut)
@@ -389,10 +428,25 @@ def admin_request_detail(
     )
 
 
-@router.get("/audit-logs", response_model=list[AuditLogOut])
+@router.get("/audit-logs", response_model=PaginatedResponse[AuditLogOut])
 def audit_logs(
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 20,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles(*ADMIN_ROLES)),
-) -> list[AuditLogOut]:
-    logs = list(db.scalars(select(AuditLog).order_by(AuditLog.created_at.desc())).all())
-    return [AuditLogOut.model_validate(log) for log in logs]
+) -> PaginatedResponse[AuditLogOut]:
+    total = db.scalar(select(func.count(AuditLog.id)))
+    logs = list(
+        db.scalars(
+            select(AuditLog)
+            .order_by(AuditLog.created_at.desc())
+            .offset((page - 1) * page_size)
+            .limit(page_size)
+        ).all()
+    )
+    return PaginatedResponse(
+        items=[AuditLogOut.model_validate(log) for log in logs],
+        total=total or 0,
+        page=page,
+        page_size=page_size,
+    )

@@ -14,7 +14,8 @@ export default function MatchesPage() {
 
   useEffect(() => {
     apiRequest("/admin/requests", { token })
-      .then(async (requestData) => {
+      .then(async (data) => {
+        const requestData = data.items || data;
         setRequests(requestData);
         const matchCollections = await Promise.all(
           requestData.map((request) => apiRequest(`/matches/request/${request.id}`, { token }).catch(() => []))

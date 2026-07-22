@@ -1,7 +1,9 @@
+import logging
 from datetime import date, datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 
 from app.core.database import get_db
@@ -14,6 +16,7 @@ from app.services.notifications import create_notification
 
 
 router = APIRouter(prefix="/matches", tags=["matches"])
+logger = logging.getLogger(__name__)
 
 
 def _match_detail_out(match: DonationMatch) -> MatchDetailOut:
@@ -67,24 +70,29 @@ def create_match(
     match = DonationMatch(request_id=payload.request_id, donor_id=payload.donor_id)
     request.status = RequestStatus.MATCHED
     db.add(match)
-    db.flush()
+    try:
+        db.flush()
 
-    create_notification(
-        db,
-        user_id=donor.user_id,
-        title="New blood request match",
-        message=f"You have been matched with request #{request.id} for {request.blood_group_needed} blood in {request.city}.",
-    )
-    create_audit_log(
-        db,
-        admin_user_id=current_user.id,
-        action="create_match",
-        entity_type="donation_match",
-        entity_id=match.id,
-        details={"request_id": request.id, "donor_id": donor.id},
-    )
+        create_notification(
+            db,
+            user_id=donor.user_id,
+            title="New blood request match",
+            message=f"You have been matched with request #{request.id} for {request.blood_group_needed} blood in {request.city}.",
+        )
+        create_audit_log(
+            db,
+            admin_user_id=current_user.id,
+            action="create_match",
+            entity_type="donation_match",
+            entity_id=match.id,
+            details={"request_id": request.id, "donor_id": donor.id},
+        )
 
-    db.commit()
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        logger.exception("Integrity error creating match")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Match could not be created due to a data conflict")
     db.refresh(match)
     return MatchOut.model_validate(match)
 

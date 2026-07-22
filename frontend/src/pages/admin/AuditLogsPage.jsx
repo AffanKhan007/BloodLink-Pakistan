@@ -12,7 +12,7 @@ export default function AuditLogsPage() {
 
   useEffect(() => {
     apiRequest("/admin/audit-logs", { token })
-      .then(setLogs)
+      .then((data) => setLogs(data.items || data))
       .finally(() => setLoading(false));
   }, [token]);
 
