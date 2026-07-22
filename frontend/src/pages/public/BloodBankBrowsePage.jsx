@@ -88,8 +88,8 @@ export default function BloodBankBrowsePage() {
           <div className="request-grid">
             {filtered.map((bank) => (
               <div className="info-card" key={bank.id}>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.25rem", flexWrap: "wrap" }}>
-                  <h3 style={{ margin: 0 }}>{bank.name}</h3>
+                <div className="radar-result-header">
+                  <h3>{bank.name}</h3>
                   {bank.verified_at ? (
                     <span className="pill pill-soft" title="Verified">
                       <ShieldCheck size={13} />
@@ -100,7 +100,7 @@ export default function BloodBankBrowsePage() {
                 <div className="list-row">
                   <span className="meta-label">
                     <MapPin size={13} />
-                    {[bank.area, bank.city].filter(Boolean).join(", ") || "—"}
+                    {[bank.area, bank.city].filter(Boolean).join(", ") || "\u2014"}
                   </span>
                 </div>
                 {bank.operating_hours ? (
@@ -111,15 +111,15 @@ export default function BloodBankBrowsePage() {
                 <div className="inline-pills">
                   {bank.public_stock_visible ? (
                     <span className="pill pill-soft">
-                      {bank.available_units ?? "—"} units available
+                      {bank.available_units ?? "\u2014"} units available
                     </span>
                   ) : null}
                   {bank.expiring_soon_units > 0 ? (
                     <span className="pill pill-soft">{bank.expiring_soon_units} expiring soon</span>
                   ) : null}
                 </div>
-                <div style={{ marginTop: "0.75rem" }}>
-                  <Link className="button button-secondary" to={`/blood-banks/${bank.id}`}>
+                <div className="radar-result-actions">
+                  <Link className="button button-secondary button-full" to={`/blood-banks/${bank.id}`}>
                     View profile
                   </Link>
                 </div>

@@ -55,7 +55,7 @@ function driveIcon() {
     iconSize: [26, 34],
     iconAnchor: [13, 34],
     popupAnchor: [0, -34],
-    html: `<div style="width:26px;height:34px;display:flex;align-items:flex-end;justify-content:center"><svg viewBox="0 0 26 34" width="26" height="34"><path d="M13 0C5.82 0 0 5.82 0 13c0 9.75 13 21 13 21s13-11.25 13-21C26 5.82 20.18 0 13 0z" fill="#16a34a"/><circle cx="13" cy="12" r="5.5" fill="#fff" opacity="0.9"/><text x="13" y="15" text-anchor="middle" font-size="8" font-weight="700" fill="#16a34a">♥</text></svg></div>`,
+    html: `<div style="width:26px;height:34px;display:flex;align-items:flex-end;justify-content:center"><svg viewBox="0 0 26 34" width="26" height="34"><path d="M13 0C5.82 0 0 5.82 0 13c0 9.75 13 21 13 21s13-11.25 13-21C26 5.82 20.18 0 13 0z" fill="#16a34a"/><circle cx="13" cy="12" r="5.5" fill="#fff" opacity="0.9"/><text x="13" y="15" text-anchor="middle" font-size="8" font-weight="700" fill="#16a34a">\u2665</text></svg></div>`,
   });
 }
 
@@ -69,18 +69,17 @@ function CollapsibleCard({ icon: Icon, title, count, defaultOpen = true, childre
     <div className="content-card">
       <button
         type="button"
-        className="filter-row"
-        style={{ background: "none", border: "none", cursor: "pointer", width: "100%", textAlign: "left", padding: "0.75rem 1rem" }}
+        className="collapsible-trigger"
         onClick={() => setOpen((o) => !o)}
       >
-        <span style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem" }}>
+        <span className="collapsible-trigger-label">
           <Icon size={16} />
           <strong>{title}</strong>
           <span className="pill pill-soft">{count}</span>
         </span>
         {open ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
       </button>
-      {open ? <div style={{ padding: "0 1rem 1rem" }}>{children}</div> : null}
+      {open ? <div className="collapsible-body">{children}</div> : null}
     </div>
   );
 }
@@ -90,15 +89,15 @@ function ContactButton({ number }) {
   if (!number) return null;
   if (revealed) {
     return (
-      <a className="button button-primary button-full" href={`tel:${number}`} style={{ marginTop: "0.5rem", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.35rem" }}>
+      <a className="button button-primary button-full radar-result-actions" href={`tel:${number}`}>
         <Phone size={13} />
         Call {number}
       </a>
     );
   }
   return (
-    <button className="button button-secondary button-full" type="button" onClick={() => setRevealed(true)} style={{ marginTop: "0.5rem" }}>
-      <Phone size={13} style={{ marginRight: "0.35rem" }} />
+    <button className="button button-secondary button-full radar-result-actions" type="button" onClick={() => setRevealed(true)}>
+      <Phone size={13} />
       Show contact
     </button>
   );
@@ -258,13 +257,13 @@ export default function BloodRadarPage() {
               <label className="meta-label">City</label>
               <CityCombobox value={city} onChange={setCity} required />
             </div>
-            <div className="form-span-2" style={{ display: "flex", gap: "0.5rem", alignItems: "flex-end" }}>
-              <button className="button button-secondary" type="button" onClick={handleLocate} disabled={locating} style={{ whiteSpace: "nowrap" }}>
+            <div className="form-span-2 radar-form-actions">
+              <button className="button button-secondary" type="button" onClick={handleLocate} disabled={locating}>
                 {locating ? <LoaderCircle size={14} className="spin-icon" /> : <Crosshair size={14} />}
                 {locating ? "Locating..." : "Locate me"}
               </button>
               <button className="button button-primary" type="submit" disabled={!bloodGroup || !city || loading} style={{ flex: 1 }}>
-                <Search size={14} style={{ marginRight: "0.35rem" }} />
+                <Search size={14} />
                 Search radar
               </button>
             </div>
@@ -296,17 +295,17 @@ export default function BloodRadarPage() {
         {results && !loading && totalCount > 0 && (
           <>
             <div className="stats-grid">
-              <div className="stat-card stat-card-red">
+              <div className="stat-card stat-card-red radar-stat-card">
                 <Building2 size={18} />
                 <strong>{banks.length}</strong>
                 <span>Blood banks</span>
               </div>
-              <div className="stat-card stat-card-blue">
+              <div className="stat-card stat-card-blue radar-stat-card">
                 <Users size={18} />
                 <strong>{donors.length}</strong>
                 <span>Donors</span>
               </div>
-              <div className="stat-card stat-card-green">
+              <div className="stat-card stat-card-green radar-stat-card">
                 <CalendarHeart size={18} />
                 <strong>{drives.length}</strong>
                 <span>Drives</span>
@@ -318,7 +317,7 @@ export default function BloodRadarPage() {
                 <div style={{ height: "400px", width: "100%" }}>
                   <Suspense
                     fallback={
-                      <div style={{ height: 400, display: "flex", alignItems: "center", justifyContent: "center", background: "#f8f9fa" }}>
+                      <div style={{ height: 400, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-surface-alt)" }}>
                         <LoaderCircle size={20} className="spin-icon" />
                       </div>
                     }
@@ -334,8 +333,8 @@ export default function BloodRadarPage() {
                 <div className="stacked-cards">
                   {banks.map((b) => (
                     <div className="info-card" key={b.id}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.25rem", flexWrap: "wrap" }}>
-                        <h3 style={{ margin: 0 }}>{b.name}</h3>
+                      <div className="radar-result-header">
+                        <h3>{b.name}</h3>
                         {b.verified ? (
                           <span className="pill pill-soft" title="Verified"><ShieldCheck size={13} /></span>
                         ) : null}
@@ -344,7 +343,7 @@ export default function BloodRadarPage() {
                       <div className="list-row">
                         <span className="meta-label">
                           <MapPin size={13} />
-                          {[b.area, b.city].filter(Boolean).join(", ") || "—"}
+                          {[b.area, b.city].filter(Boolean).join(", ") || "\u2014"}
                         </span>
                       </div>
                       <div className="inline-pills">
@@ -359,7 +358,7 @@ export default function BloodRadarPage() {
                         )}
                       </div>
                       <ContactButton number={b.contact_number} />
-                      <div style={{ marginTop: "0.5rem" }}>
+                      <div className="radar-result-actions">
                         <Link className="button button-secondary button-full" to={`/blood-banks/${b.id}`}>
                           View full profile
                         </Link>
@@ -375,8 +374,8 @@ export default function BloodRadarPage() {
                 <div className="stacked-cards">
                   {donors.map((d) => (
                     <div className="info-card" key={d.anon_id}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.25rem" }}>
-                        <h3 style={{ margin: 0 }}>{d.anon_id}</h3>
+                      <div className="radar-result-header">
+                        <h3>{d.anon_id}</h3>
                         <span className="pill">{d.blood_group}</span>
                         {d.verified ? (
                           <span className="pill pill-soft" title="Verified donor"><ShieldCheck size={13} /></span>
@@ -385,7 +384,7 @@ export default function BloodRadarPage() {
                       <div className="list-row">
                         <span className="meta-label">
                           <MapPin size={13} />
-                          {[d.area, d.city].filter(Boolean).join(", ") || "—"}
+                          {[d.area, d.city].filter(Boolean).join(", ") || "\u2014"}
                         </span>
                       </div>
                       <div className="inline-pills">
@@ -393,9 +392,11 @@ export default function BloodRadarPage() {
                           <span className="pill">{d.distance_km.toFixed(1)} km</span>
                         )}
                       </div>
-                      <Link className="button button-primary button-full" to="/receiver/create-request" style={{ marginTop: "0.5rem" }}>
-                        Send match request
-                      </Link>
+                      <div className="radar-result-actions">
+                        <Link className="button button-primary button-full" to="/receiver/create-request">
+                          Send match request
+                        </Link>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -412,7 +413,7 @@ export default function BloodRadarPage() {
                       <div className="list-row">
                         <span className="meta-label">
                           <MapPin size={13} />
-                          {[dr.location_address, dr.city].filter(Boolean).join(", ") || "—"}
+                          {[dr.location_address, dr.city].filter(Boolean).join(", ") || "\u2014"}
                         </span>
                       </div>
                       <div className="inline-pills">
@@ -423,7 +424,7 @@ export default function BloodRadarPage() {
                         )}
                         {dr.start_time && dr.end_time && (
                           <span className="pill pill-soft">
-                            {dr.start_time.slice(0, 5)} – {dr.end_time.slice(0, 5)}
+                            {dr.start_time.slice(0, 5)} \u2013 {dr.end_time.slice(0, 5)}
                           </span>
                         )}
                         {dr.days_until != null && (
@@ -439,7 +440,7 @@ export default function BloodRadarPage() {
                           ))}
                         </div>
                       )}
-                      <div style={{ marginTop: "0.5rem" }}>
+                      <div className="radar-result-actions">
                         <Link className="button button-secondary button-full" to={`/drives/${dr.id}`}>
                           View details
                         </Link>

@@ -11,6 +11,21 @@ import StatCard from "../../components/StatCard";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
+const CAPACITY_PER_GROUP = 50;
+
+function inventoryBarClass(available) {
+  if (available === 0) return "inventory-bar-fill-empty";
+  if (available <= 5) return "inventory-bar-fill-critical";
+  if (available <= 15) return "inventory-bar-fill-low";
+  return "inventory-bar-fill-available";
+}
+
+function inventoryBarWidth(available) {
+  if (available === 0) return "0%";
+  const pct = Math.min((available / CAPACITY_PER_GROUP) * 100, 100);
+  return `${pct}%`;
+}
+
 export default function BloodBankProfilePage() {
   const { id } = useParams();
   const [bank, setBank] = useState(null);
@@ -76,7 +91,7 @@ export default function BloodBankProfilePage() {
           title={
             <span style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem" }}>
               {bank.name}
-              {bank.verified_at ? <ShieldCheck size={18} style={{ color: "var(--accent)" }} /> : null}
+              {bank.verified_at ? <ShieldCheck size={18} style={{ color: "var(--color-success)" }} /> : null}
               <GovtVerifiedBadge govtVerified={bank.govt_verified} />
             </span>
           }
@@ -85,10 +100,10 @@ export default function BloodBankProfilePage() {
         />
 
         <div className="stats-grid">
-          <StatCard label="Total units" value={inventory?.total_units ?? "—"} tone="default" />
-          <StatCard label="Available" value={inventory?.available_units ?? "—"} tone="available" />
-          <StatCard label="Reserved" value={inventory?.reserved_units ?? "—"} tone="pending" />
-          <StatCard label="Expiring soon" value={inventory?.expiring_soon_units ?? "—"} tone="critical" />
+          <StatCard label="Total units" value={inventory?.total_units ?? "\u2014"} tone="default" />
+          <StatCard label="Available" value={inventory?.available_units ?? "\u2014"} tone="available" />
+          <StatCard label="Reserved" value={inventory?.reserved_units ?? "\u2014"} tone="pending" />
+          <StatCard label="Expiring soon" value={inventory?.expiring_soon_units ?? "\u2014"} tone="critical" />
         </div>
 
         <div className="content-card">
@@ -119,31 +134,30 @@ export default function BloodBankProfilePage() {
             </div>
 
             {bank.description ? (
-              <p style={{ margin: 0, color: "var(--text-secondary)" }}>{bank.description}</p>
+              <p style={{ margin: 0, color: "var(--text-muted)" }}>{bank.description}</p>
             ) : null}
           </div>
         </div>
 
         <div className="content-card">
           <h3 style={{ margin: "0 0 0.75rem" }}>Blood group availability</h3>
-          <div className="request-grid">
+          <div className="inventory-bar-group">
             {BLOOD_GROUPS.map((group) => {
               const unit = unitMap[group];
               const available = unit?.available_units ?? 0;
               const expiring = unit?.expiring_soon_units ?? 0;
               return (
-                <div
-                  className={`info-card${expiring > 0 ? " card-highlight" : ""}`}
-                  key={group}
-                  style={{ textAlign: "center" }}
-                >
-                  <p className="meta-label" style={{ marginBottom: "0.25rem" }}>{group}</p>
-                  <h3 style={{ margin: 0, fontSize: "1.5rem" }}>{available}</h3>
-                  {expiring > 0 ? (
-                    <span className="pill pill-soft" style={{ marginTop: "0.25rem" }}>
-                      {expiring} expiring soon
-                    </span>
-                  ) : null}
+                <div className="inventory-bar-row" key={group}>
+                  <span className="inventory-bar-label">{group}</span>
+                  <div className="inventory-bar-track">
+                    <div
+                      className={`inventory-bar-fill ${inventoryBarClass(available)}`}
+                      style={{ width: inventoryBarWidth(available) }}
+                    />
+                  </div>
+                  <span className={`inventory-bar-count ${available === 0 ? "inventory-bar-count-zero" : ""}`}>
+                    {available}{expiring > 0 ? ` (${expiring} exp.)` : ""}
+                  </span>
                 </div>
               );
             })}
@@ -153,7 +167,7 @@ export default function BloodBankProfilePage() {
         <div className="content-card">
           <div className="list-row">
             <Utensils size={14} />
-            <span style={{ color: "var(--text-secondary)" }}>No upcoming blood drives scheduled.</span>
+            <span style={{ color: "var(--text-muted)" }}>No upcoming blood drives scheduled.</span>
           </div>
         </div>
       </div>
