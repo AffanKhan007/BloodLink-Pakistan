@@ -92,17 +92,9 @@ LAHORE_BLOOD_BANKS = [
 def main() -> None:
     db = SessionLocal()
     try:
-        protected_ids = [
-            row[0]
-            for row in db.execute(
-                select(User.id).where(
-                    User.role.in_([UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.BLOOD_BANK_ADMIN])
-                )
-            ).all()
-        ]
         for table in TABLES_IN_DELETE_ORDER:
             db.execute(delete(table))
-        db.execute(delete(User).where(User.id.notin_(protected_ids)))
+        db.execute(delete(User))
         db.flush()
 
         for index, (name, province) in enumerate(PAKISTAN_CITIES, start=1):
