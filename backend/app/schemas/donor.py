@@ -1,6 +1,6 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from app.models import DonorVerificationStatus
 from app.schemas.common import BaseSchema
@@ -18,6 +18,9 @@ class DonorProfileCreate(BaseModel):
     availability_status: str = Field(pattern="^(available|unavailable)$")
     is_publicly_available: bool = False
     health_notes: str | None = Field(default=None, max_length=1000)
+    latitude: float | None = None
+    longitude: float | None = None
+    location_opt_in: bool = False
 
     @field_validator("blood_group")
     @classmethod
@@ -48,8 +51,24 @@ class DonorProfileOut(BaseSchema):
     is_publicly_available: bool
     verification_status: DonorVerificationStatus
     health_notes: str | None
+    latitude: float | None = None
+    longitude: float | None = None
+    location_opt_in: bool = False
+    blood_group_verified: bool = False
+    matches_accepted: int = 0
+    matches_completed: int = 0
+    matches_no_show: int = 0
+    next_eligible_date: date | None = None
     created_at: datetime
     updated_at: datetime
+
+    @model_validator(mode="after")
+    def compute_next_eligible(self) -> "DonorProfileOut":
+        if self.last_donation_date:
+            self.next_eligible_date = self.last_donation_date + timedelta(days=90)
+        else:
+            self.next_eligible_date = None
+        return self
 
 
 class DonorWithUserOut(DonorProfileOut):

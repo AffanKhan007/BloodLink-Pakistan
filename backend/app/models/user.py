@@ -14,8 +14,6 @@ class UserRole(StrEnum):
     ADMIN = "admin"
     SUPER_ADMIN = "super_admin"
     OPERATIONS_AGENT = "operations_agent"
-    HOSPITAL_ADMIN = "hospital_admin"
-    HOSPITAL_STAFF = "hospital_staff"
     BLOOD_BANK_ADMIN = "blood_bank_admin"
     BLOOD_BANK_STAFF = "blood_bank_staff"
     AUDITOR = "auditor"

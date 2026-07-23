@@ -1,8 +1,10 @@
+import logging
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, WebSocketDisconnect, status
 from sqlalchemy import and_, or_, select
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session, joinedload, subqueryload
 
 from app.core.database import get_db
 from app.core.deps import get_current_user
@@ -17,6 +19,7 @@ from app.services.notifications import create_notification
 
 
 router = APIRouter(prefix="/chats", tags=["chats"])
+logger = logging.getLogger(__name__)
 
 
 def _counterpart(chat: Chat, current_user_id: int) -> User:
@@ -156,7 +159,7 @@ def list_chats(
             .options(
                 joinedload(Chat.participant_one),
                 joinedload(Chat.participant_two),
-                joinedload(Chat.messages),
+                subqueryload(Chat.messages),
             )
             .where(or_(Chat.participant_one_id == current_user.id, Chat.participant_two_id == current_user.id))
             .order_by(Chat.updated_at.desc())
@@ -195,7 +198,12 @@ def create_chat(
             subject=subject,
         )
         db.add(chat)
-        db.flush()
+        try:
+            db.flush()
+        except IntegrityError:
+            db.rollback()
+            logger.exception("Integrity error creating chat")
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Chat could not be created due to a data conflict")
 
     if payload.initial_message:
         message = ChatMessage(chat_id=chat.id, sender_id=current_user.id, message=payload.initial_message)
@@ -207,7 +215,12 @@ def create_chat(
             title="New chat message",
             message=f"{current_user.full_name} sent you a message in BloodLink.",
         )
-        db.commit()
+        try:
+            db.commit()
+        except IntegrityError:
+            db.rollback()
+            logger.exception("Integrity error saving chat message")
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Message could not be sent due to a data conflict")
         db.refresh(chat)
         db.refresh(message)
         chat = db.scalar(
@@ -296,7 +309,12 @@ def send_message(
         title="New chat reply",
         message=f"{current_user.full_name} replied in your BloodLink conversation.",
     )
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        logger.exception("Integrity error sending chat message")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Message could not be sent due to a data conflict")
     db.refresh(message)
     db.refresh(chat)
     _schedule_broadcast(chat, message)

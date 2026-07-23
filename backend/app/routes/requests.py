@@ -1,9 +1,11 @@
+import logging
 import os
 import uuid
 from datetime import date, timedelta
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from sqlalchemy import exists, or_, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 
 from app.core.config import get_settings
@@ -35,6 +37,9 @@ from app.utils.validators import ALLOWED_UPLOAD_EXTENSIONS
 
 router = APIRouter(prefix="/requests", tags=["blood_requests"])
 settings = get_settings()
+logger = logging.getLogger(__name__)
+
+MAX_ACTIVE_REQUESTS = 3
 
 
 def _get_request_for_user(db: Session, request_id: int, user: User) -> BloodRequest:
@@ -63,14 +68,32 @@ def create_request(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles(UserRole.MEMBER)),
 ) -> BloodRequestOut:
+    active_statuses = {RequestStatus.PENDING_REVIEW, RequestStatus.APPROVED, RequestStatus.MATCHED}
+    active_requests = list(db.scalars(
+        select(BloodRequest).where(
+            BloodRequest.created_by_user_id == current_user.id,
+            BloodRequest.status.in_(active_statuses),
+        )
+    ).all())
+    if len(active_requests) >= MAX_ACTIVE_REQUESTS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"You can have at most {MAX_ACTIVE_REQUESTS} simultaneously active requests. Please fulfil or cancel an existing request first.",
+        )
+
     request = BloodRequest(
         created_by_user_id=current_user.id,
         **payload.model_dump(),
     )
     db.add(request)
-    db.flush()
-    create_automatic_matches(db, request)
-    db.commit()
+    try:
+        db.flush()
+        create_automatic_matches(db, request)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        logger.exception("Integrity error creating blood request")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Request could not be created due to a data conflict")
     db.refresh(request)
     return BloodRequestOut.model_validate(request)
 
@@ -90,10 +113,27 @@ def list_requests(
         statement = statement.where(BloodRequest.created_by_user_id == current_user.id)
 
     requests = list(db.scalars(statement).unique().all())
+
+    user_request_counts: dict[int, int] = {}
+    user_fulfilled_counts: dict[int, int] = {}
+    user_ids = {r.created_by_user_id for r in requests}
+    if user_ids:
+        for uid in user_ids:
+            user_request_counts[uid] = db.scalar(
+                select(BloodRequest.id).where(BloodRequest.created_by_user_id == uid).select_from(BloodRequest)
+            )
+            total_for_user = list(db.scalars(
+                select(BloodRequest).where(BloodRequest.created_by_user_id == uid)
+            ).all())
+            user_request_counts[uid] = len(total_for_user)
+            user_fulfilled_counts[uid] = sum(1 for r in total_for_user if r.status == RequestStatus.FULFILLED)
+
     return [
         BloodRequestListOut(
             **request.__dict__,
             confirmed_donor_count=count_confirmed_matches(request),
+            requester_total_requests=user_request_counts.get(request.created_by_user_id, 0),
+            requester_fulfilled_count=user_fulfilled_counts.get(request.created_by_user_id, 0),
         )
         for request in requests
     ]

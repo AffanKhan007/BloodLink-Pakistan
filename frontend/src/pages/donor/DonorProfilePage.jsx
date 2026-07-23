@@ -1,4 +1,5 @@
-import { ChevronDown, Droplets, HeartPulse, MapPin, ShieldCheck, X } from "lucide-react";
+import React, { Suspense } from "react";
+import { AlertCircle, CalendarClock, CheckCircle2, ChevronDown, Droplets, HeartPulse, MapPin, ShieldCheck, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { apiRequest } from "../../api/client";
@@ -6,6 +7,16 @@ import { useAuth } from "../../auth/AuthContext";
 import { AlertMessage, LoadingState } from "../../components/PageState";
 import SectionIntro from "../../components/SectionIntro";
 import citiesList from "../../data/pakistan_cities.json";
+
+const LeafletMap = React.lazy(() => import("./_DonorLocationMap"));
+
+function LocationPicker({ latitude, longitude, onLocationChange }) {
+  return (
+    <Suspense fallback={<div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--surface-muted)" }}>Loading map...</div>}>
+      <LeafletMap latitude={latitude} longitude={longitude} onLocationChange={onLocationChange} />
+    </Suspense>
+  );
+}
 
 const initialForm = {
   blood_group: "A+",
@@ -17,6 +28,9 @@ const initialForm = {
   availability_status: "available",
   is_publicly_available: false,
   health_notes: "",
+  latitude: null,
+  longitude: null,
+  location_opt_in: false,
 };
 
 export default function DonorProfilePage() {
@@ -133,6 +147,13 @@ export default function DonorProfilePage() {
             </div>
           </div>
           <div className="metric-chip">
+            {form.blood_group_verified ? <CheckCircle2 size={14} /> : <AlertCircle size={14} />}
+            <div>
+              <span>Blood group status</span>
+              <strong>{form.blood_group_verified ? "Lab verified" : "Self-reported"}</strong>
+            </div>
+          </div>
+          <div className="metric-chip">
             <ShieldCheck size={14} />
             <div>
               <span>Availability</span>
@@ -146,6 +167,15 @@ export default function DonorProfilePage() {
               <strong>{form.health_notes ? "Added" : "Optional"}</strong>
             </div>
           </div>
+          {form.next_eligible_date ? (
+            <div className="metric-chip">
+              <CalendarClock size={14} />
+              <div>
+                <span>Next eligible date</span>
+                <strong>{new Date(form.next_eligible_date).toLocaleDateString()}</strong>
+              </div>
+            </div>
+          ) : null}
         </div>
       </section>
 
@@ -282,6 +312,29 @@ export default function DonorProfilePage() {
             placeholder="Optional notes about donation timing, temporary restrictions, or health context."
           />
         </label>
+        <div className="form-section form-span">
+          <div className="form-section-header">
+            <h3>Location sharing (optional)</h3>
+            <p>Drop a pin on the map to help nearby requests find you. Your exact location is never shown — only an anonymized approximate marker.</p>
+          </div>
+        </div>
+        <label className="form-span">
+          <input
+            type="checkbox"
+            checked={form.location_opt_in}
+            onChange={(event) => setForm((current) => ({ ...current, location_opt_in: event.target.checked }))}
+          />
+          Share my approximate location on Blood Radar
+        </label>
+        {form.location_opt_in ? (
+          <div className="form-span" style={{ height: "300px", borderRadius: "var(--radius-lg)", overflow: "hidden", border: "1px solid var(--border-subtle)" }}>
+            <LocationPicker
+              latitude={form.latitude}
+              longitude={form.longitude}
+              onLocationChange={(lat, lng) => setForm((current) => ({ ...current, latitude: lat, longitude: lng }))}
+            />
+          </div>
+        ) : null}
           <div className="form-span form-actions-row">
             <button className="button button-primary">Save profile</button>
           </div>

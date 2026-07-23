@@ -3,6 +3,7 @@ import { useState } from "react";
 
 import StatusBadge from "./StatusBadge";
 import ReportModal from "./ReportModal";
+import WhatsAppShareButton from "./WhatsAppShareButton";
 import { useAuth } from "../auth/AuthContext";
 
 export default function RequestCard({ request, actions, footer, onClick, selected }) {
@@ -77,6 +78,14 @@ export default function RequestCard({ request, actions, footer, onClick, selecte
             {request.city}, {request.area}
           </strong>
         </div>
+        {request.requester_total_requests > 0 ? (
+          <div>
+            <span className="meta-label">Requester history</span>
+            <strong>
+              {request.requester_fulfilled_count}/{request.requester_total_requests} fulfilled
+            </strong>
+          </div>
+        ) : null}
       </div>
       <div className="request-meta-row">
         <span>
@@ -95,6 +104,11 @@ export default function RequestCard({ request, actions, footer, onClick, selecte
         ) : null}
       </div>
       {footer ? <p className="card-footer-copy">{footer}</p> : null}
+      {(request.status === "approved" || request.status === "matched") && (
+        <div style={{ marginTop: "0.25rem" }}>
+          <WhatsAppShareButton bloodGroup={request.blood_group_needed} city={request.city} />
+        </div>
+      )}
       {actions ? (
         <div className="card-actions">
           {actions}

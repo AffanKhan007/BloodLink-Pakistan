@@ -1,15 +1,18 @@
+import logging
 import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.api.v1 import api_router
 from app.core.config import get_settings
-from app.routes import admin, auth, blood_banks, chats, cities, donors, hospitals, institutions, matches, notifications, reports, requests, uploads
+from app.routes import admin, auth, blood_banks, blood_radar, chats, cities, donors, hospitals, institutions, matches, notification_stubs, notifications, reports, requests, uploads
 
 
 settings = get_settings()
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
@@ -19,6 +22,16 @@ async def lifespan(_app: FastAPI):
 
 
 app = FastAPI(title="BloodLink Pakistan API", version="1.0.0", lifespan=lifespan)
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(_request: Request, exc: Exception):
+    logger.exception("Unhandled exception: %s", exc)
+    return JSONResponse(
+        status_code=500,
+        content={"error": {"code": "INTERNAL_ERROR", "message": "An unexpected error occurred."}},
+    )
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -43,7 +56,9 @@ app.include_router(admin.router)
 app.include_router(uploads.router)
 app.include_router(hospitals.router)
 app.include_router(blood_banks.router)
+app.include_router(blood_radar.router)
 app.include_router(institutions.router)
 app.include_router(chats.router)
 app.include_router(cities.router)
+app.include_router(notification_stubs.router)
 app.include_router(api_router)

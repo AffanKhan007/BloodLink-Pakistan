@@ -64,6 +64,8 @@ class BloodRequestOut(BaseSchema):
 
 class BloodRequestListOut(BloodRequestOut):
     confirmed_donor_count: int = 0
+    requester_total_requests: int = 0
+    requester_fulfilled_count: int = 0
 
 
 class RequestDocumentOut(BaseSchema):

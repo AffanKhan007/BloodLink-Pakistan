@@ -1,6 +1,8 @@
 import {
+  BarChart3,
   Bell,
   Building2,
+  CalendarClock,
   ClipboardCheck,
   ClipboardList,
   Droplets,
@@ -11,6 +13,7 @@ import {
   LogOut,
   Menu,
   MessageSquare,
+  Radar,
   Search,
   ShieldCheck,
   Syringe,
@@ -21,6 +24,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import { apiRequest } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
@@ -34,7 +38,8 @@ const navByRole = {
     { label: "My Requests", to: "/receiver/requests", icon: ClipboardList },
     { label: "My Matches", to: "/donor/matches", icon: HeartHandshake },
     { label: "Available Donors", to: "/receiver/available-donors", icon: Search },
-    { label: "Blood Banks", to: "/receiver/blood-banks", icon: Warehouse },
+    { label: "Blood Banks", to: "/blood-banks", icon: Warehouse },
+    { label: "Blood Radar", to: "/blood-radar", icon: Radar },
     { label: "Institutions", to: "/receiver/institutions", icon: University },
     { label: "Notifications", to: "/donor/notifications", icon: Bell },
     { label: "Chats", to: "/donor/chats", icon: MessageSquare },
@@ -44,6 +49,7 @@ const navByRole = {
     { label: "Users", to: "/admin/users", icon: Users },
     { label: "Donors", to: "/admin/donors", icon: Syringe },
     { label: "Institutions", to: "/admin/institutions", icon: Building2 },
+    { label: "Blood Banks", to: "/admin/blood-banks", icon: Warehouse },
     { label: "Blood Requests", to: "/admin/requests", icon: Droplets },
     { label: "Matches", to: "/admin/matches", icon: HeartHandshake },
     { label: "Reports", to: "/admin/reports", icon: ClipboardCheck },
@@ -54,6 +60,7 @@ const navByRole = {
     { label: "Users", to: "/admin/users", icon: Users },
     { label: "Donors", to: "/admin/donors", icon: Syringe },
     { label: "Institutions", to: "/admin/institutions", icon: Building2 },
+    { label: "Blood Banks", to: "/admin/blood-banks", icon: Warehouse },
     { label: "Blood Requests", to: "/admin/requests", icon: Droplets },
     { label: "Matches", to: "/admin/matches", icon: HeartHandshake },
     { label: "Reports", to: "/admin/reports", icon: ClipboardCheck },
@@ -64,26 +71,18 @@ const navByRole = {
     { label: "Blood Requests", to: "/admin/requests", icon: Droplets },
     { label: "Reports", to: "/admin/reports", icon: ClipboardCheck },
   ],
-  hospital_admin: [
-    { label: "Dashboard", to: "/hospital", icon: LayoutDashboard },
-    { label: "Create Request", to: "/hospital/create-request", icon: Droplets },
-    { label: "Requests", to: "/hospital/requests", icon: ClipboardList },
-  ],
-  hospital_staff: [
-    { label: "Dashboard", to: "/hospital", icon: LayoutDashboard },
-    { label: "Create Request", to: "/hospital/create-request", icon: Droplets },
-    { label: "Requests", to: "/hospital/requests", icon: ClipboardList },
-  ],
   blood_bank_admin: [
     { label: "Dashboard", to: "/blood-bank", icon: LayoutDashboard },
     { label: "Inventory", to: "/blood-bank/inventory", icon: Warehouse },
-    { label: "Create Unit", to: "/blood-bank/create-unit", icon: Droplets },
     { label: "City Requests", to: "/blood-bank/city-requests", icon: ClipboardList },
+    { label: "Donation Drives", to: "/blood-bank/drives", icon: Droplets },
+    { label: "Appointments", to: "/blood-bank/appointments", icon: CalendarClock },
+    { label: "Analytics", to: "/blood-bank/analytics", icon: BarChart3 },
+    { label: "Profile", to: "/blood-bank/profile", icon: Building2 },
   ],
   blood_bank_staff: [
     { label: "Dashboard", to: "/blood-bank", icon: LayoutDashboard },
     { label: "Inventory", to: "/blood-bank/inventory", icon: Warehouse },
-    { label: "Create Unit", to: "/blood-bank/create-unit", icon: Droplets },
     { label: "City Requests", to: "/blood-bank/city-requests", icon: ClipboardList },
   ],
   institution_donor: [
@@ -120,24 +119,14 @@ const roleMeta = {
     title: "Operations overview",
     description: "Handle requests and review reports.",
   },
-  hospital_admin: {
-    eyebrow: "Hospital",
-    title: "Request coordination",
-    description: "Create and manage hospital blood requests.",
-  },
-  hospital_staff: {
-    eyebrow: "Hospital",
-    title: "Request coordination",
-    description: "Create and manage hospital blood requests.",
-  },
   blood_bank_admin: {
     eyebrow: "Blood bank",
-    title: "Inventory and requests",
-    description: "Track stock and monitor city-wide requests.",
+    title: "Blood bank workspace",
+    description: "Manage inventory, fulfillment, drives, and appointments.",
   },
   blood_bank_staff: {
     eyebrow: "Blood bank",
-    title: "Inventory and requests",
+    title: "Inventory workspace",
     description: "Track stock and monitor city-wide requests.",
   },
   institution_donor: {
@@ -149,6 +138,7 @@ const roleMeta = {
 
 export default function Layout() {
   const { token, user, logout } = useAuth();
+  const { i18n } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const pageAreaRef = useRef(null);
@@ -282,7 +272,20 @@ export default function Layout() {
           <div className="top-bar-left">
             <span className="top-bar-title">BloodLink</span>
           </div>
-          <div className="top-bar-right" />
+          <div className="top-bar-right">
+            <button
+              className="nav-lang-toggle"
+              onClick={() => {
+                const next = i18n.language === 'ur' ? 'en' : 'ur';
+                i18n.changeLanguage(next);
+                document.documentElement.dir = next === 'ur' ? 'rtl' : 'ltr';
+                document.documentElement.lang = next;
+              }}
+              title={i18n.language === 'ur' ? 'Switch to English' : 'اردو میں تبدیل کریں'}
+            >
+              {i18n.language === 'ur' ? 'EN' : 'اردو'}
+            </button>
+          </div>
         </div>
         <main className="page-area">
           <header className="page-header">

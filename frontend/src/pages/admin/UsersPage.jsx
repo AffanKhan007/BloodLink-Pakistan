@@ -15,7 +15,7 @@ export default function UsersPage() {
 
   const loadUsers = async () => {
     const data = await apiRequest("/admin/users", { token });
-    setUsers(data);
+    setUsers(data.items || data);
   };
 
   useEffect(() => {

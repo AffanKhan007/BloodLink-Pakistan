@@ -56,12 +56,21 @@ export default function CreateRequestPage() {
         body: formData,
         isFormData: true,
       });
-      navigate(`/receiver/requests/${request.id}`, {
-        state: {
-          flashSuccess: "Request created, hospital slip uploaded, and compatible donors have been checked automatically.",
-          createdRequest: request,
-        },
-      });
+      if (form.urgency_level === "critical") {
+        navigate(`/blood-radar?blood_group=${request.blood_group_needed}&city=${encodeURIComponent(request.city)}`, {
+          state: {
+            flashSuccess: "Critical request created. Blood Radar is scanning for available blood now.",
+            createdRequest: request,
+          },
+        });
+      } else {
+        navigate(`/receiver/requests/${request.id}`, {
+          state: {
+            flashSuccess: "Request created, hospital slip uploaded, and compatible donors have been checked automatically.",
+            createdRequest: request,
+          },
+        });
+      }
     } catch (submitError) {
       setError(submitError.message);
     } finally {

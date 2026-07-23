@@ -1,4 +1,4 @@
-import { Building2, HeartHandshake, MessageSquarePlus, Search, Warehouse } from "lucide-react";
+import { Building2, HeartHandshake, MessageSquarePlus, Radar, Search, Warehouse } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 
@@ -226,6 +226,23 @@ export default function RequestDetailsPage() {
           <Link className="button button-secondary" to="/receiver/chats">
             <HeartHandshake size={14} />
             Open chats
+          </Link>
+        </div>
+      </section>
+
+      <section className="content-card">
+        <SectionIntro
+          eyebrow="Blood Radar"
+          title="Live radar for this request"
+          compact
+        />
+        <div className="card-actions">
+          <Link
+            className="button button-primary"
+            to={`/blood-radar?blood_group=${request.blood_group_needed}&city=${encodeURIComponent(request.city)}`}
+          >
+            <Radar size={14} />
+            Open Blood Radar
           </Link>
         </div>
       </section>

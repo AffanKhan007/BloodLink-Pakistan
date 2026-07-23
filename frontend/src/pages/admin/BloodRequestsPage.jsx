@@ -32,7 +32,7 @@ export default function BloodRequestsPage() {
 
   const loadRequests = async () => {
     const data = await apiRequest("/admin/requests", { token });
-    setRequests(data);
+    setRequests(data.items || data);
   };
 
   const loadDetail = async (requestId) => {

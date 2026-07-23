@@ -1,20 +1,24 @@
 /* ============================================================
-   BloodLink Pakistan — Light-only Design System
+   BloodLink Pakistan — Design Tokens
    ============================================================ */
 
-/* ── Light Palette + Shared Tokens ──────────────────────── */
 :root {
-  /* Palette */
-  --bg-base:              #F9FAFB;
+  /* ── Core palette (cooler neutrals) ─────────────────────── */
+  --bg-base:              #F8FAFB;
   --bg-surface:           #FFFFFF;
-  --bg-surface-alt:       #F3F4F6;
-  --text-primary:         #111827;
-  --text-muted:           #6B7280;
-  --border-color:         #E5E7EB;
-  --color-urgent:         #DC2626;
-  --color-urgent-soft:    #FEF2F2;
-  --crimson-rgb:           190, 18, 60;
+  --bg-surface-alt:       #F1F5F9;
+  --text-primary:         #0F172A;
+  --text-muted:           #64748B;
+  --border-color:         #E2E8F0;
 
+  /* ── Brand ─────────────────────────────────────────────── */
+  --crimson-rgb:          190, 18, 60;
+  --color-logo-bg:        #BE123C;
+  --color-logo-icon:      #FFFFFF;
+  --primary-dark:         #9F1239;
+  --primary-soft:         #FFF1F2;
+
+  /* ── Semantic ──────────────────────────────────────────── */
   --color-success:        #059669;
   --color-success-soft:   #ECFDF5;
   --color-warning:        #D97706;
@@ -23,73 +27,56 @@
   --color-danger-soft:    #FEF2F2;
   --color-info:           #2563EB;
   --color-info-soft:      #EFF6FF;
+  --color-urgent:         #DC2626;
+  --color-urgent-soft:    #FEF2F2;
 
-  --color-nav-hover:      #F3F4F6;
-  --color-nav-active:     #E5E7EB;
-  --color-nav-active-text:#111827;
-  --color-logo-bg:        #BE123C;
-  --color-logo-icon:      #FFFFFF;
+  /* ── Typography ────────────────────────────────────────── */
+  --type-display:         "DM Sans", "Segoe UI", sans-serif;
+  --type-body:            "Inter", "Segoe UI", sans-serif;
+  --type-mono:            "IBM Plex Mono", "Consolas", monospace;
 
-  --gradient-hero:        linear-gradient(160deg, #F9FAFB 0%, #F3F4F6 100%);
-
-  --color-shadow-sm:      rgba(0, 0, 0, 0.05);
-  --color-shadow-md:      rgba(0, 0, 0, 0.08);
-
-  /* Typography */
-  --font-body:            "Inter", "Segoe UI", sans-serif;
   --font-weight-regular:  400;
   --font-weight-medium:   500;
   --font-weight-semibold: 600;
   --font-weight-bold:     700;
-  --font-weight-extrabold:800;
 
-  /* Spacing */
+  /* ── Spacing (4px scale) ──────────────────────────────── */
   --space-xs:             4px;
   --space-sm:             8px;
   --space-md:             16px;
   --space-lg:             24px;
   --space-xl:             32px;
   --space-2xl:            48px;
-  --space-3xl:            64px;
-  --space-4xl:            96px;
   --container:            1200px;
 
-  /* Radii */
+  /* ── Radii (2-tier system) ────────────────────────────── */
   --radius-card:          8px;
   --radius-input:         8px;
-  --radius-button:        999px;
+  --radius-button:        8px;
   --radius-badge:         999px;
+  --radius-circle:        50%;
 
-  /* Motion */
+  /* ── Shadows ──────────────────────────────────────────── */
+  --shadow-sm:            0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md:            0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-focus:         0 0 0 3px rgba(var(--crimson-rgb), 0.2);
+
+  /* ── Motion ────────────────────────────────────────────── */
   --ease-glide:           cubic-bezier(0.19, 1, 0.22, 1);
   --dur-micro:            180ms;
   --dur-transition:       320ms;
-  --dur-hero:             900ms;
 
-  /* Sidebar panel — neutral gray */
-  --sidebar-panel-bg:        #F3F4F6;
-
-  /* Sidebar nav — inactive */
+  /* ── Sidebar ───────────────────────────────────────────── */
+  --sidebar-panel-bg:        #F1F5F9;
   --sidebar-nav-bg:           transparent;
-  --sidebar-nav-text:         #374151;
+  --sidebar-nav-text:         #334155;
   --sidebar-nav-hover-bg:     rgba(0, 0, 0, 0.04);
-
-  /* Sidebar nav — active: primary crimson */
   --sidebar-nav-active-bg:    #BE123C;
   --sidebar-nav-active-text:  #FFFFFF;
-
-  /* Shadows */
   --sidebar-nav-shadow:       rgba(0, 0, 0, 0.1);
   --sidebar-nav-shadow-hover: rgba(190, 18, 60, 0.15);
 
-  /* Aliases — canonical tokens used throughout styles.css */
-  --color-ink:            var(--text-primary);
-  --color-paper:          var(--bg-surface);
-  --color-charcoal:       #1F2937;
-  --color-muted:          var(--text-muted);
-  --color-border:         var(--border-color);
-  --color-surface-alt:    var(--bg-surface-alt);
-
+  /* ── Aliases (backward-compat) ─────────────────────────── */
   --color-bg-primary:     var(--bg-base);
   --color-bg-secondary:   var(--bg-surface-alt);
   --color-bg-surface:     var(--bg-surface);
@@ -100,6 +87,13 @@
   --color-border-default: var(--border-color);
   --color-border-subtle:  var(--border-color);
 
+  --color-ink:            var(--text-primary);
+  --color-paper:          var(--bg-surface);
+  --color-muted:          var(--text-muted);
+  --color-border:         var(--border-color);
+  --color-surface-alt:    var(--bg-surface-alt);
+  --color-charcoal:       #1E293B;
+
   --bg:                   var(--bg-base);
   --bg-soft:              var(--bg-surface-alt);
   --surface:              var(--bg-surface);
@@ -109,12 +103,11 @@
   --text:                 var(--text-primary);
   --muted:                var(--text-muted);
   --primary:              var(--color-logo-bg);
-  --primary-dark:         #9F1239;
   --primary-soft:         #FFF1F2;
   --border:               var(--border-color);
   --border-strong:        var(--border-color);
-  --shadow:               var(--color-shadow-md);
-  --shadow-soft:          var(--color-shadow-sm);
+  --shadow:               var(--shadow-md);
+  --shadow-soft:          var(--shadow-sm);
   --success:              var(--color-success);
   --success-soft:         var(--color-success-soft);
   --warning:              var(--color-warning);
@@ -127,9 +120,9 @@
   --color-accent-hover:   var(--primary-dark);
   --color-accent-subtle:  #FFF1F2;
   --color-accent-rgb:     190, 18, 60;
-  --color-ink-rgb:        17, 24, 39;
+  --color-ink-rgb:        15, 23, 42;
 
-  font-family: var(--font-body);
+  font-family: var(--type-body);
   color-scheme: light;
 }
 

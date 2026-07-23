@@ -487,15 +487,6 @@ def test_admin_approval_route_still_available(client, seeded_db):
     assert response.json()["status"] == "matched"
 
 
-def test_hospital_dashboard_route(client, seeded_db):
-    token = login(client, "hospital@test.com", "Hospital12345")
-    response = client.get(
-        f"/api/v1/hospitals/{seeded_db['hospital'].id}/dashboard",
-        headers={"Authorization": f"Bearer {token}"},
-    )
-    assert response.status_code == 200
-    assert response.json()["hospital"]["name"] == "Test Hospital"
-
 
 def test_blood_bank_inventory_summary_route(client, seeded_db):
     token = login(client, "bank@test.com", "BloodBank12345")

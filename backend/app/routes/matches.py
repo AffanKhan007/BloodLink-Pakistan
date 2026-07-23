@@ -1,7 +1,9 @@
-from datetime import datetime, timezone
+import logging
+from datetime import date, datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 
 from app.core.database import get_db
@@ -14,6 +16,7 @@ from app.services.notifications import create_notification
 
 
 router = APIRouter(prefix="/matches", tags=["matches"])
+logger = logging.getLogger(__name__)
 
 
 def _match_detail_out(match: DonationMatch) -> MatchDetailOut:
@@ -67,24 +70,29 @@ def create_match(
     match = DonationMatch(request_id=payload.request_id, donor_id=payload.donor_id)
     request.status = RequestStatus.MATCHED
     db.add(match)
-    db.flush()
+    try:
+        db.flush()
 
-    create_notification(
-        db,
-        user_id=donor.user_id,
-        title="New blood request match",
-        message=f"You have been matched with request #{request.id} for {request.blood_group_needed} blood in {request.city}.",
-    )
-    create_audit_log(
-        db,
-        admin_user_id=current_user.id,
-        action="create_match",
-        entity_type="donation_match",
-        entity_id=match.id,
-        details={"request_id": request.id, "donor_id": donor.id},
-    )
+        create_notification(
+            db,
+            user_id=donor.user_id,
+            title="New blood request match",
+            message=f"You have been matched with request #{request.id} for {request.blood_group_needed} blood in {request.city}.",
+        )
+        create_audit_log(
+            db,
+            admin_user_id=current_user.id,
+            action="create_match",
+            entity_type="donation_match",
+            entity_id=match.id,
+            details={"request_id": request.id, "donor_id": donor.id},
+        )
 
-    db.commit()
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        logger.exception("Integrity error creating match")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Match could not be created due to a data conflict")
     db.refresh(match)
     return MatchOut.model_validate(match)
 
@@ -142,6 +150,11 @@ def accept_match(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="This match is no longer active")
     match.status = MatchStatus.ACCEPTED
     match.accepted_at = datetime.now(timezone.utc)
+
+    donor = db.get(DonorProfile, match.donor_id)
+    if donor:
+        donor.matches_accepted += 1
+
     create_notification(
         db,
         user_id=match.request.created_by_user_id,
@@ -162,8 +175,15 @@ def reject_match(
     match = _get_owned_match(db, match_id, current_user)
     if match.status not in {MatchStatus.PENDING, MatchStatus.ACCEPTED}:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="This match is no longer active")
+
+    was_accepted = match.status == MatchStatus.ACCEPTED
     match.status = MatchStatus.REJECTED
     match.rejected_at = datetime.now(timezone.utc)
+
+    donor = db.get(DonorProfile, match.donor_id)
+    if donor and was_accepted:
+        donor.matches_no_show += 1
+
     create_notification(
         db,
         user_id=match.request.created_by_user_id,
@@ -186,8 +206,15 @@ def complete_match(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
     if match.request.status in {RequestStatus.REJECTED, RequestStatus.CANCELLED}:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="This match is no longer active")
+
     match.status = MatchStatus.COMPLETED
     match.completed_at = datetime.now(timezone.utc)
+
+    donor = db.get(DonorProfile, match.donor_id)
+    if donor:
+        donor.last_donation_date = date.today()
+        donor.matches_completed += 1
+
     db.commit()
     db.refresh(match)
     return MatchOut.model_validate(match)
