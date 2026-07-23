@@ -71,9 +71,6 @@ export default function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/register/institution" element={<RegisterInstitutionPage />} />
         <Route path="/register/blood-bank" element={<RegisterBloodBankPage />} />
-        <Route path="/blood-banks" element={<BloodBankBrowsePage />} />
-        <Route path="/blood-banks/:id" element={<BloodBankPublicProfilePage />} />
-        <Route path="/blood-radar" element={<BloodRadarPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/transparency" element={<TransparencyPage />} />
 
@@ -84,6 +81,9 @@ export default function App() {
             </ProtectedRoute>
           }
         >
+          <Route path="/blood-banks" element={<BloodBankBrowsePage />} />
+          <Route path="/blood-banks/:id" element={<BloodBankPublicProfilePage />} />
+          <Route path="/blood-radar" element={<BloodRadarPage />} />
           <Route
             path="/dashboard"
             element={
