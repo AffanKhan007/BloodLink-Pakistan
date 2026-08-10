@@ -279,12 +279,11 @@ bloodlink-pakistan/
 |---|---|---|
 | `MEMBER` | **Active** | Single account identity — can create a donor profile, submit blood requests, or both. Default registration role. |
 | `ADMIN` | **Active** | Full system-wide visibility: manages users, donors, requests, matches, reports, audit logs, institution approvals, and blood bank admin status. |
-| `SUPER_ADMIN` | **Active** | Extended admin with platform-wide coordination. Same permissions as `ADMIN`. |
-| `OPERATIONS_AGENT` | **Active** | Focused operational view: manages blood requests and reports. Included in admin role checks. |
 | `BLOOD_BANK_ADMIN` | **Active** | Blood-bank-scoped workspace: manages inventory, blood unit lifecycle, donation drives, appointment slots, analytics, city-level request visibility, and request fulfillment. |
 | `BLOOD_BANK_STAFF` | **Active** | Blood-bank-scoped workspace with access to inventory management and city requests (no drive or analytics access). |
 | `INSTITUTION_DONOR` | **Active** | Organization-level account (university, NGO, blood society). Registers through a separate verification flow. Features unlock only after admin approval. |
-| `AUDITOR` | **Defined, unused** | Role exists in the `UserRole` enum but no routes, dashboards, or permission checks reference it. Reserved for future use. |
+
+**Note**: `HOSPITAL_ADMIN` and `HOSPITAL_STAFF` roles were removed in migration 0009. `SUPER_ADMIN`, `OPERATIONS_AGENT`, and `AUDITOR` roles were removed in migration 0014 — `ADMIN` is the single platform admin role.
 
 **Note**: `HOSPITAL_ADMIN` and `HOSPITAL_STAFF` roles were removed in migration 0009. Hospital-scoped request management via a dedicated hospital workspace is **not implemented** in the current codebase.
 
@@ -647,7 +646,6 @@ This application is not a replacement for hospitals, licensed blood banks, medic
 ### Dead code
 - [ ] `src/pages/hospital/HospitalDashboardPage.jsx` and `HospitalRequestsPage.jsx` exist on disk but are not imported or routed in `App.jsx`.
 - [ ] `src/pages/bloodbank/CreateBloodUnitPage.jsx` exists on disk but is not imported or routed in `App.jsx`.
-- [ ] `UserRole.AUDITOR` is defined in the enum but never checked by any route or permission guard.
 - [ ] `app/worker.py` is a stub (prints Redis URL, sleeps forever) — not connected to any actual job processing.
 
 ### Missing features / incomplete implementations

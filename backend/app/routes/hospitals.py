@@ -10,7 +10,7 @@ from app.schemas.hospital import HospitalCreate, HospitalOut
 
 router = APIRouter(prefix="/hospitals", tags=["hospitals"])
 
-ADMIN_ONLY = (UserRole.ADMIN, UserRole.SUPER_ADMIN)
+ADMIN_ONLY = (UserRole.ADMIN,)
 
 
 @router.get("", response_model=list[HospitalOut])

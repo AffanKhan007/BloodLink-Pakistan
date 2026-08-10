@@ -15,7 +15,7 @@ export default function RequestCard({ request, actions, footer, onClick, selecte
     String(request?.urgency_level || "").toLowerCase() === "urgent";
 
   const isCreator = user?.id === request.created_by_user_id;
-  const isAdmin = ["admin", "super_admin", "operations_agent"].includes(user?.role);
+  const isAdmin = ["admin"].includes(user?.role);
   const showReport = user && !isCreator && !isAdmin;
 
   return (

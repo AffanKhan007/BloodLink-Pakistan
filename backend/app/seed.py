@@ -101,24 +101,16 @@ def main() -> None:
             db.add(City(name=name, province=province, sort_order=index))
         db.flush()
 
-        # ── Admin / Super Admin / Blood Bank Admin ────────────────────
+        # ── Admin / Blood Bank Admin ─────────────────────────────────
         admin_user = User(
-            full_name="Platform Admin",
+            full_name="BloodLink Admin",
             email="admin@bloodlink.pk",
             phone="+923001000001",
             password_hash=get_password_hash("Admin12345"),
             role=UserRole.ADMIN,
             is_active=True,
         )
-        super_admin_user = User(
-            full_name="Super Admin",
-            email="superadmin@bloodlink.pk",
-            phone="+923001000002",
-            password_hash=get_password_hash("SuperAdmin12345"),
-            role=UserRole.SUPER_ADMIN,
-            is_active=True,
-        )
-        db.add_all([admin_user, super_admin_user])
+        db.add(admin_user)
         db.flush()
 
         # ── Donor Users ──────────────────────────────────────────────
@@ -302,7 +294,7 @@ def main() -> None:
             db.add(Institution(**inst_data))
 
         db.commit()
-        print(f"Seed data inserted: 2 admins, {len(donor_users)} donors, 2 institutions, {len(blood_banks)} blood banks, 3 drives.")
+        print(f"Seed data inserted: 1 admin, {len(donor_users)} donors, 2 institutions, {len(blood_banks)} blood banks, 3 drives.")
     finally:
         db.close()
 
