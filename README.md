@@ -366,8 +366,8 @@ Root `.env.example`:
 DATABASE_URL=postgresql+psycopg://blood_user:blood_password@db:5432/blood_app
 SECRET_KEY=change_this_secret
 ACCESS_TOKEN_EXPIRE_MINUTES=60
-BACKEND_CORS_ORIGINS=["http://localhost:5173"]
-VITE_API_BASE_URL=http://localhost:8000
+BACKEND_CORS_ORIGINS=["http://localhost:3000"]
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
 UPLOAD_DIR=/app/uploads
 REDIS_URL=redis://redis:6379/0
 MINIO_ENDPOINT=http://minio:9000
@@ -386,7 +386,7 @@ docker compose up --build
 ```
 
 Expected local URLs:
-- Frontend: [http://localhost:5173](http://localhost:5173)
+- Frontend: [http://localhost:3000](http://localhost:3000)
 - Backend: [http://localhost:8000](http://localhost:8000)
 - FastAPI docs: [http://localhost:8000/docs](http://localhost:8000/docs)
 - MinIO API: [http://localhost:9000](http://localhost:9000)

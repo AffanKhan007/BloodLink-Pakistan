@@ -93,8 +93,7 @@ services:
     depends_on:
       - backend
     command: >
-      sh -c "npm install &&
-      npm run dev"
+      sh -c "npm run dev"
     networks:
       - bloodlink-network
 
