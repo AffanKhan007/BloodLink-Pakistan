@@ -1,9 +1,9 @@
 import { Download, ExternalLink, FileText, Flag, MessageSquare, SendHorizontal, X, Zap } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
 
 import { API_BASE_URL, WS_BASE_URL, apiRequest } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
+import { useNavigationState } from "../utils/navigationState";
 import { AlertMessage, EmptyState, LoadingState } from "./PageState";
 import SectionIntro from "./SectionIntro";
 import ReportModal from "./ReportModal";
@@ -11,10 +11,10 @@ import ReportModal from "./ReportModal";
 
 export default function ChatWorkspace({ eyebrow, title, description }) {
   const { token, user } = useAuth();
-  const location = useLocation();
+  const navigationState = useNavigationState();
   const [loading, setLoading] = useState(true);
   const [chats, setChats] = useState([]);
-  const [selectedChatId, setSelectedChatId] = useState(location.state?.chatId || null);
+  const [selectedChatId, setSelectedChatId] = useState(navigationState?.chatId || null);
   const [chatDetail, setChatDetail] = useState(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");

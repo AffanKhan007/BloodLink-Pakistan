@@ -26,7 +26,7 @@ def get_request_document(
         raise HTTPException(status_code=404, detail="Document not found")
     request = document.request
 
-    if current_user.role in {UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.OPERATIONS_AGENT}:
+    if current_user.role == UserRole.ADMIN:
         pass
     elif request.created_by_user_id == current_user.id:
         pass
@@ -70,7 +70,7 @@ def get_report_evidence(
     report = db.get(Report, report_id)
     if not report or not report.evidence_file:
         raise HTTPException(status_code=404, detail="Evidence not found")
-    if current_user.role not in {UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.OPERATIONS_AGENT}:
+    if current_user.role != UserRole.ADMIN:
         raise HTTPException(status_code=403, detail="Access denied")
 
     file_path = os.path.join(settings.upload_dir, report.evidence_file)

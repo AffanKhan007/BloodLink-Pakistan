@@ -1,3 +1,4 @@
+import { AnimatePresence, motion } from "framer-motion";
 import {
   BarChart3,
   Bell,
@@ -22,8 +23,9 @@ import {
   Warehouse,
   X,
 } from "lucide-react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { apiRequest } from "../api/client";
@@ -54,22 +56,6 @@ const navByRole = {
     { label: "Matches", to: "/admin/matches", icon: HeartHandshake },
     { label: "Reports", to: "/admin/reports", icon: ClipboardCheck },
     { label: "Audit Logs", to: "/admin/audit-logs", icon: FileClock },
-  ],
-  super_admin: [
-    { label: "Dashboard", to: "/admin", icon: LayoutDashboard },
-    { label: "Users", to: "/admin/users", icon: Users },
-    { label: "Donors", to: "/admin/donors", icon: Syringe },
-    { label: "Institutions", to: "/admin/institutions", icon: Building2 },
-    { label: "Blood Banks", to: "/admin/blood-banks", icon: Warehouse },
-    { label: "Blood Requests", to: "/admin/requests", icon: Droplets },
-    { label: "Matches", to: "/admin/matches", icon: HeartHandshake },
-    { label: "Reports", to: "/admin/reports", icon: ClipboardCheck },
-    { label: "Audit Logs", to: "/admin/audit-logs", icon: FileClock },
-  ],
-  operations_agent: [
-    { label: "Dashboard", to: "/admin", icon: LayoutDashboard },
-    { label: "Blood Requests", to: "/admin/requests", icon: Droplets },
-    { label: "Reports", to: "/admin/reports", icon: ClipboardCheck },
   ],
   blood_bank_admin: [
     { label: "Dashboard", to: "/blood-bank", icon: LayoutDashboard },
@@ -109,16 +95,6 @@ const roleMeta = {
     title: "Operations overview",
     description: "Review requests, institutions, and reports.",
   },
-  super_admin: {
-    eyebrow: "Admin",
-    title: "Operations overview",
-    description: "Review requests, institutions, and reports.",
-  },
-  operations_agent: {
-    eyebrow: "Operations",
-    title: "Operations overview",
-    description: "Handle requests and review reports.",
-  },
   blood_bank_admin: {
     eyebrow: "Blood bank",
     title: "Blood bank workspace",
@@ -136,11 +112,11 @@ const roleMeta = {
   },
 };
 
-export default function Layout() {
+export default function Layout({ children }) {
   const { token, user, logout } = useAuth();
   const { i18n } = useTranslation();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const router = useRouter();
+  const pathname = usePathname();
   const pageAreaRef = useRef(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [institutionStatus, setInstitutionStatus] = useState(null);
@@ -148,7 +124,7 @@ export default function Layout() {
   useEffect(() => {
     const pageArea = document.querySelector(".page-area");
     if (pageArea) pageArea.scrollTop = 0;
-  }, [location.pathname]);
+  }, [pathname]);
   const navItems = useMemo(() => {
     const items = navByRole[user?.role] || [];
     if (user?.role === "institution_donor" && institutionStatus && institutionStatus !== "approved") {
@@ -226,18 +202,17 @@ export default function Layout() {
 
         <nav className="side-nav">
           {navItems.map((item) => (
-            <NavLink
+            <Link
               key={item.to}
-              to={item.to}
-              end
-              className={({ isActive }) => (isActive ? "nav-link nav-link-active" : "nav-link")}
+              href={item.to}
+              className={pathname === item.to ? "nav-link nav-link-active" : "nav-link"}
               onClick={() => setSidebarOpen(false)}
             >
               <span className="nav-link-body">
                 <item.icon size={15} />
                 <span>{item.label}</span>
               </span>
-            </NavLink>
+            </Link>
           ))}
         </nav>
 
@@ -249,16 +224,16 @@ export default function Layout() {
               <strong>{user?.full_name}</strong>
             </div>
           </div>
-          <NavLink className="button button-tertiary button-full" to="/" onClick={() => setSidebarOpen(false)}>
+          <Link className="button button-tertiary button-full" href="/" onClick={() => setSidebarOpen(false)}>
             <Home size={14} />
             Public site
-          </NavLink>
+          </Link>
           <button
             className="button button-secondary button-full"
             onClick={() => {
               logout();
               setSidebarOpen(false);
-              navigate("/login");
+              router.push("/login");
             }}
           >
             <LogOut size={14} />
@@ -296,9 +271,19 @@ export default function Layout() {
           </div>
         </header>
 
-        <PageTransition>
-          <Outlet />
-        </PageTransition>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={pathname}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.35, ease: [0.19, 1, 0.22, 1] }}
+          >
+            <PageTransition>
+              {children}
+            </PageTransition>
+          </motion.div>
+        </AnimatePresence>
       </main>
     </div>
   </div>

@@ -132,7 +132,7 @@ def list_blood_banks(
     city: str | None = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(
-        require_roles(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.BLOOD_BANK_ADMIN, UserRole.BLOOD_BANK_STAFF, UserRole.MEMBER)
+        require_roles(UserRole.ADMIN, UserRole.BLOOD_BANK_ADMIN, UserRole.BLOOD_BANK_STAFF, UserRole.MEMBER)
     ),
 ) -> list[BloodBankOut]:
     statement = (
@@ -153,7 +153,7 @@ def list_blood_banks(
 def create_blood_bank(
     payload: BloodBankCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)),
+    current_user: User = Depends(require_roles(UserRole.ADMIN)),
 ) -> BloodBankOut:
     bank = BloodBank(**payload.model_dump())
     db.add(bank)
@@ -170,7 +170,7 @@ def inventory_summary(
     blood_bank_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(
-        require_roles(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.BLOOD_BANK_ADMIN, UserRole.BLOOD_BANK_STAFF)
+        require_roles(UserRole.ADMIN, UserRole.BLOOD_BANK_ADMIN, UserRole.BLOOD_BANK_STAFF)
     ),
 ) -> InventorySummaryOut:
     _ensure_blood_bank_scope(current_user, blood_bank_id)
@@ -231,7 +231,7 @@ def create_blood_unit(
     payload: BloodUnitCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(
-        require_roles(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.BLOOD_BANK_ADMIN, UserRole.BLOOD_BANK_STAFF)
+        require_roles(UserRole.ADMIN, UserRole.BLOOD_BANK_ADMIN, UserRole.BLOOD_BANK_STAFF)
     ),
 ) -> BloodUnitOut:
     _ensure_blood_bank_scope(current_user, blood_bank_id)
@@ -262,7 +262,7 @@ def get_blood_unit(
     unit_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(
-        require_roles(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.BLOOD_BANK_ADMIN, UserRole.BLOOD_BANK_STAFF)
+        require_roles(UserRole.ADMIN, UserRole.BLOOD_BANK_ADMIN, UserRole.BLOOD_BANK_STAFF)
     ),
 ) -> BloodUnitOut:
     unit = db.get(BloodUnit, unit_id)
@@ -281,7 +281,7 @@ def update_blood_unit_status(
     payload: BloodUnitStatusUpdate,
     db: Session = Depends(get_db),
     current_user: User = Depends(
-        require_roles(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.BLOOD_BANK_ADMIN, UserRole.BLOOD_BANK_STAFF)
+        require_roles(UserRole.ADMIN, UserRole.BLOOD_BANK_ADMIN, UserRole.BLOOD_BANK_STAFF)
     ),
 ) -> BloodUnitOut:
     unit = db.get(BloodUnit, unit_id)
@@ -314,7 +314,7 @@ def issue_blood_unit(
     payload: BloodUnitIssue,
     db: Session = Depends(get_db),
     current_user: User = Depends(
-        require_roles(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.BLOOD_BANK_ADMIN, UserRole.BLOOD_BANK_STAFF)
+        require_roles(UserRole.ADMIN, UserRole.BLOOD_BANK_ADMIN, UserRole.BLOOD_BANK_STAFF)
     ),
 ) -> InventoryMovementOut:
     unit = db.get(BloodUnit, unit_id)
@@ -345,7 +345,7 @@ def transfer_blood_unit(
     payload: BloodUnitTransfer,
     db: Session = Depends(get_db),
     current_user: User = Depends(
-        require_roles(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.BLOOD_BANK_ADMIN, UserRole.BLOOD_BANK_STAFF)
+        require_roles(UserRole.ADMIN, UserRole.BLOOD_BANK_ADMIN, UserRole.BLOOD_BANK_STAFF)
     ),
 ) -> InventoryMovementOut:
     unit = db.get(BloodUnit, unit_id)
@@ -375,7 +375,7 @@ def trace_blood_unit(
     unit_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(
-        require_roles(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.BLOOD_BANK_ADMIN, UserRole.BLOOD_BANK_STAFF)
+        require_roles(UserRole.ADMIN, UserRole.BLOOD_BANK_ADMIN, UserRole.BLOOD_BANK_STAFF)
     ),
 ) -> list[InventoryMovementOut]:
     unit = db.get(BloodUnit, unit_id)
@@ -515,7 +515,7 @@ def update_blood_bank_admin_status(
     blood_bank_id: int,
     payload: BloodBankAdminStatusUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)),
+    current_user: User = Depends(require_roles(UserRole.ADMIN)),
 ) -> BloodBankOut:
     bank = db.get(BloodBank, blood_bank_id)
     if not bank:
@@ -554,7 +554,7 @@ def update_blood_bank_admin_status(
 def list_all_blood_banks_admin(
     status_filter: str | None = None,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)),
+    current_user: User = Depends(require_roles(UserRole.ADMIN)),
 ) -> list[BloodBankAdminListItem]:
     statement = select(BloodBank).order_by(BloodBank.created_at.desc())
     if status_filter:
@@ -1157,7 +1157,7 @@ def get_transparency_stats(db: Session = Depends(get_db)):
 def toggle_govt_verified(
     blood_bank_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)),
+    current_user: User = Depends(require_roles(UserRole.ADMIN)),
 ) -> GovtVerifiedOut:
     """Admin-only toggle for Government Health Authority Verified badge."""
     bank = db.query(BloodBank).filter(BloodBank.id == blood_bank_id).first()

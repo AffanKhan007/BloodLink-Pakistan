@@ -11,7 +11,7 @@ from app.schemas.report import AdminConversationPreview
 from app.schemas.user import ChatUserSummary
 
 
-ADMIN_ROLES = (UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.OPERATIONS_AGENT)
+ADMIN_ROLES = (UserRole.ADMIN,)
 REPORTS_MAX_PER_HOUR = 10
 DUPLICATE_WINDOW = timedelta(hours=1)
 

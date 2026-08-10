@@ -215,7 +215,7 @@ def list_institutions(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> list[InstitutionWithUserOut]:
-    if current_user.role not in {UserRole.MEMBER, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.INSTITUTION_DONOR}:
+    if current_user.role not in {UserRole.MEMBER, UserRole.ADMIN, UserRole.INSTITUTION_DONOR}:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
     if current_user.role == UserRole.INSTITUTION_DONOR:
         institution = _get_institution_for_user(db, current_user.id)
@@ -225,7 +225,7 @@ def list_institutions(
             detail="Institution approval is required before using institution features.",
         )
     statement = select(Institution).options(joinedload(Institution.user)).order_by(Institution.institution_name.asc())
-    if current_user.role not in {UserRole.ADMIN, UserRole.SUPER_ADMIN}:
+    if current_user.role != UserRole.ADMIN:
         statement = statement.where(Institution.status == InstitutionStatus.APPROVED)
     if city:
         statement = statement.where(Institution.city == city)

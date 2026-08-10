@@ -1,0 +1,155 @@
+import { ArrowRight, ClipboardCheck, HeartHandshake, MapPin, ShieldCheck } from "lucide-react";
+import { useState } from "react";
+import Link from "next/link";
+
+import PageTransition from "../../components/PageTransition";
+import PublicFooter from "../../components/PublicFooter";
+import PublicHeader from "../../components/PublicHeader";
+
+const steps = [
+  {
+    title: "Create a request",
+    description: "Add patient details, hospital info, urgency level, and a supporting slip.",
+  },
+  {
+    title: "Match with donors",
+    description: "Compatible donors, blood banks, and institutions surface in your city automatically.",
+  },
+  {
+    title: "Track and fulfill",
+    description: "Monitor responses, message participants, and update the request status as support is confirmed.",
+  },
+];
+
+const benefits = [
+  {
+    title: "Structured requests",
+    description: "Every request includes hospital details and a supporting slip so donors can verify before responding.",
+    icon: ClipboardCheck,
+  },
+  {
+    title: "Automatic matching",
+    description: "Donors are matched by city, blood-group compatibility, and donation recency without manual searching.",
+    icon: HeartHandshake,
+  },
+  {
+    title: "Role-based access",
+    description: "Each user sees only what is relevant to their role. Admins moderate the platform.",
+    icon: ShieldCheck,
+  },
+];
+
+export default function LandingPage() {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  return (
+    <PageTransition>
+    <div className="marketing-shell">
+      <PublicHeader
+        ctaLabel="Get started"
+        ctaTo="/register"
+        mobileOpen={menuOpen}
+        onToggleMenu={() => setMenuOpen((current) => !current)}
+        onCloseMenu={() => setMenuOpen(false)}
+      />
+
+      <section className="hero">
+        <div className="hero-copy-column">
+          <p className="eyebrow">Blood donation coordination</p>
+          <h1>One platform instead of scattered posts.</h1>
+          <p className="hero-copy">
+            Connect donors, hospitals, and blood banks through verified requests and automatic matching.
+          </p>
+          <div className="hero-actions">
+            <Link className="button button-primary button-with-icon" href="/register">
+              Register
+              <ArrowRight size={14} />
+            </Link>
+            <Link className="button button-secondary" href="/login">
+              Login
+            </Link>
+          </div>
+        </div>
+
+        <div className="hero-panel hero-panel-large">
+          <div className="hero-surface hero-surface-minimal">
+            <div className="hero-surface-copy">
+              <h3>Request → match → fulfill</h3>
+            </div>
+            <div className="hero-preview-grid">
+              <div className="mini-stat">
+                <div className="hero-stat-icon"><MapPin size={14} /></div>
+                <strong>City &amp; blood-group matching</strong>
+                <p>Donors are surfaced based on city, compatibility, availability, and donation recency.</p>
+              </div>
+              <div className="mini-stat">
+                <div className="hero-stat-icon"><ClipboardCheck size={14} /></div>
+                <strong>Hospital slip required</strong>
+                <p>Every request includes a supporting document so donors know it is legitimate.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="marketing-section">
+        <div className="section-heading">
+          <div className="section-copy">
+            <p className="eyebrow">How it works</p>
+            <h2>Three steps from request to response</h2>
+
+          </div>
+        </div>
+        <div className="timeline-grid">
+          {steps.map((item, index) => (
+            <section className="info-card timeline-card" key={item.title}>
+              <span className="timeline-step">Step {index + 1}</span>
+              <h3>{item.title}</h3>
+              <p>{item.description}</p>
+            </section>
+          ))}
+        </div>
+      </section>
+
+      <section className="marketing-section">
+        <div className="section-heading">
+          <div className="section-copy">
+            <p className="eyebrow">Why BloodLink</p>
+            <h2>Built for clarity and trust</h2>
+
+          </div>
+        </div>
+        <div className="feature-grid">
+          {benefits.map((item) => (
+            <div className="info-card feature-card" key={item.title}>
+              <div className="feature-icon">
+                <item.icon size={15} />
+              </div>
+              <h3>{item.title}</h3>
+              <p>{item.description}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="marketing-section marketing-section-soft section-center">
+        <h2>Ready to get started?</h2>
+        <p className="section-description">
+          One account works as donor, request creator, or both.
+        </p>
+        <div className="hero-actions" style={{ justifyContent: "center" }}>
+          <Link className="button button-primary button-with-icon" href="/register">
+            Create account
+            <ArrowRight size={14} />
+          </Link>
+          <Link className="button button-secondary" href="/login">
+            Sign in
+          </Link>
+        </div>
+      </section>
+
+      <PublicFooter />
+    </div>
+    </PageTransition>
+  );
+}

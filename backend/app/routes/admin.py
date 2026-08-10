@@ -39,7 +39,7 @@ class AdminRequestStatusUpdate(BaseModel):
 
 
 router = APIRouter(prefix="/admin", tags=["admin"])
-ADMIN_ROLES = (UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.OPERATIONS_AGENT)
+ADMIN_ROLES = (UserRole.ADMIN,)
 
 
 @router.get("/dashboard", response_model=DashboardStats)
