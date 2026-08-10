@@ -1,5 +1,7 @@
+"use client";
+
 import { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 
 import { apiRequest } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
@@ -14,6 +16,7 @@ function routeForStatus(status) {
 
 export default function InstitutionRouteGuard({ children, allowedStatuses }) {
   const { token } = useAuth();
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
   const [error, setError] = useState("");
@@ -25,11 +28,18 @@ export default function InstitutionRouteGuard({ children, allowedStatuses }) {
       .finally(() => setLoading(false));
   }, [token]);
 
+  useEffect(() => {
+    if (loading || error || !profile) return;
+    if (!allowedStatuses.includes(profile.status)) {
+      router.replace(routeForStatus(profile.status));
+    }
+  }, [loading, error, profile, allowedStatuses, router]);
+
   if (loading) return <LoadingState label="Loading institution access" />;
   if (error) return <EmptyState title="Institution access unavailable" description={error} />;
   if (!profile) return <EmptyState title="Institution profile not found" description="This institution account does not have a verification profile yet." />;
   if (!allowedStatuses.includes(profile.status)) {
-    return <Navigate to={routeForStatus(profile.status)} replace />;
+    return null;
   }
 
   return children;

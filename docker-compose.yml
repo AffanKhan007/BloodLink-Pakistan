@@ -86,7 +86,7 @@ services:
     env_file:
       - .env
     ports:
-      - "5173:5173"
+      - "3000:3000"
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -94,7 +94,7 @@ services:
       - backend
     command: >
       sh -c "npm install &&
-      npm run dev -- --host 0.0.0.0 --port 5173"
+      npm run dev"
     networks:
       - bloodlink-network
 

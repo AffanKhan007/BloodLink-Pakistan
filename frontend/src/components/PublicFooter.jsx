@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import SocialRow from "./SocialRow";
 
 export default function PublicFooter() {
@@ -10,7 +10,7 @@ export default function PublicFooter() {
           <span>Verified donation coordination</span>
         </div>
         <nav className="public-footer-links">
-          <Link to="/transparency">Transparency & Impact</Link>
+          <Link href="/transparency">Transparency & Impact</Link>
         </nav>
         <SocialRow />
       </div>
