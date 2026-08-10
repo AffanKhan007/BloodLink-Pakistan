@@ -6,7 +6,7 @@ A blood donation coordination platform for Pakistan connecting donors, request c
 
 <p align="left">
   <img src="https://img.shields.io/badge/ReactJS-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="ReactJS" />
-  <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=FFFFFF" alt="Vite" />
+  <img src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=FFFFFF" alt="Next.js" />
   <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=FFFFFF" alt="FastAPI" />
   <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=FFFFFF" alt="PostgreSQL" />
 </p>
@@ -30,9 +30,9 @@ A blood donation coordination platform for Pakistan connecting donors, request c
   <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=1F2328" alt="JavaScript" />
 </p>
 
-- **Frontend**: React + Vite + Lucide React + Leaflet/react-leaflet (OpenStreetMap tiles) + react-i18next for English/Urdu localization + custom CSS design system
+- **Frontend**: Next.js (App Router) + React 18 + Lucide React + Leaflet/react-leaflet (OpenStreetMap tiles) + react-i18next for English/Urdu localization + custom CSS design system
 - **Backend**: FastAPI with modular route handlers (auth, donors, requests, matches, chats, notifications, blood banks, institutions, reports, admin, uploads, cities, blood_radar, notification_stubs)
-- **Database**: PostgreSQL with SQLAlchemy ORM + Alembic migrations (14 migrations)
+- **Database**: PostgreSQL with SQLAlchemy ORM + Alembic migrations (15 migration files, 0001–0014)
 - **Real-time**: Redis-backed WebSocket chat via FastAPI WebSockets
 - **Object storage**: MinIO for uploaded document storage
 - **Infrastructure**: Docker Compose with 7 services (frontend, backend, PostgreSQL, Redis, MinIO, worker, scheduler)
@@ -127,7 +127,7 @@ BloodLink provides a realistic MVP with a single-account identity model:
 - Blood bank dashboard with inventory, drives, appointments, analytics, and city requests
 - Institution workspace with status-based access control
 - Reports (user-submitted) with pending/reviewed status
-- **Hospital workspace**: Frontend pages exist (`src/pages/hospital/`) but are **not routed** — dead code. No hospital-specific role exists in the current user-role enum.
+- **Hospital workspace**: Frontend pages exist (`src/views/hospital/`) but are **not routed** — dead code. No hospital-specific role exists in the current user-role enum.
 
 ### Seed data
 - 20 Lahore donors with lat/lng coordinates across Gulberg III, DHA Phase 5, Johar Town, Model Town, Cantonment, and other Lahore areas
@@ -164,6 +164,7 @@ BloodLink provides a realistic MVP with a single-account identity model:
 BloodLink includes Urdu localization via `react-i18next`:
 
 - **Translation files**: `src/i18n/en.json` (English) and `src/i18n/ur.json` (Urdu) with 181 lines each covering nav, common, bloodGroup, request, bloodBank, radar, donor, notifications, transparency, settings, share, and landing keys.
+- **App Router integration**: i18next initializes client-side in `src/app/I18nProvider.jsx` (dynamic import on mount), which also keeps `dir`/`lang` on `<html>` in sync on language change.
 - **Language toggle**: A toggle ("English / اردو") is in the dashboard sidebar top bar (`Layout.jsx`). It sets `dir="rtl"` and `lang="ur"` on `<html>`.
 - **RTL support**: CSS rules under `[dir="rtl"]` adjust sidebar border, padding, text alignment, page header layout, and filter toolbar direction.
 - **Font**: Only Inter is loaded via Google Fonts (`styles.css` line 1). **Noto Nastaliq Urdu is not loaded** — Urdu text renders in the browser's default font, which may not display Nastaliq script correctly on all systems.
@@ -180,7 +181,7 @@ A Low-Data Mode toggle is included in the notification settings page:
 
 ## Tech stack
 
-- Frontend: React + Vite + Lucide React + Leaflet/react-leaflet (OpenStreetMap) + react-i18next + custom CSS design system
+- Frontend: Next.js (App Router, JavaScript) + React 18 + Lucide React + Leaflet/react-leaflet (OpenStreetMap) + react-i18next + custom CSS design system
 - Backend: FastAPI
 - Database: PostgreSQL
 - Authentication: JWT (python-jose, HS256) + OAuth2PasswordBearer + bcrypt (Passlib)
@@ -195,20 +196,31 @@ A Low-Data Mode toggle is included in the notification settings page:
 bloodlink-pakistan/
 ├── frontend/
 │   ├── src/
-│   │   ├── api/                  # API client (client.js)
-│   │   ├── auth/                 # AuthContext (token management)
-│   │   ├── i18n/                 # i18next setup, en.json, ur.json
-│   │   ├── components/           # 25 shared components: Layout, PageTransition,
-│   │   │                         # PublicHeader, PublicFooter, SocialRow,
-│   │   │                         # RadarMap, FilterToolbar, RequestCard,
-│   │   │                         # GovtVerifiedBadge, WhatsAppShareButton,
-│   │   │                         # BloodGroupBadge, LowDataModeToggle, etc.
-│   │   ├── pages/
-│   │   │   ├── public/           # Landing, About, HowItWorks, LoginPage,
-│   │   │   │                     # RegisterPage, RegisterBloodBankPage,
-│   │   │   │                     # RegisterInstitutionPage, ForgotPasswordPage,
-│   │   │   │                     # BloodRadarPage, BloodBankBrowsePage,
-│   │   │   │                     # BloodBankProfilePage, TransparencyPage
+│   │   ├── app/                  # Next.js App Router (route groups + pages)
+│   │   │   ├── (public)/         # Landing, About, HowItWorks, Login, Register,
+│   │   │   │                     # RegisterBloodBank, RegisterInstitution,
+│   │   │   │                     # ForgotPassword, Transparency
+│   │   │   ├── (browser)/        # BloodRadar, BloodBanks, BloodBankProfile
+│   │   │   │                     # (keeps dashboard sidebar visible)
+│   │   │   ├── (member)/         # dashboard, donor (profile/matches/chats/
+│   │   │   │                     # notifications/requests), receiver (requests,
+│   │   │   │                     # matched-donors, available-donors, chats)
+│   │   │   ├── (admin)/          # users, donors, requests, matches, reports,
+│   │   │   │                     # audit-logs, blood-banks, institutions
+│   │   │   ├── (bloodbank)/      # inventory, city-requests, units/[unitId],
+│   │   │   │                     # create-unit (alias), profile
+│   │   │   ├── (bloodbank-admin)/ # drives, appointments, analytics, profile
+│   │   │   ├── (institution)/    # dashboard, profile, messages, plus
+│   │   │   │                     # verification-pending/rejected/suspended
+│   │   │   ├── layout.jsx        # root layout — theme.css, styles.css,
+│   │   │   │                     # leaflet CSS, AppProviders
+│   │   │   ├── providers.jsx     # Toast > Auth > I18n (client, mounted gate)
+│   │   │   ├── I18nProvider.jsx  # client-side i18next + dir/lang sync
+│   │   │   └── not-found.jsx     # unknown paths redirect to "/"
+│   │   ├── views/                # page components (moved from src/pages/)
+│   │   │   ├── public/           # LandingPage, LoginPage, BloodRadarPage,
+│   │   │   │                     # BloodBankBrowsePage, BloodBankProfilePage,
+│   │   │   │                     # HowItWorksPage, TransparencyPage, etc.
 │   │   │   ├── dashboard/        # DashboardPage, NotificationSettingsPage
 │   │   │   ├── donor/            # DonorDashboardPage, DonorProfilePage,
 │   │   │   │                     # _DonorLocationMap, MyMatchesPage,
@@ -227,29 +239,40 @@ bloodlink-pakistan/
 │   │   │   │                     # InstitutionMessagesPage, verification-pending,
 │   │   │   │                     # rejected, suspended status pages
 │   │   │   ├── hospital/         # HospitalDashboardPage, HospitalRequestsPage
-│   │   │   │                     # (exist on disk but NOT routed in App.jsx — dead code)
+│   │   │   │                     # (exist on disk but unrouted — dead code)
 │   │   │   └── admin/            # AdminDashboardPage, UsersPage, DonorsPage,
 │   │   │                         # BloodRequestsPage, MatchesPage, ReportsPage,
 │   │   │                         # AuditLogsPage, AdminBloodBanksPage,
 │   │   │                         # AdminInstitutionsPage
-│   │   ├── App.jsx               # All routing
-│   │   ├── main.jsx              # Entry point (loads i18n first)
-│   │   ├── styles.css            # Design system (3157 lines): tokens, cards,
-│   │   │                         # forms, sidebar nav-skew, RTL rules, responsive
+│   │   ├── api/                  # API client (client.js, NEXT_PUBLIC_API_BASE_URL)
+│   │   ├── auth/                 # AuthContext (JWT in localStorage)
+│   │   ├── contexts/             # ToastContext
+│   │   ├── data/                 # static data (pakistan_cities.json)
+│   │   ├── i18n/                 # i18next setup, en.json, ur.json
+│   │   ├── utils/                # format.js, navigationState.js (router state)
+│   │   ├── components/           # 26 shared components: Layout, PageTransition,
+│   │   │                         # PublicHeader, PublicFooter, SocialRow,
+│   │   │                         # RadarMap, leafletIcons, FilterToolbar,
+│   │   │                         # RequestCard, GovtVerifiedBadge,
+│   │   │                         # WhatsAppShareButton, BloodGroupBadge,
+│   │   │                         # LowDataModeToggle, ProtectedRoute, etc.
+│   │   ├── styles.css            # Design system: tokens, cards, forms,
+│   │   │                         # sidebar nav-skew, RTL rules, responsive
 │   │   └── styles/theme.css
 │   ├── public/
-│   ├── package.json
+│   ├── next.config.mjs
+│   ├── package.json              # next CLI — dev/build/start on port 3000
 │   ├── Dockerfile
 │   └── .env.example
 ├── backend/
 │   ├── app/
 │   │   ├── core/                 # config.py, database.py, deps.py, security.py
-│   │   ├── models/               # 15 SQLAlchemy model files (16+ tables)
-│   │   ├── routes/               # 16 route modules: auth, donors, requests,
+│   │   ├── models/               # 14 SQLAlchemy model files (20 tables)
+│   │   ├── routes/               # 15 route modules: auth, donors, requests,
 │   │   │                         # matches, chats, notifications, notification_stubs,
 │   │   │                         # hospitals, blood_banks, blood_radar, institutions,
 │   │   │                         # reports, admin, uploads, cities
-│   │   ├── schemas/              # 14 Pydantic schema files
+│   │   ├── schemas/              # 15 Pydantic schema files
 │   │   ├── services/             # 5 service modules: audit, chat_realtime,
 │   │   │                         # matching, notifications, reports
 │   │   ├── utils/                # validators.py (blood group, phone, upload checks)
@@ -259,7 +282,7 @@ bloodlink-pakistan/
 │   │   ├── seed.py               # 20 Lahore donors, 4 banks, 3 drives, 8 cities
 │   │   ├── worker.py             # Stub — prints Redis URL, sleeps
 │   │   └── scheduler.py          # Blood unit auto-expiration (every 5 min)
-│   ├── alembic/                  # 14 migration files (0001–0013)
+│   ├── alembic/                  # 15 migration files (0001–0014)
 │   ├── requirements.txt
 │   ├── Dockerfile
 │   └── .env.example
@@ -400,8 +423,10 @@ Expected local URLs:
 ```bash
 cd frontend
 npm install
-npm run dev
+npm run dev        # http://localhost:3000
 ```
+
+Requires Node 20+. `npm run build` + `npm run start` runs a production-style local build on port 3000. For the browser to reach the API, create a `frontend/.env.local` with `NEXT_PUBLIC_API_BASE_URL=http://localhost:8000` (the backend default CORS allowlist includes `http://localhost:3000`).
 
 ### Backend
 ```bash
@@ -428,7 +453,7 @@ alembic revision --autogenerate -m "description"
 alembic upgrade head
 ```
 
-14 migrations as of v1.1, covering: initial tables, org/inventory foundation, messaging, institution approval and verification, reports moderation, user-role rename, hospital role removal, blood bank elevation, blood radar location fields, trust & data freshness, and govt_verified badge.
+15 migration files (0001–0014 after the merged 0005/0006 branches), covering: initial tables, org/inventory foundation, messaging, institution approval and verification, reports moderation, user-role rename, hospital role removal, blood bank elevation, blood radar location fields, trust & data freshness, govt_verified badge, and removal of the extra admin roles.
 
 ## Seed data
 
@@ -439,7 +464,7 @@ Run `python -m app.seed` after `alembic upgrade head` to populate sample data.
 | Entity | Count | Notes |
 |---|---|---|
 | Cities | 8 | Lahore, Karachi, Islamabad, Rawalpindi, Faisalabad, Multan, Peshawar, Quetta |
-| Users | ~22 | 20 Lahore donors + 2 institution users. Admin users are preserved from prior manual creation — the seed does not create new admin accounts. |
+| Users | 23 | 1 admin + 20 Lahore donors + 2 institution users. Seed deletes and recreates all users. |
 | Donor profiles | 20 | All in Lahore with lat/lng coordinates across Gulberg III, DHA Phase 5, Johar Town, Model Town, Cantonment, etc. |
 | Blood requests | 0 seeded | Requests are created through the app, not seed data. |
 | Donation matches | 0 seeded | Matches are created when requests are approved. |
@@ -457,15 +482,15 @@ Run `python -m app.seed` after `alembic upgrade head` to populate sample data.
 
 | Email | Password | Role | Notes |
 |---|---|---|---|
-| `admin@bloodlink.pk` | `Admin12345` | ADMIN | Must be created manually or exist before seed — seed preserves admin users |
-| `bloodbank.admin@bloodlink.pk` | `BloodBank12345` | BLOOD_BANK_ADMIN | Same as above |
+| `admin@bloodlink.pk` | `Admin12345` | ADMIN | Created by seed (BloodLink Admin) |
+| `bloodbank.admin@bloodlink.pk` | `BloodBank12345` | BLOOD_BANK_ADMIN | Not seeded — seed deletes all users, so register/create this account manually and set its role to `blood_bank_admin` |
 | `institution@bloodlink.pk` | `Institution12345` | INSTITUTION_DONOR | Created by seed |
 | `edhi.institution@bloodlink.pk` | `Institution12345` | INSTITUTION_DONOR | Created by seed |
 | `ahmed.donor@bloodlink.pk` | `Donor12345` | MEMBER | Created by seed (Lahore donor) |
 
 All 20 Lahore seeded donors use password `Donor12345` and have real lat/lng coordinates.
 
-> **Note**: The seed script preserves existing admin users and deletes/recreates all other data. Running the seed is destructive to donor profiles, blood requests, matches, chats, and notifications.
+> **Note**: The seed script deletes and recreates all data, including user accounts. Running the seed is destructive to user accounts, donor profiles, blood requests, matches, chats, and notifications.
 
 ### Institution approval note
 
@@ -544,7 +569,7 @@ pytest
 ## Deployment notes
 
 Suggested future hosting options:
-- Frontend: Vercel or Netlify
+- Frontend (Next.js): Vercel or Netlify
 - Backend: Render, Railway, or a VPS
 - Database: Supabase, Neon, Railway, or Docker PostgreSQL on a VPS
 - File storage later: Supabase Storage, AWS S3, Cloudinary, or MinIO
@@ -639,13 +664,11 @@ This application is not a replacement for hospitals, licensed blood banks, medic
 ## Known gaps / TODO
 
 ### Bugs
-- [ ] **Seed script crashes on blood unit creation** — `seed.py` uses `units_reserved` and `expiry_date` fields that do not exist on the `BloodUnit` model (the model has `expires_at` and no `units_reserved` column). Running `python -m app.seed` will fail at the blood-unit insertion step.
-- [ ] **Missing `Phone` import in `BloodBankProfilePage.jsx`** — `src/pages/public/BloodBankProfilePage.jsx` uses `<Phone>` for the "Show contact" button but does not import it from `lucide-react`. This will cause a runtime error when the button is clicked.
-- [ ] **Seed hospital uses `verification_status="verified"`** — the string `"verified"` is not a standard status value in the codebase. Blood banks use `"approved"` in route logic. The column is a plain `String(40)` so it doesn't error, but it is inconsistent.
+- [ ] **Seed uses `verification_status="verified"`** — the seeded hospital and blood banks are created with `"verified"`, while approval workflows compare against `"approved"`. The columns are plain `String(40)` so nothing errors, but the statuses are inconsistent.
 
 ### Dead code
-- [ ] `src/pages/hospital/HospitalDashboardPage.jsx` and `HospitalRequestsPage.jsx` exist on disk but are not imported or routed in `App.jsx`.
-- [ ] `src/pages/bloodbank/CreateBloodUnitPage.jsx` exists on disk but is not imported or routed in `App.jsx`.
+- [ ] `src/views/hospital/HospitalDashboardPage.jsx` and `HospitalRequestsPage.jsx` exist on disk but are not routed in the app router.
+- [ ] `src/views/bloodbank/CreateBloodUnitPage.jsx` exists on disk but is not routed in the app router.
 - [ ] `app/worker.py` is a stub (prints Redis URL, sleeps forever) — not connected to any actual job processing.
 
 ### Missing features / incomplete implementations
@@ -660,12 +683,10 @@ This application is not a replacement for hospitals, licensed blood banks, medic
 - [ ] `CreateBloodUnitPage.jsx` is dead code — blood unit creation is handled within `BloodBankInventoryPage.jsx`.
 
 ### Infrastructure
-- [ ] No `.dockerignore` files — node_modules and `.git` are copied into Docker build contexts.
 - [ ] Both Dockerfiles run as root — no non-root `USER` directive.
 - [ ] `worker.py` is a stub — no actual background job processing.
 - [ ] No production Dockerfiles or multi-stage builds.
 - [ ] `docker-compose.yml` contains hardcoded database and MinIO credentials.
-- [ ] Duplicate `npm install` — `frontend/Dockerfile` runs it and `docker-compose.yml` runs it again.
 
 ## License
 
